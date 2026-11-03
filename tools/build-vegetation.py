@@ -90,46 +90,45 @@ def decorate_cover(image, mask, canopy, seed):
     return image
 
 def decorate_full_ground(image, seed):
-    """Paint a quiet grass carpet with grouped, leaf-shaped autumn litter."""
+    """Paint a quiet grass carpet with occasional clusters of autumn speckles."""
     width, height = image.size
     rng = random.Random(seed)
     details = Image.new("RGBA", image.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(details, "RGBA")
 
-    # A few clustered leaves read as fallen foliage; isolated tiny dashes read
-    # as confetti, so each cluster stays together and has no drawn vein/stem.
+    # Small, round flecks suggest fallen leaves at map scale. Keep most of
+    # them in loose patches, with varied spacing and a lot of untouched grass.
     leaf_palette = (
-        (177, 91, 45, 195), (205, 139, 55, 195),
-        (143, 67, 42, 185), (190, 111, 54, 185),
-        (130, 127, 66, 175),
+        (184, 94, 45, 188), (210, 145, 59, 180),
+        (151, 72, 45, 178), (194, 116, 57, 184),
+        (139, 132, 68, 166),
     )
-    clusters = max(90, width * height // 420)
-    for _ in range(clusters):
+    for _ in range(max(45, width * height // 9000)):
         cx, cy = rng.randrange(width), rng.randrange(height)
-        count = rng.choices((2, 3, 4), weights=(5, 4, 1), k=1)[0]
-        for _ in range(count):
-            x = cx + rng.randint(-4, 4)
-            y = cy + rng.randint(-3, 3)
-            length = rng.uniform(2.2, 4.2)
-            half_width = rng.uniform(1.0, 1.8)
-            angle = rng.uniform(0, math.tau)
-            dx, dy = math.cos(angle), math.sin(angle)
-            px, py = -dy * half_width, dx * half_width
-            points = (
-                (x - dx * length, y - dy * length),
-                (x + px, y + py),
-                (x + dx * length, y + dy * length),
-                (x - px, y - py),
-            )
-            draw.polygon(points, fill=rng.choice(leaf_palette))
+        spread = rng.uniform(7, 20)
+        for _ in range(rng.randint(9, 19)):
+            x = cx + rng.gauss(0, spread)
+            y = cy + rng.gauss(0, spread * 0.72)
+            radius_x = rng.uniform(0.55, 1.2)
+            radius_y = radius_x * rng.uniform(0.72, 1.0)
+            color = rng.choice(leaf_palette)
+            draw.ellipse((x-radius_x, y-radius_y, x+radius_x, y+radius_y),
+                         fill=color)
 
-    # Low-contrast tufts soften the flat base without turning into uniform
-    # stripes or competing with the trees, roads, paths, and building shapes.
+    # A very sparse scattering beyond the clusters keeps the ground alive
+    # without making the whole surface read like confetti.
+    for _ in range(max(80, width * height // 1800)):
+        x, y = rng.randrange(width), rng.randrange(height)
+        radius = rng.uniform(0.45, 0.85)
+        color = rng.choice(leaf_palette)
+        draw.ellipse((x-radius, y-radius, x+radius, y+radius), fill=color)
+
+    # Low-contrast tufts soften the flat base without forming repeated stripes.
     tuft_palette = (
-        (80, 105, 61, 30), (157, 150, 94, 28),
-        (105, 126, 75, 25), (177, 139, 78, 22),
+        (80, 105, 61, 24), (157, 150, 94, 22),
+        (105, 126, 75, 20), (177, 139, 78, 18),
     )
-    for _ in range(max(100, width * height // 260)):
+    for _ in range(max(100, width * height // 320)):
         cx, cy = rng.randrange(width), rng.randrange(height)
         color = rng.choice(tuft_palette)
         for _ in range(rng.randint(2, 3)):
