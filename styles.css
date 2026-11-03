@@ -329,3 +329,14 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
  color:#f0ddba;
 }
 .rpg-fullscreen #rpg-neighborhood-map .maplibregl-ctrl-attrib a{color:#f1d28f}
+
+
+/* Opt-in live GPS controls inside the existing RPG HUD. */
+.rpg-gps-row{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 0 10px;min-height:34px}
+.rpg-gps-row button{pointer-events:auto;cursor:pointer;flex:none;min-height:34px;padding:6px 11px;border:1px solid #d8b46a;border-radius:8px;background:#34271fe8;color:#f3dba4;font:700 .72rem/1.15 system-ui,sans-serif}
+.rpg-gps-row button[aria-pressed="true"]{background:#d8b46a;color:#251b14}
+.rpg-gps-row button:focus-visible{outline:2px solid #fff0cc;outline-offset:2px}
+.rpg-gps-row button[hidden]{display:none!important}
+.rpg-gps-row #rpg-gps-status{flex:0 1 auto;min-width:0;color:#ead6b2;font:600 .66rem/1.25 system-ui,sans-serif;text-align:left}
+@media(max-width:390px){.rpg-gps-row{gap:5px}.rpg-gps-row button{padding:6px 8px;font-size:.67rem}.rpg-gps-row #rpg-gps-status{font-size:.61rem}}
+@media print{.rpg-gps-row{display:none!important}}

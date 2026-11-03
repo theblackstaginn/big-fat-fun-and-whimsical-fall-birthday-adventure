@@ -153,13 +153,112 @@ function installClevelandHomeMapLibreScene(map,vegetationBefore,symbolBefore){
 function homeIconSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2M5.7 9.1V20h12.6V9.1M9.5 20v-6.2h5V20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
 function returnIconSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 3.5 10.5 9 16M4 10.5h9a7 7 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2)"/></svg>'}
 function playerMarkerSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" fill="currentColor"/><path d="M5.2 21v-2.1a6.8 6.8 0 0 1 13.6 0V21z" fill="currentColor"/></svg>'}
+/* Opt-in GPS player marker. Location is never written to quest progress. */
+let livePlayerPoint=null,playerWatchId=null,playerFollow=false,gpsSession=0;
+let liveStreetMarker=null,liveWorldMarker=null,liveVillageMarker=null;
+function makeLiveLeafletIcon(L){
+ ensurePlayerTestStyles();
+ return L.divIcon({className:"rpg-player-marker-shell",html:'<span class="rpg-player-marker" aria-hidden="true">'+playerMarkerSvg()+'</span>',iconSize:[38,38],iconAnchor:[19,19]});
+}
+function syncLivePlayerMarkers(){
+ if(!livePlayerPoint)return;
+ const point=livePlayerPoint;
+ if(streetMap&&streetPins&&window.L){
+  if(!liveStreetMarker||!streetPins.hasLayer(liveStreetMarker)){
+   liveStreetMarker=window.L.marker(point,{icon:makeLiveLeafletIcon(window.L),title:"Your live GPS position",keyboard:true,zIndexOffset:950}).bindPopup("You are here · live GPS location").addTo(streetPins);
+  }else liveStreetMarker.setLatLng(point);
+ }
+ if(worldMap&&window.L){
+  if(!liveWorldMarker){
+   liveWorldMarker=window.L.marker(point,{icon:makeLiveLeafletIcon(window.L),title:"Your live GPS position",keyboard:true,zIndexOffset:950}).bindPopup("You are here · live GPS location").addTo(worldMap);
+  }else liveWorldMarker.setLatLng(point);
+ }
+ if(neighborhoodMap&&window.maplibregl){
+  if(!liveVillageMarker){
+   const marker=document.createElement("div");
+   marker.className="rpg-player-marker-shell";
+   marker.setAttribute("role","img");
+   marker.setAttribute("aria-label","Your live GPS location");
+   marker.innerHTML='<span class="rpg-player-marker" aria-hidden="true">'+playerMarkerSvg()+'</span>';
+   liveVillageMarker=new window.maplibregl.Marker({element:marker,anchor:"center"}).setLngLat([point[1],point[0]]).setPopup(new window.maplibregl.Popup({offset:24}).setText("You are here · live GPS location")).addTo(neighborhoodMap);
+  }else liveVillageMarker.setLngLat([point[1],point[0]]);
+ }
+}
+function clearLivePlayerMarkers(){
+ if(liveStreetMarker&&streetPins)streetPins.removeLayer(liveStreetMarker);
+ if(liveWorldMarker)liveWorldMarker.remove();
+ if(liveVillageMarker)liveVillageMarker.remove();
+ liveStreetMarker=liveWorldMarker=liveVillageMarker=null;
+}
+function setGpsControls(message){
+ const follow=document.querySelector("#rpg-locate"),stop=document.querySelector("#rpg-stop-location"),status=document.querySelector("#rpg-gps-status");
+ if(follow){follow.textContent=playerWatchId===null?"⌖ Locate me":"⌖ Follow me";follow.setAttribute("aria-pressed",String(playerWatchId!==null&&playerFollow));}
+ if(stop)stop.hidden=playerWatchId===null;
+ if(status&&message)status.textContent=message;
+}
+function onPlayerMapDragged(){
+ if(playerWatchId===null||!playerFollow)return;
+ playerFollow=false;
+ setGpsControls("GPS active · map free");
+}
+function centerOnLivePlayer(){
+ if(!livePlayerPoint)return;
+ const nearby=document.querySelector("#nearby-view");
+ if(nearby&&!nearby.hidden){
+  if(neighborhoodMap&&nearby.classList.contains("vector-ready")){
+   neighborhoodMap.easeTo({center:[livePlayerPoint[1],livePlayerPoint[0]],zoom:Math.max(neighborhoodMap.getZoom(),17.5),duration:450});
+  }else if(streetMap)streetMap.setView(livePlayerPoint,Math.max(streetMap.getZoom(),17),{animate:true});
+ }else if(worldMap)worldMap.setView(livePlayerPoint,Math.max(worldMap.getZoom(),16),{animate:true});
+}
+function stopLivePlayerTracking(){
+ gpsSession++;
+ if(playerWatchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(playerWatchId);
+ playerWatchId=null;playerFollow=false;livePlayerPoint=null;
+ clearLivePlayerMarkers();
+ setGpsControls("Location off");
+}
+function startLivePlayerTracking(){
+ if(playerWatchId!==null){
+  playerFollow=true;
+  centerOnLivePlayer();
+  setGpsControls(livePlayerPoint?"Following your position":"Waiting for GPS…");
+  return;
+ }
+ if(!window.isSecureContext||!navigator.geolocation){setGpsControls("GPS needs HTTPS and location permission");return;}
+ playerFollow=true;
+ const session=++gpsSession;
+ try{
+  playerWatchId=navigator.geolocation.watchPosition(
+   position=>{
+    if(session!==gpsSession||playerWatchId===null)return;
+    const latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude);
+    if(!Number.isFinite(latitude)||!Number.isFinite(longitude))return;
+    livePlayerPoint=[latitude,longitude];
+    syncLivePlayerMarkers();
+    if(playerFollow)centerOnLivePlayer();
+    const accuracy=Number(position.coords.accuracy);
+    setGpsControls(Number.isFinite(accuracy)?"GPS active · ±"+Math.round(accuracy)+" m":"GPS active");
+   },
+   error=>{
+    if(session!==gpsSession)return;
+    if(error.code===1){
+     stopLivePlayerTracking();
+     setGpsControls("Location denied · check browser settings");
+    }else setGpsControls(error.code===3?"GPS timed out · retrying":"GPS unavailable · retrying");
+   },
+   {enableHighAccuracy:true,maximumAge:5000,timeout:20000}
+  );
+  setGpsControls("Finding your location…");
+ }catch{
+  stopLivePlayerTracking();
+  setGpsControls("Unable to start GPS");
+ }
+}
 function addLeafletHomePlayerMarkers(L,map,layer){
  ensurePlayerTestStyles();
  const point=[homeTestLocation.lat,homeTestLocation.lng];
  const home=L.divIcon({className:"rpg-home-marker-shell",html:'<span class="rpg-home-marker" aria-hidden="true">'+homeIconSvg()+'</span>',iconSize:[48,46],iconAnchor:[44,43]});
- const player=L.divIcon({className:"rpg-player-marker-shell",html:'<span class="rpg-player-marker" aria-hidden="true">'+playerMarkerSvg()+'</span>',iconSize:[48,48],iconAnchor:[4,24]});
  L.marker(point,{icon:home,title:"Home test location",keyboard:true,zIndexOffset:800}).bindPopup("<strong>Home test location</strong><br>"+homeTestLocation.address).addTo(layer);
- L.marker(point,{icon:player,title:"Player icon test",keyboard:true,zIndexOffset:900}).bindPopup("<strong>Player icon test</strong><br>Player position set to home.").addTo(layer);
 }
 function ensureLeafletHomeControl(L,map,questPoint){
  ensurePlayerTestStyles();
@@ -168,10 +267,10 @@ function ensureLeafletHomeControl(L,map,questPoint){
  control.questPoint=questPoint;
  control.onAdd=function(){
   const wrap=L.DomUtil.create("div","leaflet-bar rpg-location-controls");
-  wrap.innerHTML='<button type="button" aria-label="Show home and player test location" title="Show home and player test location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
+  wrap.innerHTML='<button type="button" aria-label="Show home location" title="Show home location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
   L.DomEvent.disableClickPropagation(wrap);
-  L.DomEvent.on(wrap.children[0],"click",event=>{L.DomEvent.preventDefault(event);map.setView([homeTestLocation.lat,homeTestLocation.lng],18.5,{animate:true})});
-  L.DomEvent.on(wrap.children[1],"click",event=>{L.DomEvent.preventDefault(event);map.setView(control.questPoint||helenCenter,17,{animate:true})});
+  L.DomEvent.on(wrap.children[0],"click",event=>{L.DomEvent.preventDefault(event);onPlayerMapDragged();map.setView([homeTestLocation.lat,homeTestLocation.lng],18.5,{animate:true})});
+  L.DomEvent.on(wrap.children[1],"click",event=>{L.DomEvent.preventDefault(event);onPlayerMapDragged();map.setView(control.questPoint||helenCenter,17,{animate:true})});
   return wrap;
  };
  control.addTo(map);streetHomeControl=control;
@@ -180,11 +279,8 @@ function addMapLibreHomePlayerMarkers(ml,map){
  ensurePlayerTestStyles();
  const home=document.createElement("button");home.type="button";home.className="rpg-home-marker-shell";home.setAttribute("aria-label","Home test location");
  home.innerHTML='<span class="rpg-home-marker" aria-hidden="true">'+homeIconSvg()+'</span>';
- const player=document.createElement("button");player.type="button";player.className="rpg-player-marker-shell";player.setAttribute("aria-label","Player icon test");
- player.innerHTML='<span class="rpg-player-marker" aria-hidden="true">'+playerMarkerSvg()+'</span>';
  const homeMarker=new ml.Marker({element:home,anchor:"bottom",offset:[-16,0]}).setLngLat([homeTestLocation.lng,homeTestLocation.lat]).setPopup(new ml.Popup({offset:28}).setText("Home test location · "+homeTestLocation.address)).addTo(map);
- const playerMarker=new ml.Marker({element:player,anchor:"center",offset:[18,0]}).setLngLat([homeTestLocation.lng,homeTestLocation.lat]).setPopup(new ml.Popup({offset:24}).setText("Player icon test · Player position set to home.")).addTo(map);
- neighborhoodPins.push(homeMarker,playerMarker);
+ neighborhoodPins.push(homeMarker);
 }
 function ensureMapLibreHomeControl(ml,map,questCenter){
  ensurePlayerTestStyles();
@@ -194,9 +290,9 @@ function ensureMapLibreHomeControl(ml,map,questCenter){
   onAdd(mapInstance){
    this.map=mapInstance;
    this.container=document.createElement("div");this.container.className="maplibregl-ctrl maplibregl-ctrl-group rpg-location-controls";
-   this.container.innerHTML='<button type="button" aria-label="Show home and player test location" title="Show home and player test location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
-   this.container.children[0].addEventListener("click",()=>mapInstance.flyTo({center:[homeTestLocation.lng,homeTestLocation.lat],zoom:18.5,pitch:42}));
-   this.container.children[1].addEventListener("click",()=>mapInstance.flyTo({center:this.questCenter,zoom:17,pitch:42}));
+   this.container.innerHTML='<button type="button" aria-label="Show home location" title="Show home location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
+   this.container.children[0].addEventListener("click",()=>{onPlayerMapDragged();mapInstance.flyTo({center:[homeTestLocation.lng,homeTestLocation.lat],zoom:18.5,pitch:42})});
+   this.container.children[1].addEventListener("click",()=>{onPlayerMapDragged();mapInstance.flyTo({center:this.questCenter,zoom:17,pitch:42})});
    return this.container;
   },
   onRemove(){this.container?.remove();this.map=null}
@@ -484,7 +580,7 @@ async function renderVillageAtlas(center,features){
   });
   neighborhoodMap.addControl(new ml.NavigationControl({showCompass:false}),"top-left");
   showAtlasDiagnostic("Loading vector style and tiles");
-  neighborhoodMap.on("error",event=>showAtlasDiagnostic("Map event: "+(event?.error?.message||"unknown"),true));
+  neighborhoodMap.on("error",event=>showAtlasDiagnostic("Map event: "+(event?.error?.message||"unknown"),true));neighborhoodMap.on("dragstart",onPlayerMapDragged);
   neighborhoodLoad=new Promise((resolve,reject)=>{
    const timeout=setTimeout(()=>reject(new Error("Vector map startup timed out")),18000);
    neighborhoodMap.once("load",()=>{clearTimeout(timeout);showAtlasDiagnostic("Style loaded; applying rooftops");styleVillageAtlas(neighborhoodMap);resolve()});
@@ -511,12 +607,14 @@ async function renderVillageAtlas(center,features){
  addMapLibreHomePlayerMarkers(ml,neighborhoodMap);
  ensureMapLibreHomeControl(ml,neighborhoodMap,center);
  nearby.classList.add("vector-ready");
+ syncLivePlayerMarkers();
+ if(playerFollow)centerOnLivePlayer();
  neighborhoodMap.resize();
  showAtlasDiagnostic("Vector neighborhood visible");
 }
 
-function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
-async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();renderClevelandHomeSceneLeaflet(L);points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);addLeafletHomePlayerMarkers(L,streetMap,streetPins);ensureLeafletHomeControl(L,streetMap,current?.point||helenCenter);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);renderVillageAtlas(current.point,points).catch(error=>{showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true)})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
+function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("dragstart",onPlayerMapDragged);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
+async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();liveStreetMarker=null;renderClevelandHomeSceneLeaflet(L);points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);addLeafletHomePlayerMarkers(L,streetMap,streetPins);syncLivePlayerMarkers();ensureLeafletHomeControl(L,streetMap,current?.point||helenCenter);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);if(playerFollow&&livePlayerPoint)centerOnLivePlayer();renderVillageAtlas(current.point,points).catch(error=>{showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true)})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
 function updateNearby(){const wasVisited=completed.includes(selected.id);document.querySelector("#nearby-context").textContent=wasVisited?"REAL STREETS · VISITED CHAPTER":"REAL STREETS · CURRENT CHAPTER";document.querySelector("#nearby-place").textContent=selected.title;document.querySelector("#nearby-address").textContent=selected.address;if(document.querySelector("#nearby-view").hidden)return;renderStreetMap().catch(error=>{setStreetStatus(`${error.message}. Use the chapter’s directions below.`)})}
 function renderProgress(){currentIndex=Math.min(completed.length,chapters.length-1);if(!completed.includes(selected.id)&&chapters.indexOf(selected)>currentIndex)selected=chapters[currentIndex];const count=completed.length;document.querySelector("#progress-count").textContent=`${count} of ${chapters.length} places visited`;document.querySelector(".progress-track").setAttribute("aria-valuenow",String(count));document.querySelector("#progress-fill").style.width=`${count/chapters.length*100}%`;document.querySelector("#progress-message").textContent=count===chapters.length?"Adventure complete. Jess has explored the whole map. Roll credits; cue kisses.":count===0?"The opening place is revealed. Explore it to discover the path ahead.":`${count} place${count===1?"":"s"} explored. A new destination has appeared on your map.`;renderList();renderMap();renderDetail();updateNearby()}
 function setMapMode(mode){const nearby=mode==="nearby";document.querySelector("#overview-view").hidden=nearby;document.querySelector("#nearby-view").hidden=!nearby;document.querySelector("#overview-view").classList.toggle("is-active",!nearby);document.querySelector("#nearby-view").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").classList.toggle("is-active",!nearby);document.querySelector("#mode-nearby").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").setAttribute("aria-pressed",String(!nearby));document.querySelector("#mode-nearby").setAttribute("aria-pressed",String(nearby));if(nearby){updateNearby();setTimeout(()=>streetMap&&streetMap.invalidateSize(),80)}}
@@ -531,7 +629,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   document.body.classList.add("rpg-fullscreen");
   const hud=document.createElement("div");
   hud.className="rpg-hud";
-  hud.innerHTML='<div class="rpg-topbar"><span class="rpg-title">✦ Jess’s Birthday Adventure</span><button type="button" class="rpg-icon" data-panel="story" aria-label="Read the birthday dedication">♡</button></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite">✧ <span id="rpg-count">Chapter 1 of 7</span></div><div class="rpg-toolbar"><button type="button" data-panel="quest">✦ Journal</button><button type="button" data-panel="notes">❧ Notes</button><button type="button" data-panel="story">♡ Story</button><button type="button" data-panel="settings">⚙ More</button></div></div>';
+  hud.innerHTML='<div class="rpg-topbar"><span class="rpg-title">✦ Jess’s Birthday Adventure</span><button type="button" class="rpg-icon" data-panel="story" aria-label="Read the birthday dedication">♡</button></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite">✧ <span id="rpg-count">Chapter 1 of 7</span></div><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false">⌖ Locate me</button><button type="button" id="rpg-stop-location" hidden>Stop GPS</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><div class="rpg-toolbar"><button type="button" data-panel="quest">✦ Journal</button><button type="button" data-panel="notes">❧ Notes</button><button type="button" data-panel="story">♡ Story</button><button type="button" data-panel="settings">⚙ More</button></div></div>';
   art.append(hud);
   const shade=document.createElement("div");shade.className="rpg-shade";shade.hidden=true;
   const sheet=document.createElement("section");sheet.className="rpg-sheet";sheet.hidden=true;sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-label","Adventure journal");
@@ -550,6 +648,9 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   };
   const closePanel=()=>{sheet.classList.remove("is-open");sheet.hidden=true;shade.hidden=true;};
   hud.querySelectorAll("[data-panel]").forEach(button=>button.addEventListener("click",()=>openPanel(button.dataset.panel)));
+  hud.querySelector("#rpg-locate").addEventListener("click",startLivePlayerTracking);
+  hud.querySelector("#rpg-stop-location").addEventListener("click",stopLivePlayerTracking);
+  window.addEventListener("pagehide",stopLivePlayerTracking);
   shade.addEventListener("click",closePanel);sheet.querySelector("#rpg-close").addEventListener("click",closePanel);
   document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!sheet.hidden)closePanel()});
   settings.querySelector("#rpg-print").addEventListener("click",()=>window.print());
@@ -572,7 +673,7 @@ function initWorldMap(L){
  if(worldMap)return;
  worldMap=L.map("world-map",{center:helenCenter,zoom:15,minZoom:12,maxZoom:19,zoomControl:false,scrollWheelZoom:false,preferCanvas:true});
  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",crossOrigin:true}).addTo(worldMap);
- worldPins=L.layerGroup().addTo(worldMap);
+ worldPins=L.layerGroup().addTo(worldMap);worldMap.on("dragstart",onPlayerMapDragged);
  L.control.zoom({position:"topright"}).addTo(worldMap);
  worldMap.whenReady(()=>document.querySelector(".map-canvas").classList.add("world-ready"));
  worldMap.on("tileerror",()=>document.querySelector(".map-canvas").classList.remove("world-ready"));
@@ -595,7 +696,8 @@ async function renderWorldMap(){
   L.marker(point,{icon,title:chapter.title}).on("click",()=>{selected=chapter;renderProgress();document.querySelector('[data-panel="quest"]')?.click()}).addTo(worldPins);
  });
  const active=found.find(x=>x.chapter.id===selected.id);
- if(active)worldMap.setView(active.point,16,{animate:false});
+ if(playerFollow&&livePlayerPoint)worldMap.setView(livePlayerPoint,Math.max(worldMap.getZoom(),16),{animate:false});
+ else if(active)worldMap.setView(active.point,16,{animate:false});
  else worldMap.setView(helenCenter,15,{animate:false});
 }
 const previousWorldProgress=renderProgress;
