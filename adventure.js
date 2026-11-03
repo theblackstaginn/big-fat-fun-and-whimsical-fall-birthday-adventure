@@ -67,7 +67,7 @@ function renderClevelandHomeSceneLeaflet(L){
  for(const building of CLEVELAND_HOME_SCENE.buildings){
   const roof=building.pixels.map(homePixelToLatLng);
   const wall=roof.map(([lat,lng])=>[lat-0.000018,lng+0.000012]);
-  L.polygon([roof,wall],{pane:"village-geometry",stroke:false,fillColor:"#49362a",fillOpacity:.92,interactive:false}).addTo(buildings);
+  roof.forEach((point,index)=>{const following=roof[(index+1)%roof.length];const lower=wall[index],lowerFollowing=wall[(index+1)%wall.length];L.polygon([point,following,lowerFollowing,lower],{pane:"village-geometry",stroke:false,fillColor:"#49362a",fillOpacity:.94,interactive:false}).addTo(buildings)});
   L.polygon(roof,{pane:"village-geometry",color:"#583729",weight:1.1,opacity:.92,fillColor:building.roof,fillOpacity:1,interactive:false}).addTo(buildings);
   const ridge=roof.slice(0,2);
   L.polyline(ridge,{pane:"village-geometry",color:"#c17a51",weight:1.2,opacity:.6,interactive:false}).addTo(buildings);
