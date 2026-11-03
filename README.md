@@ -30,6 +30,3 @@ The Pages configuration is not enabled from this branch. Do not treat the illust
 - `assets/helen-quest-map.svg` — original scalable parchment fantasy map
 - `ROUTE-RESEARCH.md` — source links, checked hours, and open logistics
 
-## Privacy
-
-This is a public repository. Keep personal contact details and any private birthday plans out of committed files. The public quest describes only the destinations and adventure; any personal surprise belongs offline.
