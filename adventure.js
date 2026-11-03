@@ -169,6 +169,11 @@ function styleVillageAtlas(map){
    },roads?.id||symbolBefore);
   }
  }catch{/* Woodland texture is optional; vector map remains available. */}
+ /* Village paving uses only mapped pedestrian paths and service-lane edges. */
+ if(typeof window.installHelenStonework==="function"){
+  try{window.installHelenStonework(map,vectorSource,symbolBefore)}
+  catch{/* Decorative stonework must not affect map navigation. */}
+ }
  /* OSM building height is used when present. Unmapped heights get modest village proportions.
   * Dark eaves and copper-red roof caps hint at alpine architecture without inventing
   * a claimed survey of every real roof or adding heavy 3D models on iPhone. */
