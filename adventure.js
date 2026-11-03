@@ -49,21 +49,11 @@ function createMapGrid(L){const Grid=L.GridLayer.extend({createTile(){const tile
 let neighborhoodMap=null,neighborhoodLoad=null,neighborhoodLibrary=null,neighborhoodPins=[],neighborhoodRequest=0;
 /* Temporary on-screen atlas diagnostic for iPhone / embedded browsers.
  * Reports only map-loading stages, never visitor location or personal data. */
+/* Keep atlas diagnostics in the developer console so they never cover the map. */
 function showAtlasDiagnostic(message,failed=false){
- const host=document.querySelector(".street-map-frame");
- if(!host)return;
- let status=document.querySelector("#atlas-diagnostic");
- if(!status){
-  status=document.createElement("div");
-  status.id="atlas-diagnostic";
-  status.setAttribute("role","status");
-  status.setAttribute("aria-live","polite");
-  status.style.cssText="position:absolute;z-index:650;top:15px;left:86px;right:22px;max-width:420px;padding:8px 10px;border:1px solid #c79b56;border-radius:8px;background:rgba(38,27,21,.94);color:#fff1d1;font:600 12px/1.35 system-ui,sans-serif;box-shadow:0 3px 12px #150e0b9c;pointer-events:none;overflow-wrap:anywhere";
-  host.append(status);
- }
- status.textContent="ATLAS CHECK: "+String(message).slice(0,210);
- status.style.borderColor=failed?"#e4a177":"#c79b56";
- status.hidden=false;
+ const status=document.querySelector("#atlas-diagnostic");
+ if(status)status.remove();
+ if(failed)console.warn("3D village view unavailable; showing the street map.",String(message).slice(0,180));
 }
 function loadNeighborhoodLibrary(){
  if(window.maplibregl&&typeof window.maplibregl.Map==="function")return Promise.resolve(window.maplibregl);
@@ -115,7 +105,7 @@ function installSyntheticHelenGround(map,layers){
  const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
  try{
   if(map.getLayer(layerId))return true;
-  const url=new URL("assets/helen-painted-ground.png",document.baseURI).href;
+  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground3",document.baseURI).href;
   if(!map.getSource(sourceId))map.addSource(sourceId,{
    type:"image",url,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
@@ -301,7 +291,6 @@ async function renderVillageAtlas(center,features){
  nearby.classList.add("vector-ready");
  neighborhoodMap.resize();
  showAtlasDiagnostic("Vector neighborhood visible");
- setTimeout(()=>{const node=document.querySelector("#atlas-diagnostic");if(node&&node.textContent==="ATLAS CHECK: Vector neighborhood visible")node.hidden=true},2200);
 }
 
 function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}

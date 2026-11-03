@@ -81,11 +81,20 @@ def run():
             ndvi_bytes[k] = max(0, min(255, round((ndvi + 0.05) * 320)))
             if n > 48 and ndvi > .155:
                 binpx[x, y] = 255
-    # Smooth isolated pixels; keep coherent tree/lawn surfaces.
-    binary = binary.filter(ImageFilter.MedianFilter(3))
-    binary = binary.filter(ImageFilter.MaxFilter(3)).filter(ImageFilter.MinFilter(3))
+    # Remove isolated sensor noise without expanding vegetation into roads.
     binary = binary.filter(ImageFilter.MedianFilter(3))
     clean = binary.load()
+    # Broad watercolor-like tonal patches replace per-pixel noise. The source
+    # photograph is never copied into the published texture.
+    coarse_w, coarse_h = max(4, WIDTH // 24), max(4, HEIGHT // 24)
+    texture_rng = random.Random(7319)
+    coarse = Image.new("L", (coarse_w, coarse_h))
+    coarse.putdata([128 + texture_rng.randint(-18, 18)
+                    for _ in range(coarse_w * coarse_h)])
+    texture = coarse.resize(im.size, Image.Resampling.BICUBIC).filter(
+        ImageFilter.GaussianBlur(6)
+    )
+    texture_px = texture.load()
     ground = Image.new("RGBA", im.size, (0, 0, 0, 0))
     data = Image.new("RGB", im.size, (0, 0, 0))
     gp = ground.load()
@@ -113,11 +122,13 @@ def run():
                 kind = 75
                 base = (124, 147, 92)
                 alpha = 216
-            # Procedural illustrated color variation, NEVER the photograph.
-            noise = ((x * 37 + y * 91 + (x // 7) * 59) % 23) - 11
-            gp[x, y] = (max(0, base[0] + noise),
-                         max(0, base[1] + noise // 2),
-                         max(0, base[2] + noise // 3), alpha)
+            # Gentle fine grain sits beneath the larger watercolor variation.
+            patch = round((texture_px[x, y] - 128) * 0.65)
+            grain = ((x * 37 + y * 91 + (x // 7) * 59) % 5) - 2
+            noise = patch + grain
+            gp[x, y] = (max(0, min(255, base[0] + noise)),
+                         max(0, min(255, base[1] + noise // 2)),
+                         max(0, min(255, base[2] + noise // 3)), alpha)
             dp[x, y] = (kind, min(255, round(max(0, ndvi) * 320)),
                          min(255, contrast))
     fraction = (grass + canopy) / (WIDTH * HEIGHT)
