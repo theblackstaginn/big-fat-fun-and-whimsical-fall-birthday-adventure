@@ -4,7 +4,7 @@
    margins. The whole layer is optional and does not alter map navigation. */
 (function(){
  "use strict";
- const WORLD=40075016.68557849, TAU=Math.PI*2;
+ const WORLD=40075016.68557849, TAU=Math.PI*2, MAX_TREES=360;
  const PALETTE=[
   [.67,.37,.17],[.76,.49,.20],[.77,.60,.29],[.59,.39,.20],
   [.48,.48,.25],[.55,.28,.18],[.36,.46,.31],[.29,.40,.33]
@@ -24,7 +24,7 @@
     resolve(vegetationMask);
    };
    image.onerror=()=>resolve(null);
-   image.src=new URL("assets/helen-vegetation-data.png?v=20261103-ground4",document.baseURI).href;
+   image.src=new URL("assets/helen-vegetation-data.png?v=20261103-ground5",document.baseURI).href;
   });
  }
  function hash(a,b,salt=0){
@@ -140,7 +140,7 @@
   const trees=[],occupied=new Set();
   let attempts=0;
   function addTree(px,py,kind,gx,gy){
-   if(trees.length>=220||px<view.minX||px>view.maxX||py<view.minY||py>view.maxY)return;
+   if(trees.length>=MAX_TREES||px<view.minX||px>view.maxX||py<view.minY||py>view.maxY)return;
    const key=Math.round(px/5)+":"+Math.round(py/5);
    if(occupied.has(key))return;
    if(waters.some(poly=>shapeContains([px,py],poly)||shapeEdgeDistance([px,py],poly)<5.5))return;
@@ -152,7 +152,7 @@
    if(!view.bounds.contains([lon,lat]))return;
    occupied.add(key);
    const variant=hash(gx,gy,113),size=.78+.48*hash(gx,gy,171);
-   trees.push({x:px,y:py,variant:variant<.20?"pine":variant<.34?"shrub":"deciduous",
+   trees.push({x:px,y:py,variant:variant<.13?"pine":variant<.23?"shrub":"deciduous",
     size,color:PALETTE[Math.floor(hash(gx,gy,203)*PALETTE.length)]});
   }
   if(vegetationMask){
@@ -161,8 +161,8 @@
    const x1=Math.min(w-1,Math.ceil((b.getEast()-EXTENT.west)/(EXTENT.east-EXTENT.west)*w));
    const y0=Math.max(0,Math.floor((EXTENT.north-b.getNorth())/(EXTENT.north-EXTENT.south)*h));
    const y1=Math.min(h-1,Math.ceil((EXTENT.north-b.getSouth())/(EXTENT.north-EXTENT.south)*h));
-   const candidates=[],sampleStep=6;
-   for(let gy=Math.floor(y0/sampleStep);gy<=Math.floor(y1/sampleStep)&&attempts<12000;gy++){
+   const candidates=[],sampleStep=4;
+   for(let gy=Math.floor(y0/sampleStep);gy<=Math.floor(y1/sampleStep)&&attempts<30000;gy++){
     for(let gx=Math.floor(x0/sampleStep);gx<=Math.floor(x1/sampleStep)&&attempts<12000;gx++){
      attempts++;
      const ix=Math.min(w-1,gx*sampleStep+Math.floor(hash(gx,gy,267)*sampleStep));
@@ -176,21 +176,21 @@
    }
    candidates.sort((a,b)=>a.rank-b.rank);
    for(const candidate of candidates){
-    if(trees.length>=220)break;
-    if(candidate.rank>.82)continue;
+    if(trees.length>=MAX_TREES)break;
+    if(candidate.rank>.90)continue;
     addTree(candidate.x,candidate.y,"wood",candidate.gx,candidate.gy);
    }
   }else{
    /* If NAIP is unavailable, use mapped woodland, parks, and grass as the safe fallback. */
    for(const {kind,rings} of green){
-    if(trees.length>=220||attempts>=8500)break;
+    if(trees.length>=MAX_TREES||attempts>=8500)break;
     const outer=rings[0],xs=outer.map(p=>p[0]),ys=outer.map(p=>p[1]);
     const step=kind==="wood"?14:kind==="park"?18:21;
     const keep=kind==="wood"?.78:kind==="park"?.42:.23;
     const minX=Math.max(view.minX,Math.min(...xs)),maxX=Math.min(view.maxX,Math.max(...xs));
     const minY=Math.max(view.minY,Math.min(...ys)),maxY=Math.min(view.maxY,Math.max(...ys));
-    for(let gy=Math.floor(minY/step);gy<=Math.floor(maxY/step)&&trees.length<220&&attempts<8500;gy++){
-     for(let gx=Math.floor(minX/step);gx<=Math.floor(maxX/step)&&trees.length<220&&attempts<8500;gx++){
+    for(let gy=Math.floor(minY/step);gy<=Math.floor(maxY/step)&&trees.length<MAX_TREES&&attempts<8500;gy++){
+     for(let gx=Math.floor(minX/step);gx<=Math.floor(maxX/step)&&trees.length<MAX_TREES&&attempts<8500;gx++){
       attempts++;
       if(hash(gx,gy,31)>keep)continue;
       const px=(gx+.16+.68*hash(gx,gy,67))*step;
@@ -212,8 +212,8 @@
  }
  function makeTree(out,x,y,tree){
   const pine=tree.variant==="pine",shrub=tree.variant==="shrub",s=tree.size;
-  const trunkH=shrub?.4:pine?2.4*s:2.0*s,top=shrub?2.2*s:pine?8.5*s:6.8*s;
-  const radius=shrub?2.25*s:pine?2.65*s:3.3*s;
+  const trunkH=shrub?.4:pine?2.4*s:2.0*s,top=shrub?2.2*s:pine?12.5*s:9.6*s;
+  const radius=shrub?2.25*s:pine?3.15*s:3.8*s;
   const trunkCol=[.32,.22,.16],n=8;
   /* Ground-contact shadow, subtle enough not to obscure map linework. */
   const shadow=[.32,.37,.29],shadowCenter=[x+.65,y+.85,.045];

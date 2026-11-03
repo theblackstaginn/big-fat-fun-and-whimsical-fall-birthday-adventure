@@ -105,15 +105,21 @@ function installSyntheticHelenGround(map,layers){
  const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
  try{
   if(map.getLayer(layerId))return true;
-  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground4",document.baseURI).href;
+  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground5",document.baseURI).href;
   if(!map.getSource(sourceId))map.addSource(sourceId,{
    type:"image",url,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
    attribution:"Synthetic vegetation derived from 2023 USDA NAIP aerial imagery"
   });
-  const firstDrawingLayer=layers.find(layer=>layer.type!=="background")?.id;
+  /* The NAIP image contains only classified vegetation pixels with alpha.
+   * Draw it above landuse/landcover fills so the illustration can be seen, but
+   * below river, street, building, and label layers so mapped features stay clear. */
+  const clearFeatureLayer=layers.find(layer=>{
+   const sourceLayer=layer["source-layer"];
+   return ["waterway","water","transportation","building"].includes(sourceLayer)||layer.type==="symbol";
+  })?.id;
   map.addLayer({id:layerId,type:"raster",source:sourceId,minzoom:12,
-   paint:{"raster-opacity":1,"raster-fade-duration":250}},firstDrawingLayer);
+   paint:{"raster-opacity":1,"raster-fade-duration":250}},clearFeatureLayer);
   return true;
  }catch{
   try{if(map.getLayer(layerId))map.removeLayer(layerId)}catch{}
