@@ -220,6 +220,7 @@ function stopLivePlayerTracking(){
 function startLivePlayerTracking(){
  if(playerWatchId!==null){
   playerFollow=true;
+  if(document.querySelector("#nearby-view")?.hidden)setMapMode("nearby");
   centerOnLivePlayer();
   setGpsControls(livePlayerPoint?"Following your position":"Waiting for GPS…");
   return;
@@ -233,9 +234,10 @@ function startLivePlayerTracking(){
     if(session!==gpsSession||playerWatchId===null)return;
     const latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude);
     if(!Number.isFinite(latitude)||!Number.isFinite(longitude))return;
+    const firstFix=livePlayerPoint===null;
     livePlayerPoint=[latitude,longitude];
-    /* The portrait fantasy overview isn't georeferenced: show the real map. */
-    if(document.querySelector("#nearby-view")?.hidden)setMapMode("nearby");
+    /* The portrait overview is not georeferenced. Open real streets on the first fix only. */
+    if(firstFix&&document.querySelector("#nearby-view")?.hidden)setMapMode("nearby");
     syncLivePlayerMarkers();
     if(playerFollow)centerOnLivePlayer();
     const accuracy=Number(position.coords.accuracy);
