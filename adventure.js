@@ -101,37 +101,16 @@ function makeAutumnCanopyTile(){
 }
 /* Synthetic, car-free ground cover classified from 2023 USDA NAIP.
  * OSM roads, buildings, and water are drawn above this transparent image. */
-function installSyntheticHelenGround(map,layers){
- const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
- const coreLayerId="birthday-painted-ground-downtown",coreSourceId="birthday-painted-ground-downtown-source";
- /* Place the transparent vegetation raster above every base-map surface fill,
-  * then let labels and the RPG building/tree layers render over it. */
- const clearFeatureLayer=layers.find(layer=>layer.type==="symbol")?.id||layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id;
- try{
-  if(!map.getSource(sourceId))map.addSource(sourceId,{
-   type:"image",url:new URL("assets/helen-painted-ground.png?v=20261103-ground16",document.baseURI).href,
-   coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
-   attribution:"Synthetic vegetation derived from 2023 USDA NAIP aerial imagery"
-  });
-  if(!map.getLayer(layerId))map.addLayer({id:layerId,type:"raster",source:sourceId,minzoom:12,
-   paint:{"raster-opacity":1,"raster-fade-duration":250}},clearFeatureLayer);
-  /* Higher-resolution NAIP classification preserves small lawns and planting
-   * beds throughout the playable downtown while streets, roofs, and parking
-   * remain clear above the transparent synthetic ground texture. */
-  if(!map.getSource(coreSourceId))map.addSource(coreSourceId,{
-   type:"image",url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground16",document.baseURI).href,
-   coordinates:[[-83.732,34.708],[-83.717,34.708],[-83.717,34.694],[-83.732,34.694]],
-   attribution:"Synthetic downtown ground derived from 2023 USDA NAIP aerial imagery"
-  });
-  if(!map.getLayer(coreLayerId))map.addLayer({id:coreLayerId,type:"raster",source:coreSourceId,minzoom:14,
-   paint:{"raster-opacity":1,"raster-fade-duration":180}},clearFeatureLayer);
-  return true;
- }catch{
-  for(const id of [coreLayerId,layerId]){
-   try{if(map.getLayer(id))map.removeLayer(id)}catch{}
-  }
-  return false;
- }
+function installSyntheticHelenGround(map){
+ /* Ground images share the landscaping WebGL layer with trees. Keep their
+  * transparent alpha so roads, roofs, parking, and water stay unobstructed. */
+ map.__birthdayGroundLayers=[
+  {url:new URL("assets/helen-painted-ground.png?v=20261103-ground17",document.baseURI).href,
+   coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],minzoom:12},
+  {url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground17",document.baseURI).href,
+   coordinates:[[-83.732,34.708],[-83.717,34.708],[-83.717,34.694],[-83.732,34.694]],minzoom:14}
+ ];
+ return true;
 }
 
 /* A repeating meadow wash gives mapped parks and grass a visible storybook

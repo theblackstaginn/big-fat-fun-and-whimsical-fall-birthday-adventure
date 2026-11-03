@@ -279,69 +279,136 @@
   const layer={
    id:"birthday-landscaping",type:"custom",renderingMode:"3d",
    onAdd(map,gl){
-    const vert="#version 300 es\nprecision highp float; in vec3 a_position; in vec3 a_color; uniform mat4 u_matrix; out vec3 v_color; void main(){gl_Position=u_matrix*vec4(a_position,1.0);v_color=a_color;}";
-    const frag="#version 300 es\nprecision mediump float; in vec3 v_color; out vec4 fragColor; void main(){fragColor=vec4(v_color,1.0);}";
+    this.map=map;this.gl=gl;
     const compile=(type,source)=>{
      const shader=gl.createShader(type);gl.shaderSource(shader,source);gl.compileShader(shader);
-     if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw new Error("Landscaping shader failed");
+     if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS)){
+      const message=gl.getShaderInfoLog(shader);gl.deleteShader(shader);throw new Error(message||"Landscaping shader failed");
+     }
      return shader;
     };
-    const vertex=compile(gl.VERTEX_SHADER,vert),fragment=compile(gl.FRAGMENT_SHADER,frag);
-    const program=gl.createProgram();gl.attachShader(program,vertex);gl.attachShader(program,fragment);
-    gl.linkProgram(program);
-    if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw new Error("Landscaping program failed");
-    gl.deleteShader(vertex);gl.deleteShader(fragment);
-    this.program=program;this.buffer=gl.createBuffer();
-    this.aPosition=gl.getAttribLocation(program,"a_position");
-    this.aColor=gl.getAttribLocation(program,"a_color");
-    this.uMatrix=gl.getUniformLocation(program,"u_matrix");
+    const link=(vert,frag)=>{
+     const vs=compile(gl.VERTEX_SHADER,vert),fs=compile(gl.FRAGMENT_SHADER,frag);
+     const program=gl.createProgram();gl.attachShader(program,vs);gl.attachShader(program,fs);gl.linkProgram(program);
+     gl.deleteShader(vs);gl.deleteShader(fs);
+     if(!gl.getProgramParameter(program,gl.LINK_STATUS)){const message=gl.getProgramInfoLog(program);gl.deleteProgram(program);throw new Error(message||"Landscaping program failed")}
+     return program;
+    };
+    const treeVert="#version 300 es\nprecision highp float; in vec3 a_position; in vec3 a_color; uniform mat4 u_matrix; out vec3 v_color; void main(){gl_Position=u_matrix*vec4(a_position,1.0);v_color=a_color;}";
+    const treeFrag="#version 300 es\nprecision mediump float; in vec3 v_color; out vec4 fragColor; void main(){fragColor=vec4(v_color,1.0);}";
+    const groundVert="#version 300 es\nprecision highp float; in vec3 a_position; in vec2 a_uv; uniform mat4 u_matrix; out vec2 v_uv; void main(){gl_Position=u_matrix*vec4(a_position,1.0);v_uv=a_uv;}";
+    const groundFrag="#version 300 es\nprecision mediump float; in vec2 v_uv; uniform sampler2D u_texture; out vec4 fragColor; void main(){vec4 color=texture(u_texture,v_uv);fragColor=color;}";
+    this.program=link(treeVert,treeFrag);this.groundProgram=link(groundVert,groundFrag);
+    this.buffer=gl.createBuffer();
+    this.aPosition=gl.getAttribLocation(this.program,"a_position");this.aColor=gl.getAttribLocation(this.program,"a_color");
+    this.uMatrix=gl.getUniformLocation(this.program,"u_matrix");
+    this.groundPosition=gl.getAttribLocation(this.groundProgram,"a_position");
+    this.groundUv=gl.getAttribLocation(this.groundProgram,"a_uv");
+    this.groundMatrix=gl.getUniformLocation(this.groundProgram,"u_matrix");
+    this.groundSampler=gl.getUniformLocation(this.groundProgram,"u_texture");
+    this.grounds=(map.__birthdayGroundLayers||[]).map(spec=>({...spec,texture:gl.createTexture(),buffer:gl.createBuffer(),ready:false,vertices:null}));
+    for(const ground of this.grounds){
+     const image=new Image();ground.image=image;
+     image.onload=()=>{
+      if(!this.map||!gl.isTexture(ground.texture))return;
+      gl.bindTexture(gl.TEXTURE_2D,ground.texture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
+      gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,image);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+      gl.bindTexture(gl.TEXTURE_2D,null);
+      ground.ready=true;map.triggerRepaint();
+     };
+     image.src=ground.url;
+    }
     this.count=0;this.lastKey=null;
     this.refresh=()=>{
-     if(map.getZoom()<14.8){this.count=0;this.lastKey=null;return}
-     const center=map.getCenter();
-     const key=[center.lng.toFixed(5),center.lat.toFixed(5),map.getZoom().toFixed(2)].join("|");
+     const center=map.getCenter(),ml=window.maplibregl;
+     const origin=ml.MercatorCoordinate.fromLngLat([center.lng,center.lat]);
+     const scale=origin.meterInMercatorCoordinateUnits();
+     this.origin=origin;this.scale=scale;
+     for(const ground of this.grounds){
+      const points=ground.coordinates.map(([lng,lat])=>ml.MercatorCoordinate.fromLngLat([lng,lat]));
+      const local=points.map(point=>[(point.x-origin.x)/scale,(point.y-origin.y)/scale]);
+      const [nw,ne,se,sw]=local;
+      ground.vertices=new Float32Array([
+       nw[0],nw[1],0,0,0, ne[0],ne[1],0,1,0, se[0],se[1],0,1,1,
+       nw[0],nw[1],0,0,0, se[0],se[1],0,1,1, sw[0],sw[1],0,0,1
+      ]);
+      gl.bindBuffer(gl.ARRAY_BUFFER,ground.buffer);
+      gl.bufferData(gl.ARRAY_BUFFER,ground.vertices,gl.DYNAMIC_DRAW);
+     }
+     gl.bindBuffer(gl.ARRAY_BUFFER,null);
+     const zoom=map.getZoom();
+     if(zoom<14.8){this.count=0;this.lastKey=null;map.triggerRepaint();return}
+     const key=[center.lng.toFixed(5),center.lat.toFixed(5),zoom.toFixed(2)].join("|");
      const found=collectTrees(map,vectorSource),trees=found.trees;
      const fullKey=key+":"+trees.length+":"+(trees[0]?.x||"");
      if(fullKey===this.lastKey)return;
-     const ml=window.maplibregl,origin=ml.MercatorCoordinate.fromLngLat([center.lng,center.lat]);
-     const scale=origin.meterInMercatorCoordinateUnits();
      const out=[];
      for(const tree of trees){
       const x=(tree.x/WORLD-origin.x)/scale,y=(tree.y/WORLD-origin.y)/scale;
       makeTree(out,x,y,tree);
      }
      this.count=out.length/6;
-     this.origin=origin;this.scale=scale;
-     gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);
-     gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(out),gl.DYNAMIC_DRAW);
-     gl.bindBuffer(gl.ARRAY_BUFFER,null);
-     this.lastKey=fullKey;
-     map.triggerRepaint();
+     gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(out),gl.DYNAMIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,null);
+     this.lastKey=fullKey;map.triggerRepaint();
     };
     map.on("idle",this.refresh);map.on("moveend",this.refresh);
     this.refresh();
-    loadVegetationMask().then(mask=>{if(mask){this.lastKey=null;this.refresh()}});
+    loadVegetationMask().then(mask=>{if(mask&&this.map){this.lastKey=null;this.refresh()}});
    },
    render(gl,args){
-    if(!this.count||!this.origin)return;
     const projection=args?.defaultProjectionData?.mainMatrix;
-    if(!gl||!projection)return;
+    if(!gl||!projection||!this.origin)return;
     const s=this.scale,o=this.origin;
     const model=[s,0,0,0,0,s,0,0,0,0,s,0,o.x,o.y,0,1];
-    gl.useProgram(this.program);
-    gl.uniformMatrix4fv(this.uMatrix,false,multiply(projection,model));
-    gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);
-    gl.enableVertexAttribArray(this.aPosition);gl.enableVertexAttribArray(this.aColor);
-    gl.vertexAttribPointer(this.aPosition,3,gl.FLOAT,false,24,0);
-    gl.vertexAttribPointer(this.aColor,3,gl.FLOAT,false,24,12);
-    gl.drawArrays(gl.TRIANGLES,0,this.count);
-    gl.disableVertexAttribArray(this.aPosition);gl.disableVertexAttribArray(this.aColor);
-    gl.bindBuffer(gl.ARRAY_BUFFER,null);
+    const matrix=multiply(projection,model);
+    const depthTest=gl.isEnabled(gl.DEPTH_TEST),blend=gl.isEnabled(gl.BLEND);
+    const depthMask=gl.getParameter(gl.DEPTH_WRITEMASK);
+    const blendSrcRgb=gl.getParameter(gl.BLEND_SRC_RGB),blendDstRgb=gl.getParameter(gl.BLEND_DST_RGB);
+    const blendSrcAlpha=gl.getParameter(gl.BLEND_SRC_ALPHA),blendDstAlpha=gl.getParameter(gl.BLEND_DST_ALPHA);
+    const blendEqRgb=gl.getParameter(gl.BLEND_EQUATION_RGB),blendEqAlpha=gl.getParameter(gl.BLEND_EQUATION_ALPHA);
+    const activeTexture=gl.getParameter(gl.ACTIVE_TEXTURE);
+    if(depthTest)gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+    if(this.grounds?.length){
+     gl.useProgram(this.groundProgram);gl.uniformMatrix4fv(this.groundMatrix,false,matrix);
+     gl.enableVertexAttribArray(this.groundPosition);gl.enableVertexAttribArray(this.groundUv);
+     gl.uniform1i(this.groundSampler,0);gl.activeTexture(gl.TEXTURE0);
+     for(const ground of this.grounds){
+      if(!ground.ready||this.map.getZoom()<ground.minzoom)continue;
+      gl.bindBuffer(gl.ARRAY_BUFFER,ground.buffer);
+      gl.vertexAttribPointer(this.groundPosition,3,gl.FLOAT,false,20,0);
+      gl.vertexAttribPointer(this.groundUv,2,gl.FLOAT,false,20,12);
+      gl.bindTexture(gl.TEXTURE_2D,ground.texture);gl.drawArrays(gl.TRIANGLES,0,6);
+     }
+     gl.disableVertexAttribArray(this.groundPosition);gl.disableVertexAttribArray(this.groundUv);
+     gl.bindBuffer(gl.ARRAY_BUFFER,null);gl.bindTexture(gl.TEXTURE_2D,null);
+    }
+    if(this.count){
+     gl.useProgram(this.program);gl.uniformMatrix4fv(this.uMatrix,false,matrix);
+     gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);
+     gl.enableVertexAttribArray(this.aPosition);gl.enableVertexAttribArray(this.aColor);
+     gl.vertexAttribPointer(this.aPosition,3,gl.FLOAT,false,24,0);gl.vertexAttribPointer(this.aColor,3,gl.FLOAT,false,24,12);
+     gl.drawArrays(gl.TRIANGLES,0,this.count);
+     gl.disableVertexAttribArray(this.aPosition);gl.disableVertexAttribArray(this.aColor);gl.bindBuffer(gl.ARRAY_BUFFER,null);
+    }
+    gl.blendEquationSeparate(blendEqRgb,blendEqAlpha);gl.blendFuncSeparate(blendSrcRgb,blendDstRgb,blendSrcAlpha,blendDstAlpha);
+    gl.activeTexture(activeTexture);
+    if(!blend)gl.disable(gl.BLEND);
+    gl.depthMask(depthMask);
+    if(depthTest)gl.enable(gl.DEPTH_TEST);
    },
    onRemove(map,gl){
     if(this.refresh){map.off("idle",this.refresh);map.off("moveend",this.refresh)}
-    if(this.buffer)gl.deleteBuffer(this.buffer);
-    if(this.program)gl.deleteProgram(this.program);
+    for(const ground of this.grounds||[])if(ground.texture)gl.deleteTexture(ground.texture);
+    for(const buffer of [this.buffer,...(this.grounds||[]).map(ground=>ground.buffer)])if(buffer)gl.deleteBuffer(buffer);
+    for(const program of [this.program,this.groundProgram])if(program)gl.deleteProgram(program);
+    this.map=null;
    }
   };
   map.addLayer(layer,before);
