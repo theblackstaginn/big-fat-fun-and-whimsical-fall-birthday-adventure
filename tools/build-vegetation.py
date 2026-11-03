@@ -79,11 +79,11 @@ def run():
             ndvi = (n - r) / max(1, n + r)
             k = y * WIDTH + x
             ndvi_bytes[k] = max(0, min(255, round((ndvi + 0.05) * 320)))
-            if n > 48 and ndvi > .155:
+            if n > 42 and ndvi > .11:
                 binpx[x, y] = 255
-    # Remove pixel-scale noise without expanding vegetation into roads.
-    # At this output scale a 5-pixel window represents roughly 12 meters.
-    binary = binary.filter(ImageFilter.MedianFilter(5))
+    # Preserve narrower downtown lawns and planted strips while removing isolated
+    # pixel noise. At this output scale, 3 pixels represent about 7 meters.
+    binary = binary.filter(ImageFilter.MedianFilter(3))
     clean = binary.load()
     # Broad watercolor-like tonal patches replace per-pixel noise. The source
     # photograph is never copied into the published texture.

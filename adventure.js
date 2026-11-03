@@ -105,7 +105,7 @@ function installSyntheticHelenGround(map,layers){
  const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
  try{
   if(map.getLayer(layerId))return true;
-  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground6",document.baseURI).href;
+  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground7",document.baseURI).href;
   if(!map.getSource(sourceId))map.addSource(sourceId,{
    type:"image",url,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
@@ -114,7 +114,7 @@ function installSyntheticHelenGround(map,layers){
   /* The NAIP overlay is transparent outside classified vegetation.
    * Place it above base map fills, while labels remain crisp above it. Roads and
    * buildings are preserved by the transparent mask and by the OSM outlines. */
-  const clearFeatureLayer=layers.find(layer=>layer.type==="symbol")?.id;
+  const clearFeatureLayer=layers.find(layer=>["transportation","building"].includes(layer["source-layer"])||layer.type==="symbol")?.id;
   map.addLayer({id:layerId,type:"raster",source:sourceId,minzoom:12,
    paint:{"raster-opacity":1,"raster-fade-duration":250}},clearFeatureLayer);
   return true;
