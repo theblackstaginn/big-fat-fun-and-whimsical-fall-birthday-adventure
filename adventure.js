@@ -234,6 +234,8 @@ function startLivePlayerTracking(){
     const latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude);
     if(!Number.isFinite(latitude)||!Number.isFinite(longitude))return;
     livePlayerPoint=[latitude,longitude];
+    /* The portrait fantasy overview isn't georeferenced: show the real map. */
+    if(document.querySelector("#nearby-view")?.hidden)setMapMode("nearby");
     syncLivePlayerMarkers();
     if(playerFollow)centerOnLivePlayer();
     const accuracy=Number(position.coords.accuracy);
