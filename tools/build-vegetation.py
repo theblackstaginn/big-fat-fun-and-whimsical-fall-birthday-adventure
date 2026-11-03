@@ -192,11 +192,10 @@ def run():
     for name in (ground_path, mask_path):
         print(f"  {name}: {os.path.getsize(name)} bytes")
     print("NAIP extent:", WEST, SOUTH, EAST, NORTH)
-    # A second, finer synthetic ground layer covers the whole playable downtown.
-    # The broad map is ~2.5 m/pixel, too coarse for narrow hotel lawns and planted
-    # strips. This 0.5 m/pixel NAIP crop preserves those small greens without
-    # publishing photographic imagery.
-    core_west, core_south, core_east, core_north = -83.7255, 34.6955, -83.7185, 34.7015
+    # A finer synthetic ground layer spans the entire playable downtown and river
+    # corridor, including every hotel lawn, park, and planted strip in the map view.
+    # At about 1 m/pixel, it preserves small greens without photographic imagery.
+    core_west, core_south, core_east, core_north = -83.732, 34.694, -83.717, 34.708
     core_width = core_height = 1536
     core = fetch_false_color(core_west, core_south, core_east, core_north,
                              core_width, core_height)

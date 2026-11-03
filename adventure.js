@@ -107,7 +107,7 @@ function installSyntheticHelenGround(map,layers){
  const clearFeatureLayer=layers.find(layer=>["transportation","building"].includes(layer["source-layer"])||layer.type==="symbol")?.id;
  try{
   if(!map.getSource(sourceId))map.addSource(sourceId,{
-   type:"image",url:new URL("assets/helen-painted-ground.png?v=20261103-ground11",document.baseURI).href,
+   type:"image",url:new URL("assets/helen-painted-ground.png?v=20261103-ground12",document.baseURI).href,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
    attribution:"Synthetic vegetation derived from 2023 USDA NAIP aerial imagery"
   });
@@ -117,8 +117,8 @@ function installSyntheticHelenGround(map,layers){
    * beds throughout the playable downtown while streets, roofs, and parking
    * remain clear above the transparent synthetic ground texture. */
   if(!map.getSource(coreSourceId))map.addSource(coreSourceId,{
-   type:"image",url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground11",document.baseURI).href,
-   coordinates:[[-83.7255,34.7015],[-83.7185,34.7015],[-83.7185,34.6955],[-83.7255,34.6955]],
+   type:"image",url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground12",document.baseURI).href,
+   coordinates:[[-83.732,34.708],[-83.717,34.708],[-83.717,34.694],[-83.732,34.694]],
    attribution:"Synthetic downtown ground derived from 2023 USDA NAIP aerial imagery"
   });
   if(!map.getLayer(coreLayerId))map.addLayer({id:coreLayerId,type:"raster",source:coreSourceId,minzoom:14,
