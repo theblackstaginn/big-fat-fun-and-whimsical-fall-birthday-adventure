@@ -76,3 +76,38 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 #world-map .leaflet-control-attribution a{color:#493d2e}
 #world-map .leaflet-control-zoom a{background:#34271e;color:#f0d798;border-color:#b98e53}
 #world-map .leaflet-container{background:#293e33}
+
+/* Upgrade 2: cinematic enchanted-world treatment on the real Helen terrain. */
+.rpg-fullscreen .map-canvas.world-ready::after{
+ content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
+ background:
+ radial-gradient(ellipse 95% 75% at 52% 44%,transparent 35%,rgba(25,31,25,.20) 78%,rgba(17,22,21,.52) 100%),
+ linear-gradient(180deg,rgba(15,23,27,.31),transparent 23%,transparent 67%,rgba(29,20,15,.36));
+ box-shadow:inset 0 0 90px 12px rgba(25,23,18,.23);
+}
+.rpg-fullscreen .map-canvas.world-ready #world-map .leaflet-tile-pane{
+ filter:saturate(1.12) sepia(.12) contrast(1.15) brightness(.91);
+}
+.rpg-fullscreen .map-canvas.world-ready #world-map::before{
+ content:"";position:absolute;inset:0;z-index:390;pointer-events:none;
+ background:radial-gradient(ellipse 45% 34% at 12% 20%,rgba(244,195,105,.09),transparent 95%),
+ radial-gradient(ellipse 45% 40% at 85% 74%,rgba(245,169,96,.08),transparent 95%);
+ mix-blend-mode:screen;
+}
+#world-map .leaflet-marker-pane .street-quest-pin{
+ width:46px;height:46px;border:2px solid #f8e1a4;
+ background:radial-gradient(circle at 36% 28%,#a4754c,#56372c 78%);
+ box-shadow:0 0 0 5px rgba(216,180,106,.15),0 0 22px 7px rgba(239,190,100,.42),0 8px 16px #120e0bbb;
+ font:700 1.12rem Georgia,serif;
+}
+#world-map .leaflet-marker-pane .street-quest-pin.current{
+ animation:world-quest-beacon 3.2s ease-in-out infinite;
+}
+#world-map .leaflet-marker-pane .street-quest-pin.visited{
+ background:radial-gradient(circle at 36% 28%,#718568,#344d40 78%);
+}
+@keyframes world-quest-beacon{
+ 0%,100%{box-shadow:0 0 0 5px rgba(216,180,106,.14),0 0 18px 5px rgba(239,190,100,.35),0 8px 16px #120e0bbb}
+ 50%{box-shadow:0 0 0 9px rgba(216,180,106,.1),0 0 35px 13px rgba(239,190,100,.5),0 8px 16px #120e0bbb}
+}
+@media(prefers-reduced-motion:reduce){#world-map .leaflet-marker-pane .street-quest-pin.current{animation:none}}
