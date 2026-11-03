@@ -48,6 +48,24 @@ function createMapGrid(L){const Grid=L.GridLayer.extend({createTile(){const tile
  * MapLibre/OpenFreeMap is optional; Leaflet aerial navigation remains a working fallback.
  * No live Overpass requests and no paid map keys. */
 let neighborhoodMap=null,neighborhoodLoad=null,neighborhoodLibrary=null,neighborhoodPins=[],neighborhoodRequest=0;
+/* Temporary on-screen atlas diagnostic for iPhone / embedded browsers.
+ * Reports only map-loading stages, never visitor location or personal data. */
+function showAtlasDiagnostic(message,failed=false){
+ const host=document.querySelector(".street-map-frame");
+ if(!host)return;
+ let status=document.querySelector("#atlas-diagnostic");
+ if(!status){
+  status=document.createElement("div");
+  status.id="atlas-diagnostic";
+  status.setAttribute("role","status");
+  status.setAttribute("aria-live","polite");
+  status.style.cssText="position:absolute;z-index:650;top:15px;left:86px;right:22px;max-width:420px;padding:8px 10px;border:1px solid #c79b56;border-radius:8px;background:rgba(38,27,21,.94);color:#fff1d1;font:600 12px/1.35 system-ui,sans-serif;box-shadow:0 3px 12px #150e0b9c;pointer-events:none;overflow-wrap:anywhere";
+  host.append(status);
+ }
+ status.textContent="ATLAS CHECK: "+String(message).slice(0,210);
+ status.style.borderColor=failed?"#e4a177":"#c79b56";
+ status.hidden=false;
+}
 function loadNeighborhoodLibrary(){
  if(neighborhoodLibrary)return neighborhoodLibrary;
  if(!document.querySelector("#maplibre-css")){
@@ -103,12 +121,14 @@ function styleVillageAtlas(map){
  }catch{/* Flat building polygons remain if the tile schema differs. */}
 }
 async function renderVillageAtlas(center,features){
+ showAtlasDiagnostic("Starting vector map");
  const request=++neighborhoodRequest;
  const pane=document.querySelector(".street-map-frame"),nearby=document.querySelector("#nearby-view");
- if(!pane||!nearby||nearby.hidden)return;
+ if(!pane||!nearby||nearby.hidden){showAtlasDiagnostic("Nearby container not visible",true);return;}
  let container=pane.querySelector("#rpg-neighborhood-map");
  if(!container){container=document.createElement("div");container.id="rpg-neighborhood-map";container.setAttribute("aria-label","Illustrated interactive streets of Helen");pane.append(container);}
  const ml=await loadNeighborhoodLibrary();
+ showAtlasDiagnostic("Map library loaded");
  if(!neighborhoodMap){
   neighborhoodMap=new ml.Map({
    container,style:"https://tiles.openfreemap.org/styles/liberty",
@@ -116,9 +136,11 @@ async function renderVillageAtlas(center,features){
    bearing:0,dragRotate:false,pitchWithRotate:false,renderWorldCopies:false
   });
   neighborhoodMap.addControl(new ml.NavigationControl({showCompass:false}),"topleft");
+  showAtlasDiagnostic("Loading vector style and tiles");
+  neighborhoodMap.on("error",event=>showAtlasDiagnostic("Map event: "+(event?.error?.message||"unknown"),true));
   neighborhoodLoad=new Promise((resolve,reject)=>{
    const timeout=setTimeout(()=>reject(new Error("Vector map startup timed out")),18000);
-   neighborhoodMap.once("load",()=>{clearTimeout(timeout);styleVillageAtlas(neighborhoodMap);resolve()});
+   neighborhoodMap.once("load",()=>{clearTimeout(timeout);showAtlasDiagnostic("Style loaded; applying rooftops");styleVillageAtlas(neighborhoodMap);resolve()});
   });
  }
  await neighborhoodLoad;
@@ -141,10 +163,12 @@ async function renderVillageAtlas(center,features){
  }
  nearby.classList.add("vector-ready");
  neighborhoodMap.resize();
+ showAtlasDiagnostic("Vector neighborhood visible");
+ setTimeout(()=>{const node=document.querySelector("#atlas-diagnostic");if(node&&node.textContent==="ATLAS CHECK: Vector neighborhood visible")node.hidden=true},2200);
 }
 
 function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community · Vector detail © <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
-async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);renderVillageAtlas(current.point,points).catch(()=>{/* satellite fallback stays visible */})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
+async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);renderVillageAtlas(current.point,points).catch(error=>{showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true)})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
 function updateNearby(){const wasVisited=completed.includes(selected.id);document.querySelector("#nearby-context").textContent=wasVisited?"REAL STREETS · VISITED CHAPTER":"REAL STREETS · CURRENT CHAPTER";document.querySelector("#nearby-place").textContent=selected.title;document.querySelector("#nearby-address").textContent=selected.address;if(document.querySelector("#nearby-view").hidden)return;renderStreetMap().catch(error=>{setStreetStatus(`${error.message}. Use the chapter’s directions below.`)})}
 function renderProgress(){currentIndex=Math.min(completed.length,chapters.length-1);if(!completed.includes(selected.id)&&chapters.indexOf(selected)>currentIndex)selected=chapters[currentIndex];const count=completed.length;document.querySelector("#progress-count").textContent=`${count} of ${chapters.length} places visited`;document.querySelector(".progress-track").setAttribute("aria-valuenow",String(count));document.querySelector("#progress-fill").style.width=`${count/chapters.length*100}%`;document.querySelector("#progress-message").textContent=count===chapters.length?"Adventure complete. Jess has explored the whole map. Roll credits; cue kisses.":count===0?"The opening place is revealed. Explore it to discover the path ahead.":`${count} place${count===1?"":"s"} explored. A new destination has appeared on your map.`;renderList();renderMap();renderDetail();updateNearby()}
 function setMapMode(mode){const nearby=mode==="nearby";document.querySelector("#overview-view").hidden=nearby;document.querySelector("#nearby-view").hidden=!nearby;document.querySelector("#overview-view").classList.toggle("is-active",!nearby);document.querySelector("#nearby-view").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").classList.toggle("is-active",!nearby);document.querySelector("#mode-nearby").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").setAttribute("aria-pressed",String(!nearby));document.querySelector("#mode-nearby").setAttribute("aria-pressed",String(nearby));if(nearby){updateNearby();setTimeout(()=>streetMap&&streetMap.invalidateSize(),80)}}
