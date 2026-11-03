@@ -226,6 +226,7 @@ def run():
     tex, mpx = texture.load(), core_mask.load()
     core_ground = Image.new("RGBA", core.size, (0, 0, 0, 0))
     cgpx = core_ground.load()
+    meadow_pixels = canopy_pixels = 0
     for y in range(core_height):
         for x in range(core_width):
             if mpx[x, y] < 128:
@@ -233,16 +234,29 @@ def run():
             n, r = cn[x, y], cr[x, y]
             ndvi = (n - r) / max(1, n + r)
             contrast = chigh[x, y] - clow[x, y]
-            woody = ndvi > .32 and (contrast > 18 or n < 102)
-            base = (65, 92, 58) if woody else (106, 139, 76)
-            noise = round((tex[x, y] - 128) * .55)
-            cgpx[x, y] = (max(0, min(255, base[0] + noise)),
-                          max(0, min(255, base[1] + noise // 2)),
-                          max(0, min(255, base[2] + noise // 3)), 224)
-    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.85)))
+            # Smooth, healthy vegetation reads as lawn/meadow. Reserve the dark
+            # woodland palette for high-NDVI patches with strong crown texture.
+            woody = ndvi > .32 and contrast > 16
+            if woody:
+                base = (49, 76, 46)
+                canopy_pixels += 1
+            else:
+                base = (126, 158, 82)
+                meadow_pixels += 1
+            noise = round((tex[x, y] - 128) * .9)
+            # A fine, deterministic grain keeps open grass readable at mobile
+            # zoom without turning lawn pixels into miniature tree crowns.
+            seed = (x * 374761393 + y * 668265263) & 0xffffffff
+            seed = ((seed ^ (seed >> 13)) * 1274126177) & 0xffffffff
+            grain = ((seed >> 24) - 128) // 20
+            cgpx[x, y] = (max(0, min(255, base[0] + noise + grain)),
+                          max(0, min(255, base[1] + noise // 2 + grain)),
+                          max(0, min(255, base[2] + noise // 3 + grain // 2)), 248)
+    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.6)))
     core_path = os.path.join(OUTPUT, "helen-painted-ground-downtown.png")
     core_ground.save(core_path, optimize=True)
-    print(f"High-resolution downtown ground: {downtown_pixels} candidate pixels; "
+    print(f"High-resolution downtown ground: meadow={meadow_pixels}, "
+          f"woodland={canopy_pixels}, {downtown_pixels} candidate pixels; "
           f"{os.path.getsize(core_path)} bytes; extent "
           f"{core_west},{core_south},{core_east},{core_north}")
 
