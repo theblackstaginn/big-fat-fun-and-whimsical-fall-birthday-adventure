@@ -7,30 +7,67 @@ const chapters = [
   {id:"dinner",title:"Bavarian Birthday Dinner",subtitle:"The Hearthside Feast",address:"The Heidelberg · 8660 N Main St, Helen, GA 30545",streetQuery:"The Heidelberg, 8660 N Main St, Helen, GA 30545",hours:"Monday listed 11 a.m.–9 p.m. · reservations accepted",duration:"Call or reserve directly for your preferred dinner time.",description:"Raise a glass to another year of Jess: warm food, Bavarian village lights, and the rare pleasure of having nowhere else to be. The Heidelberg is a lovely Monday dinner possibility and accepts reservations.",clue:"When the lanterns wake and the long day softens, follow the music to supper.",google:"https://www.google.com/maps/search/?api=1&query=The+Heidelberg%2C+8660+N+Main+St%2C+Helen%2C+GA+30545",apple:"https://maps.apple.com/?q=The+Heidelberg%2C+8660+N+Main+St%2C+Helen%2C+GA+30545"},
   {id:"sweet",title:"The Sweet Last Stop",subtitle:"A Chocolate Epilogue",address:"Hansel & Gretel Candy Kitchen · 8651 N Main St, Helen, GA 30545",streetQuery:"Hansel & Gretel Candy Kitchen, 8651 N Main St, Helen, GA 30545",hours:"Monday hours vary by season · check with the shop",duration:"Best as an easy post-dinner stroll if the shop is still open.",description:"End with a little chocolate, fudge, or whatever sweet thing makes you grin. Hansel & Gretel Candy Kitchen is on North Main, an easy downtown finale when its doors are open.",clue:"The final treasure is small, sweet, and meant to be shared.",google:"https://www.google.com/maps/search/?api=1&query=Hansel+%26+Gretel+Candy+Kitchen%2C+Helen%2C+GA",apple:"https://maps.apple.com/?q=Hansel+%26+Gretel+Candy+Kitchen%2C+Helen%2C+GA"}
 ];
-const list=document.querySelector("#chapter-list"),storeKey="jess-birthday-quest-progress-v1",pinPositions=[[21,67],[32,57],[45,65],[48,50],[65,63],[59,43],[80,63]],trailPoints=[[252,530],[384,450],[540,513],[580,395],[780,495],[705,337],[965,500]];
+const list=document.querySelector("#chapter-list"),storeKey="jess-birthday-quest-progress-v1";
 function readProgress(){try{const saved=JSON.parse(localStorage.getItem(storeKey)||"[]");return chapters.filter(c=>saved.includes(c.id)).map(c=>c.id)}catch{return[]}}
 function saveProgress(){try{localStorage.setItem(storeKey,JSON.stringify(completed))}catch{/* progress still works for this open page */}}
 let completed=readProgress(),currentIndex=Math.min(completed.length,chapters.length-1),selected=chapters[currentIndex];
-function routePath(points){return points.length<2?"":points.map((p,i)=>`${i?"L":"M"}${p[0]} ${p[1]}`).join(" ")}
-/* Prepared portrait artwork overlay. Missing image leaves the real-world map untouched. */
+
+/* Each scene opens only when the FIRST quest within it is revealed.
+ * Artwork for future scenes must not even be fetched beforehand.
+ * These are scene boundaries, not extra quest-completion requirements. */
+const adventureScenes=Object.freeze([
+ {id:"gathering",number:"I",title:"The Gathering",startChapter:0},
+ {id:"little-flame",number:"II",title:"The Little Flame",startChapter:2},
+ {id:"curious-village",number:"III",title:"The Curious Village",startChapter:3},
+ {id:"riverside-finale",number:"IV",title:"The Riverside Finale",startChapter:4}
+]);
+function sceneForChapter(chapter){
+ const chapterNumber=Math.max(0,chapters.indexOf(chapter));
+ for(let i=adventureScenes.length-1;i>=0;i--)if(chapterNumber>=adventureScenes[i].startChapter)return adventureScenes[i];
+ return adventureScenes[0];
+}
+function activeScene(){
+ const scene=sceneForChapter(selected);
+ return completed.length>=scene.startChapter?scene:adventureScenes[0];
+}
+
+/* The preexisting downtown image belongs only to Scene III.
+ * Scenes I, II and IV use the truthful geographic map until their own
+ * locally verified illustrations are ready; never show downtown as South Main. */
 const portraitArtwork=document.querySelector("#portrait-overworld");
-let portraitReady=false;
-const portraitPinPositions=[[22,82],[35,69],[40,49],[49,34],[76,62],[57,57],[75,80]];
+let portraitReady=false,portraitRequested=false;
+function sceneArtworkVisible(){return !!portraitArtwork&&portraitReady&&!portraitArtwork.hidden;}
+function updateSceneArtwork(){
+ if(!portraitArtwork)return;
+ const eligible=activeScene().id==="curious-village"&&completed.length>=3;
+ if(eligible&&!portraitRequested&&portraitArtwork.dataset.sceneSrc){
+  portraitRequested=true;portraitArtwork.src=portraitArtwork.dataset.sceneSrc;
+ }
+ const show=eligible&&portraitReady;
+ portraitArtwork.hidden=!show;
+ document.querySelector(".map-canvas")?.classList.toggle("portrait-loaded",show);
+}
 if(portraitArtwork){
  portraitArtwork.addEventListener("load",()=>{
   if(!portraitArtwork.naturalWidth)return;
-  portraitReady=true;portraitArtwork.hidden=false;
-  document.querySelector(".map-canvas")?.classList.add("portrait-loaded");
+  portraitReady=true;
+  updateSceneArtwork();
   renderProgress();
  });
- portraitArtwork.addEventListener("error",()=>{portraitArtwork.hidden=true;});
- if(portraitArtwork.complete&&portraitArtwork.naturalWidth){
-  portraitReady=true;portraitArtwork.hidden=false;
-  document.querySelector(".map-canvas")?.classList.add("portrait-loaded");
- }
+ portraitArtwork.addEventListener("error",()=>{
+  portraitReady=false;
+  updateSceneArtwork();
+  renderProgress();
+ });
+ updateSceneArtwork();
 }
-
-function renderMap(){const pins=document.querySelector("#map-hotspots");pins.replaceChildren();const unlockedThrough=Math.min(completed.length,chapters.length-1);chapters.slice(0,unlockedThrough+1).forEach((chapter,index)=>{const pin=document.createElement("button"),isDone=completed.includes(chapter.id);pin.type="button";pin.className="map-pin"+(isDone?" visited":"")+(chapter.id===selected.id?" selected":"");pin.setAttribute("aria-label",isDone?`Revisit explored chapter ${index+1}: ${chapter.title}`:`Open the next revealed chapter: ${chapter.title}`);pin.style.left=`${(portraitReady?portraitPinPositions:pinPositions)[index][0]}%`;pin.style.top=`${(portraitReady?portraitPinPositions:pinPositions)[index][1]}%`;pin.innerHTML=`<span class="pin-number">${isDone?"✓":index+1}</span><span class="pin-label">${chapter.title}</span>`;pin.addEventListener("click",()=>{selected=chapter;renderProgress();document.querySelector("#quest").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"})});pins.append(pin)});const visited=document.querySelector("#trail-visited"),next=document.querySelector("#trail-to-next");visited.setAttribute("d",routePath(trailPoints.slice(0,Math.max(1,completed.length))));next.setAttribute("d",completed.length<chapters.length?routePath(trailPoints.slice(Math.max(0,completed.length-1),completed.length+1)):"")}
+/* Remove hand-positioned pins and paths from the old SVG-map system.
+ * Real-world quest markers remain in Leaflet and MapLibre. */
+function renderMap(){
+ document.querySelector("#map-hotspots")?.replaceChildren();
+ document.querySelector("#trail-visited")?.setAttribute("d","");
+ document.querySelector("#trail-to-next")?.setAttribute("d","");
+}
 function renderList(){list.replaceChildren();const unlockedThrough=Math.min(completed.length,chapters.length-1);chapters.slice(0,unlockedThrough+1).forEach((chapter,index)=>{const button=document.createElement("button");button.type="button";button.className="chapter-button"+(completed.includes(chapter.id)?" is-complete":"");button.setAttribute("aria-current",chapter.id===selected.id?"true":"false");button.innerHTML=`<span class="chapter-number">${completed.includes(chapter.id)?"✓":String(index+1).padStart(2,"0")}</span><span><span class="chapter-name">${chapter.title}</span><span class="chapter-subtitle">${chapter.subtitle}</span></span><span class="chapter-state" aria-hidden="true">${chapter.id===selected.id?"✦":"›"}</span>`;button.addEventListener("click",()=>{selected=chapter;renderProgress()});list.append(button)});for(let i=unlockedThrough+1;i<chapters.length;i++){const locked=document.createElement("div");locked.className="fog-slot";locked.setAttribute("aria-label","Unrevealed location; complete the current chapter to reveal it");locked.innerHTML='<span class="fog-lock" aria-hidden="true">⌑</span><span class="fog-copy">Uncharted trail<span class="fog-caption">Complete the revealed chapter to discover this place</span></span><span aria-hidden="true">· · ·</span>';list.append(locked)}}
 function renderDetail(){const i=chapters.indexOf(selected),isDone=completed.includes(selected.id);document.querySelector("#detail-kicker").textContent=isDone?`CHAPTER ${String(i+1).padStart(2,"0")} · EXPLORED`:`CHAPTER ${String(i+1).padStart(2,"0")} · CURRENT CHAPTER`;document.querySelector("#detail-title").textContent=selected.title;document.querySelector("#detail-description").textContent=selected.description;document.querySelector("#detail-clue").textContent=selected.clue;document.querySelector("#detail-meta").innerHTML=`<span><strong>Where:</strong> ${selected.address}</span><span><strong>When:</strong> ${selected.hours}</span><span><strong>Pace:</strong> ${selected.duration}</span>`;document.querySelector("#detail-directions").innerHTML=`<a href="${selected.google}" target="_blank" rel="noopener">Open Google Maps ↗</a><a href="${selected.apple}" target="_blank" rel="noopener">Open Apple Maps ↗</a>`;const button=document.querySelector("#complete-button");button.disabled=isDone;button.textContent=isDone?(completed.length===chapters.length?"Adventure complete":"Place explored ✓"):"Mark this place visited · reveal next";button.setAttribute("aria-pressed",String(isDone))}
 let streetMap=null,streetPins=null,leafletPromise=null,geocodeChain=Promise.resolve(),lastGeocodeAt=0,mapRenderId=0;const geocodePending=new Map(),geocodeKey="jess-birthday-map-coordinates-v1",helenCenter=[34.7012,-83.7246];
@@ -620,7 +657,7 @@ async function renderVillageAtlas(center,features){
 function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("dragstart",onPlayerMapDragged);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
 async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();liveStreetMarker=null;renderClevelandHomeSceneLeaflet(L);points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);addLeafletHomePlayerMarkers(L,streetMap,streetPins);syncLivePlayerMarkers();ensureLeafletHomeControl(L,streetMap,current?.point||helenCenter);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);if(playerFollow&&livePlayerPoint)centerOnLivePlayer();renderVillageAtlas(current.point,points).catch(error=>{showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true)})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
 function updateNearby(){const wasVisited=completed.includes(selected.id);document.querySelector("#nearby-context").textContent=wasVisited?"REAL STREETS · VISITED CHAPTER":"REAL STREETS · CURRENT CHAPTER";document.querySelector("#nearby-place").textContent=selected.title;document.querySelector("#nearby-address").textContent=selected.address;if(document.querySelector("#nearby-view").hidden)return;renderStreetMap().catch(error=>{setStreetStatus(`${error.message}. Use the chapter’s directions below.`)})}
-function renderProgress(){currentIndex=Math.min(completed.length,chapters.length-1);if(!completed.includes(selected.id)&&chapters.indexOf(selected)>currentIndex)selected=chapters[currentIndex];const count=completed.length;document.querySelector("#progress-count").textContent=`${count} of ${chapters.length} places visited`;document.querySelector(".progress-track").setAttribute("aria-valuenow",String(count));document.querySelector("#progress-fill").style.width=`${count/chapters.length*100}%`;document.querySelector("#progress-message").textContent=count===chapters.length?"Adventure complete. Jess has explored the whole map. Roll credits; cue kisses.":count===0?"The opening place is revealed. Explore it to discover the path ahead.":`${count} place${count===1?"":"s"} explored. A new destination has appeared on your map.`;renderList();renderMap();renderDetail();updateNearby()}
+function renderProgress(){currentIndex=Math.min(completed.length,chapters.length-1);if(!completed.includes(selected.id)&&chapters.indexOf(selected)>currentIndex)selected=chapters[currentIndex];updateSceneArtwork();const count=completed.length;document.querySelector("#progress-count").textContent=`${count} of ${chapters.length} places visited`;document.querySelector(".progress-track").setAttribute("aria-valuenow",String(count));document.querySelector("#progress-fill").style.width=`${count/chapters.length*100}%`;document.querySelector("#progress-message").textContent=count===chapters.length?"Adventure complete. Jess has explored the whole map. Roll credits; cue kisses.":count===0?"The opening place is revealed. Explore it to discover the path ahead.":`${count} place${count===1?"":"s"} explored. A new destination has appeared on your map.`;renderList();renderMap();renderDetail();updateNearby()}
 function setMapMode(mode){const nearby=mode==="nearby";document.querySelector("#overview-view").hidden=nearby;document.querySelector("#nearby-view").hidden=!nearby;document.querySelector("#overview-view").classList.toggle("is-active",!nearby);document.querySelector("#nearby-view").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").classList.toggle("is-active",!nearby);document.querySelector("#mode-nearby").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").setAttribute("aria-pressed",String(!nearby));document.querySelector("#mode-nearby").setAttribute("aria-pressed",String(nearby));if(nearby){updateNearby();setTimeout(()=>streetMap&&streetMap.invalidateSize(),80)}}
 document.querySelector("#mode-overview").addEventListener("click",()=>setMapMode("overview"));document.querySelector("#mode-nearby").addEventListener("click",()=>setMapMode("nearby"));
 document.querySelector("#complete-button").addEventListener("click",()=>{if(completed.includes(selected.id)||chapters.indexOf(selected)!==completed.length)return;completed.push(selected.id);saveProgress();selected=chapters[Math.min(completed.length,chapters.length-1)];renderProgress()});document.querySelector("#reset-progress").addEventListener("click",()=>{completed=[];selected=chapters[0];try{localStorage.removeItem(storeKey)}catch{}renderProgress()});renderProgress();
@@ -663,7 +700,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   const oldBegin=content.story.querySelector('a[href="#quest"]');
   if(oldBegin)oldBegin.addEventListener("click",event=>{event.preventDefault();openPanel("quest")});
   const oldRender=renderProgress;
-  renderProgress=function(){oldRender();const count=document.querySelector("#rpg-count");if(count)count.textContent=completed.length===chapters.length?"Adventure complete":`Chapter ${Math.min(completed.length+1,chapters.length)} of ${chapters.length}`};
+  renderProgress=function(){oldRender();const count=document.querySelector("#rpg-count");if(count)count.textContent=completed.length===chapters.length?"Adventure complete":`Scene ${activeScene().number} · Chapter ${Math.min(completed.length+1,chapters.length)} of ${chapters.length}`};
   const oldMap=renderMap;
   renderMap=function(){oldMap();document.querySelectorAll(".map-pin").forEach(pin=>pin.addEventListener("click",()=>openPanel("quest")))};
   renderProgress();
@@ -684,10 +721,11 @@ function initWorldMap(L){
  setTimeout(()=>worldMap&&worldMap.invalidateSize(),100);
 }
 async function renderWorldMap(){
- if(portraitReady)return;
+ if(sceneArtworkVisible())return;
  const request=++worldRequest,L=await loadLeaflet();
  initWorldMap(L);
- const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1);
+ const scene=activeScene();
+ const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1).filter(chapter=>sceneForChapter(chapter).id===scene.id);
  const found=[];
  for(const chapter of visible){
   try{const point=await coordinatesFor(chapter);if(Number.isFinite(point[0])&&Number.isFinite(point[1])&&Math.abs(point[0]-helenCenter[0])<.1&&Math.abs(point[1]-helenCenter[1])<.1)found.push({chapter,point})}catch{/* Never fabricate a location if geocoding fails. */}
