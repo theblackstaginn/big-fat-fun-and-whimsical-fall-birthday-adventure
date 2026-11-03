@@ -40,7 +40,7 @@ function ensurePlayerTestStyles(){
  if(document.querySelector("#rpg-player-test-styles"))return;
  const style=document.createElement("style");style.id="rpg-player-test-styles";
  style.textContent=".rpg-home-marker-shell,.rpg-player-marker-shell{background:transparent!important;border:0!important}.rpg-home-marker{width:34px;height:38px;display:grid;place-items:center;background:#80502f;border:2px solid #f2d58f;border-radius:50% 50% 50% 5px;transform:rotate(-45deg);box-shadow:0 3px 9px #17110db3;color:#f8e9c7}.rpg-home-marker span{font:700 22px/1 Georgia,serif;transform:rotate(45deg)}.rpg-player-marker{width:36px;height:36px;display:grid;place-items:center;background:#315a56;border:3px solid #f2d58f;border-radius:50%;box-shadow:0 2px 9px #17110dcc;color:#fff4d7}.rpg-player-marker svg{width:20px;height:20px}.rpg-location-controls{display:flex;gap:3px;padding:3px!important;background:#38271fd9!important}.rpg-location-controls button{width:40px;height:38px;padding:0;border:0;background:#f5e7c8;color:#39271d;font:700 21px/1 Georgia,serif;cursor:pointer}.rpg-location-controls button:focus-visible{outline:3px solid #c18d45;outline-offset:1px}.maplibregl-ctrl-group.rpg-location-controls{display:flex}.maplibregl-ctrl-group.rpg-location-controls button{border-radius:2px}.rpg-player-marker-shell{z-index:20!important}";
- document.head.append(style);
+ style.textContent+=".maplibregl-ctrl-top-right .rpg-location-controls{margin-top:430px!important;margin-right:8px!important}.leaflet-top.leaflet-right .rpg-location-controls{margin-top:430px!important;margin-right:8px!important}";document.head.append(style);
 }
 function playerMarkerSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" fill="currentColor"/><path d="M5.2 21v-2.1a6.8 6.8 0 0 1 13.6 0V21z" fill="currentColor"/></svg>'}
 function addLeafletHomePlayerMarkers(L,map,layer){
@@ -54,7 +54,7 @@ function addLeafletHomePlayerMarkers(L,map,layer){
 function ensureLeafletHomeControl(L,map,questPoint){
  ensurePlayerTestStyles();
  if(streetHomeControl){streetHomeControl.questPoint=questPoint;return}
- const control=L.control({position:"topleft"});
+ const control=L.control({position:"topright"});
  control.questPoint=questPoint;
  control.onAdd=function(){
   const wrap=L.DomUtil.create("div","leaflet-bar rpg-location-controls");
@@ -91,7 +91,7 @@ function ensureMapLibreHomeControl(ml,map,questCenter){
   },
   onRemove(){this.container?.remove();this.map=null}
  };
- neighborhoodHomeControl=control;map.addControl(control,"top-left");
+ neighborhoodHomeControl=control;map.addControl(control,"top-right");
 }
 
 function setStreetStatus(message,show=true){const status=document.querySelector("#street-map-status");status.textContent=message;status.hidden=!show}
