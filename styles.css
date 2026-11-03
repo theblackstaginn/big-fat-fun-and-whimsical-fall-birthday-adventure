@@ -302,3 +302,15 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
  .rpg-fullscreen .nearby-heading strong{font-size:1.08rem}
  .rpg-fullscreen .nearby-heading>span:last-child{font-size:.59rem}
 }
+
+
+/* November Alpine art pass: golden-hour warmth over the actual village geometry.
+   Decorative only; transparent to taps, panning, zooming and chapter markers. */
+.rpg-fullscreen .nearby-view.vector-ready .street-map-frame::before{
+ content:"";position:absolute;inset:0;z-index:5;pointer-events:none;
+ background:
+  radial-gradient(ellipse at 20% 5%,rgba(255,211,135,.18),transparent 51%),
+  linear-gradient(148deg,rgba(255,230,177,.065),transparent 46%,rgba(48,52,41,.12));
+ mix-blend-mode:soft-light;
+}
+.rpg-fullscreen .street-map-frame #rpg-neighborhood-map{background:#aaa88b}

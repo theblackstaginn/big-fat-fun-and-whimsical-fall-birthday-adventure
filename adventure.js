@@ -85,44 +85,135 @@ function loadNeighborhoodLibrary(){
  }).catch(error=>{neighborhoodLibrary=null;throw error});
  return neighborhoodLibrary;
 }
+/* Autumn alpine environment: enhancements stay in the vector map only.
+ * The real streets, quest pins, saved progress and aerial fallback are untouched. */
+function makeAutumnCanopyTile(){
+ const canvas=document.createElement("canvas");
+ canvas.width=canvas.height=128;
+ const ctx=canvas.getContext("2d");
+ if(!ctx)return null;
+ let seed=17317;
+ const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+ const foliage=["#4c694c","#657449","#9c874b","#c49756","#9c6640","#814b38"];
+ for(let i=0;i<26;i++){
+  const x=random()*128,y=random()*128,r=5+random()*8,tone=foliage[Math.floor(random()*foliage.length)];
+  /* Wrap each canopy at tile edges so the texture remains seamless. */
+  for(const ox of [-128,0,128])for(const oy of [-128,0,128]){
+   const cx=x+ox,cy=y+oy;
+   ctx.fillStyle="rgba(35,48,36,.22)";
+   ctx.beginPath();ctx.ellipse(cx+2,cy+3,r*1.12,r*.83,.27,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle=tone;
+   ctx.beginPath();ctx.ellipse(cx,cy,r,r*.84,-.32,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle="rgba(250,217,144,.25)";
+   ctx.beginPath();ctx.ellipse(cx-r*.23,cy-r*.26,r*.48,r*.27,-.45,0,Math.PI*2);ctx.fill();
+  }
+ }
+ return ctx.getImageData(0,0,128,128);
+}
 function styleVillageAtlas(map){
- const layers=map.getStyle()?.layers||[];
+ const style=map.getStyle(),layers=style?.layers||[];
+ /* Warm late-autumn color grading, without losing real roads or river placement. */
  for(const layer of layers){
   const source=layer["source-layer"];
   if(!source)continue;
   try{
    if(layer.type==="fill"){
-    const paint={
-     water:["#377c91",.92],landcover:["#738663",.74],
-     landuse:["#a3a678",.65],building:["#9d6346",.9]
-    }[source];
-    if(paint){map.setPaintProperty(layer.id,"fill-color",paint[0]);map.setPaintProperty(layer.id,"fill-opacity",paint[1]);}
+    if(source==="water"){
+     map.setPaintProperty(layer.id,"fill-color","#498697");
+     map.setPaintProperty(layer.id,"fill-opacity",.94);
+    }else if(source==="landcover"){
+     map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
+      "wood","#586f50","grass","#a8aa72","sand","#dac79c","wetland","#78927b","#88936a"]);
+     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",.87);
+    }else if(source==="landuse"){
+     map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
+      "park","#909f72","residential","#d6c8a7","forest","#6b7855",
+      "cemetery","#a29a78","pitch","#b9ae85","#b4ad8f"]);
+     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",.75);
+    }else if(source==="building"){
+     map.setPaintProperty(layer.id,"fill-color","#a78a68");
+     map.setPaintProperty(layer.id,"fill-opacity",.9);
+    }
    }
    if(layer.type==="line"&&source==="transportation"){
-    const isCasing=/case|outline|border/i.test(layer.id);
-    map.setPaintProperty(layer.id,"line-color",isCasing?"#5a4430":"#d9bf94");
+    const casing=/case|outline|border/i.test(layer.id);
+    map.setPaintProperty(layer.id,"line-color",casing?"#6b5442":"#e4d4b1");
    }
    if(layer.type==="symbol"&&layer.layout?.["text-field"]){
-    map.setPaintProperty(layer.id,"text-color","#493626");
-    map.setPaintProperty(layer.id,"text-halo-color","#f4e5c9");
-    map.setPaintProperty(layer.id,"text-halo-width",1.2);
+    map.setPaintProperty(layer.id,"text-color","#46372e");
+    map.setPaintProperty(layer.id,"text-halo-color","#f0e2c5");
+    map.setPaintProperty(layer.id,"text-halo-width",1.25);
    }
-  }catch{/* Use the provider's layer styling if this layer has incompatible properties. */}
+  }catch{/* Keep provider styling if a particular tile layer rejects an override. */}
  }
- const vectorSource=Object.keys(map.getStyle()?.sources||{}).find(key=>map.getStyle().sources[key].type==="vector");
- if(!vectorSource||map.getLayer("birthday-rooftops"))return;
  try{
-  const before=layers.find(layer=>layer.type==="symbol")?.id;
+  if(typeof map.setLight==="function")map.setLight({
+   anchor:"viewport",color:"#ffe3b4",intensity:.6,position:[1.3,205,48]
+  });
+ }catch{/* A missing legacy light option should never break navigation. */}
+ const vectorSource=Object.keys(style?.sources||{}).find(key=>style.sources[key].type==="vector");
+ if(!vectorSource||map.getLayer("birthday-rooftops"))return;
+ const symbolBefore=layers.find(layer=>layer.type==="symbol")?.id;
+ /* Pattern only true OSM woodland polygons: it never paints trees onto streets. */
+ try{
+  const woods=makeAutumnCanopyTile();
+  if(woods&&!map.hasImage("birthday-autumn-canopy")){
+   map.addImage("birthday-autumn-canopy",woods,{pixelRatio:2});
+  }
+  if(woods){
+   const roads=layers.find(layer=>layer.type==="line"&&layer["source-layer"]==="transportation");
+   map.addLayer({
+    id:"birthday-autumn-woods",type:"fill",source:vectorSource,"source-layer":"landcover",minzoom:12,
+    filter:["==",["get","class"],"wood"],
+    paint:{"fill-pattern":"birthday-autumn-canopy","fill-opacity":.8}
+   },roads?.id||symbolBefore);
+  }
+ }catch{/* Woodland texture is optional; vector map remains available. */}
+ /* OSM building height is used when present. Unmapped heights get modest village proportions.
+  * Dark eaves and copper-red roof caps hint at alpine architecture without inventing
+  * a claimed survey of every real roof or adding heavy 3D models on iPhone. */
+ const buildingHeight=["min",18,["max",5,["case",
+  ["has","render_height"],["to-number",["get","render_height"],9],
+  ["has","height"],["to-number",["get","height"],9],9]]];
+ const raised=(height)=>["interpolate",["linear"],["zoom"],15,0,16,height];
+ try{
+  map.addLayer({
+   id:"birthday-alpine-walls",type:"fill-extrusion",source:vectorSource,"source-layer":"building",minzoom:15,
+   paint:{
+    "fill-extrusion-color":["match",["get","type"],
+     "commercial","#e8d1ad","industrial","#b7a99a","residential","#e2c9a5","#d9c09b"],
+    "fill-extrusion-height":raised(["-",buildingHeight,1.55]),
+    "fill-extrusion-base":0,"fill-extrusion-opacity":.96,
+    "fill-extrusion-vertical-gradient":true
+   }
+  },symbolBefore);
+  map.addLayer({
+   id:"birthday-alpine-eaves",type:"fill-extrusion",source:vectorSource,"source-layer":"building",minzoom:15,
+   paint:{
+    "fill-extrusion-color":"#594338",
+    "fill-extrusion-height":raised(["-",buildingHeight,1.12]),
+    "fill-extrusion-base":raised(["-",buildingHeight,1.65]),
+    "fill-extrusion-opacity":.96
+   }
+  },symbolBefore);
   map.addLayer({
    id:"birthday-rooftops",type:"fill-extrusion",source:vectorSource,"source-layer":"building",minzoom:15,
    paint:{
-    "fill-extrusion-color":["match",["get","type"],"commercial","#b3734b","industrial","#7a6657","#976144"],
-    "fill-extrusion-height":["interpolate",["linear"],["zoom"],15,0,16,5,17,9,19,13],
-    "fill-extrusion-base":0,"fill-extrusion-opacity":.83,
+    "fill-extrusion-color":["match",["get","type"],
+     "commercial","#a75c43","industrial","#71675d","residential","#87483c","#9b5742"],
+    "fill-extrusion-height":raised(buildingHeight),
+    "fill-extrusion-base":raised(["-",buildingHeight,1.2]),
+    "fill-extrusion-opacity":.97,
     "fill-extrusion-vertical-gradient":true
    }
-  },before);
- }catch{/* Flat building polygons remain if the tile schema differs. */}
+  },symbolBefore);
+ }catch(error){
+  /* Partially installed decorative layers must not interrupt street navigation. */
+  for(const id of ["birthday-rooftops","birthday-alpine-eaves","birthday-alpine-walls"]){
+   try{if(map.getLayer(id))map.removeLayer(id)}catch{}
+  }
+  showAtlasDiagnostic("Using standard village buildings",false);
+ }
 }
 async function renderVillageAtlas(center,features){
  showAtlasDiagnostic("Starting vector map");
