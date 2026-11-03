@@ -192,9 +192,9 @@ function clearLivePlayerMarkers(){
 }
 function setGpsControls(message){
  const follow=document.querySelector("#rpg-locate"),stop=document.querySelector("#rpg-stop-location"),status=document.querySelector("#rpg-gps-status");
- if(follow){follow.textContent=playerWatchId===null?"⌖ Locate me":"⌖ Follow me";follow.setAttribute("aria-pressed",String(playerWatchId!==null&&playerFollow));}
+ if(follow){follow.textContent="⌖";follow.title=playerWatchId===null?"Locate me":"Follow my location";follow.setAttribute("aria-label",follow.title);follow.setAttribute("aria-pressed",String(playerWatchId!==null&&playerFollow));}
  if(stop)stop.hidden=playerWatchId===null;
- if(status&&message)status.textContent=message;
+ if(status&&message){status.textContent=message;status.dataset.state=/(denied|unavailable|needs|unable|timed out)/i.test(message)?"error":"normal";}
 }
 function onPlayerMapDragged(){
  if(playerWatchId===null||!playerFollow)return;
@@ -633,27 +633,27 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   document.body.classList.add("rpg-fullscreen");
   const hud=document.createElement("div");
   hud.className="rpg-hud";
-  hud.innerHTML='<div class="rpg-topbar"><span class="rpg-title">✦ Jess’s Birthday Adventure</span><button type="button" class="rpg-icon" data-panel="story" aria-label="Read the birthday dedication">♡</button></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite">✧ <span id="rpg-count">Chapter 1 of 7</span></div><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false">⌖ Locate me</button><button type="button" id="rpg-stop-location" hidden>Stop GPS</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><div class="rpg-toolbar"><button type="button" data-panel="quest">✦ Journal</button><button type="button" data-panel="notes">❧ Notes</button><button type="button" data-panel="story">♡ Story</button><button type="button" data-panel="settings">⚙ More</button></div></div>';
+  hud.innerHTML='<div class="rpg-topbar"><div class="rpg-brand"><span class="rpg-sigil" aria-hidden="true">☾</span><span class="rpg-title">The Rogue Witch’s <em>Excursion</em></span></div><div class="rpg-top-actions"><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false" aria-label="Locate me" title="Locate me">⌖</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><button type="button" class="rpg-icon" data-panel="story" aria-label="Read the birthday dedication" title="A letter for Jess">♡</button></div></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite"><span aria-hidden="true">✦</span> <span id="rpg-count">Chapter 1 of 7</span> <span aria-hidden="true">✦</span></div><nav class="rpg-toolbar" aria-label="Adventure controls"><button type="button" data-panel="quest" aria-label="Open quest journal"><span aria-hidden="true">✧</span><small>Journal</small></button><button type="button" data-panel="notes" aria-label="Open curiosities and notes"><span aria-hidden="true">❦</span><small>Curios</small></button><button type="button" data-panel="story" aria-label="Read the birthday letter"><span aria-hidden="true">♡</span><small>Letter</small></button><button type="button" data-panel="settings" aria-label="Open satchel and settings"><span aria-hidden="true">⚙</span><small>Satchel</small></button></nav></div>';
   art.append(hud);
   const shade=document.createElement("div");shade.className="rpg-shade";shade.hidden=true;
   const sheet=document.createElement("section");sheet.className="rpg-sheet";sheet.hidden=true;sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-label","Adventure journal");
-  sheet.innerHTML='<div class="rpg-sheet-head"><strong id="rpg-sheet-title">Quest journal</strong><button type="button" id="rpg-close" aria-label="Close panel">✕</button></div><div class="rpg-sheet-body" id="rpg-sheet-body"></div>';
+  sheet.innerHTML='<div class="rpg-sheet-head"><strong id="rpg-sheet-title">The Witch’s Journal</strong><button type="button" id="rpg-close" aria-label="Close panel">✕</button></div><div class="rpg-sheet-body" id="rpg-sheet-body"></div>';
   document.body.append(shade,sheet);
   const body=sheet.querySelector("#rpg-sheet-body"),title=sheet.querySelector("#rpg-sheet-title");
   const content={quest:document.querySelector(".quest-section"),notes:document.querySelector(".field-notes"),story:document.querySelector(".hero-copy"),finale:document.querySelector(".finale")};
-  const settings=document.createElement("div");settings.className="rpg-settings";settings.innerHTML='<p>Carry the adventure in your pocket. Your visited chapters stay saved on this device.</p><button type="button" id="rpg-print">Print the adventure map</button><button type="button" id="rpg-reset">Start the journey over</button><button type="button" id="rpg-finale">Read the birthday blessing</button>';
+  const settings=document.createElement("div");settings.className="rpg-settings";settings.innerHTML='<p>Every witch needs a satchel. Your visited chapters stay tucked away on this device.</p><button type="button" id="rpg-stop-location" hidden>Stop GPS tracking</button><button type="button" id="rpg-print">Print the adventure map</button><button type="button" id="rpg-reset">Start the journey over</button><button type="button" id="rpg-finale">Read the birthday blessing</button>';
   const openPanel=(name)=>{
     const target=content[name]||settings;
     if(!target)return;
     body.replaceChildren(target);
-    title.textContent=({quest:"The quest journal",notes:"Adventurer’s notes",story:"A letter to the Rogue Witch",finale:"The birthday blessing",settings:"Map & adventure settings"})[name]||"Adventure";
+    title.textContent=({quest:"The Rogue Witch’s Journal",notes:"Field Notes & Curios",story:"A Letter for Jess",finale:"The Birthday Blessing",settings:"The Adventurer’s Satchel"})[name]||"Adventure";
     shade.hidden=false;sheet.hidden=false;sheet.classList.add("is-open");
     body.scrollTop=0;sheet.querySelector("#rpg-close").focus();
   };
   const closePanel=()=>{sheet.classList.remove("is-open");sheet.hidden=true;shade.hidden=true;};
   hud.querySelectorAll("[data-panel]").forEach(button=>button.addEventListener("click",()=>openPanel(button.dataset.panel)));
   hud.querySelector("#rpg-locate").addEventListener("click",startLivePlayerTracking);
-  hud.querySelector("#rpg-stop-location").addEventListener("click",stopLivePlayerTracking);
+  settings.querySelector("#rpg-stop-location").addEventListener("click",()=>{stopLivePlayerTracking();closePanel()});
   window.addEventListener("pagehide",stopLivePlayerTracking);
   shade.addEventListener("click",closePanel);sheet.querySelector("#rpg-close").addEventListener("click",closePanel);
   document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!sheet.hidden)closePanel()});
