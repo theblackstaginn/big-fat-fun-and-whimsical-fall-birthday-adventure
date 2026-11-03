@@ -27,3 +27,45 @@ function renderProgress(){currentIndex=Math.min(completed.length,chapters.length
 function setMapMode(mode){const nearby=mode==="nearby";document.querySelector("#overview-view").hidden=nearby;document.querySelector("#nearby-view").hidden=!nearby;document.querySelector("#overview-view").classList.toggle("is-active",!nearby);document.querySelector("#nearby-view").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").classList.toggle("is-active",!nearby);document.querySelector("#mode-nearby").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").setAttribute("aria-pressed",String(!nearby));document.querySelector("#mode-nearby").setAttribute("aria-pressed",String(nearby));if(nearby){updateNearby();setTimeout(()=>streetMap&&streetMap.invalidateSize(),80)}}
 document.querySelector("#mode-overview").addEventListener("click",()=>setMapMode("overview"));document.querySelector("#mode-nearby").addEventListener("click",()=>setMapMode("nearby"));
 document.querySelector("#complete-button").addEventListener("click",()=>{if(completed.includes(selected.id)||chapters.indexOf(selected)!==completed.length)return;completed.push(selected.id);saveProgress();selected=chapters[Math.min(completed.length,chapters.length-1)];renderProgress()});document.querySelector("#reset-progress").addEventListener("click",()=>{completed=[];selected=chapters[0];try{localStorage.removeItem(storeKey)}catch{}renderProgress()});renderProgress();
+
+
+/* Full-screen RPG shell: preserve the existing quest system and content. */
+(function installAdventureShell(){
+  const hero=document.querySelector(".hero"),art=document.querySelector(".hero-art");
+  if(!hero||!art)return;
+  document.body.classList.add("rpg-fullscreen");
+  const hud=document.createElement("div");
+  hud.className="rpg-hud";
+  hud.innerHTML='<div class="rpg-topbar"><span class="rpg-title">✦ Jess’s Birthday Adventure</span><button type="button" class="rpg-icon" data-panel="story" aria-label="Read the birthday dedication">♡</button></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite">✧ <span id="rpg-count">Chapter 1 of 7</span></div><div class="rpg-toolbar"><button type="button" data-panel="quest">✦ Journal</button><button type="button" data-panel="notes">❧ Notes</button><button type="button" data-panel="story">♡ Story</button><button type="button" data-panel="settings">⚙ More</button></div></div>';
+  art.append(hud);
+  const shade=document.createElement("div");shade.className="rpg-shade";shade.hidden=true;
+  const sheet=document.createElement("section");sheet.className="rpg-sheet";sheet.hidden=true;sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-label","Adventure journal");
+  sheet.innerHTML='<div class="rpg-sheet-head"><strong id="rpg-sheet-title">Quest journal</strong><button type="button" id="rpg-close" aria-label="Close panel">✕</button></div><div class="rpg-sheet-body" id="rpg-sheet-body"></div>';
+  document.body.append(shade,sheet);
+  const body=sheet.querySelector("#rpg-sheet-body"),title=sheet.querySelector("#rpg-sheet-title");
+  const content={quest:document.querySelector(".quest-section"),notes:document.querySelector(".field-notes"),story:document.querySelector(".hero-copy"),finale:document.querySelector(".finale")};
+  const settings=document.createElement("div");settings.className="rpg-settings";settings.innerHTML='<p>Carry the adventure in your pocket. Your visited chapters stay saved on this device.</p><button type="button" id="rpg-print">Print the adventure map</button><button type="button" id="rpg-reset">Start the journey over</button><button type="button" id="rpg-finale">Read the birthday blessing</button>';
+  const openPanel=(name)=>{
+    const target=content[name]||settings;
+    if(!target)return;
+    body.replaceChildren(target);
+    title.textContent=({quest:"The quest journal",notes:"Adventurer’s notes",story:"A letter to the Rogue Witch",finale:"The birthday blessing",settings:"Map & adventure settings"})[name]||"Adventure";
+    shade.hidden=false;sheet.hidden=false;sheet.classList.add("is-open");
+    body.scrollTop=0;sheet.querySelector("#rpg-close").focus();
+  };
+  const closePanel=()=>{sheet.classList.remove("is-open");sheet.hidden=true;shade.hidden=true;};
+  hud.querySelectorAll("[data-panel]").forEach(button=>button.addEventListener("click",()=>openPanel(button.dataset.panel)));
+  shade.addEventListener("click",closePanel);sheet.querySelector("#rpg-close").addEventListener("click",closePanel);
+  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!sheet.hidden)closePanel()});
+  settings.querySelector("#rpg-print").addEventListener("click",()=>window.print());
+  settings.querySelector("#rpg-reset").addEventListener("click",()=>{document.querySelector("#reset-progress").click();closePanel()});
+  settings.querySelector("#rpg-finale").addEventListener("click",()=>openPanel("finale"));
+  const oldBegin=content.story.querySelector('a[href="#quest"]');
+  if(oldBegin)oldBegin.addEventListener("click",event=>{event.preventDefault();openPanel("quest")});
+  const oldRender=renderProgress;
+  renderProgress=function(){oldRender();const count=document.querySelector("#rpg-count");if(count)count.textContent=completed.length===chapters.length?"Adventure complete":`Chapter ${Math.min(completed.length+1,chapters.length)} of ${chapters.length}`};
+  const oldMap=renderMap;
+  renderMap=function(){oldMap();document.querySelectorAll(".map-pin").forEach(pin=>pin.addEventListener("click",()=>openPanel("quest")))};
+  renderProgress();
+  document.querySelectorAll(".hero-art .print-button").forEach(button=>button.remove());
+})();
