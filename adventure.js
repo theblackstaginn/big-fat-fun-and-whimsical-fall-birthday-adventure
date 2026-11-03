@@ -207,6 +207,12 @@ function styleVillageAtlas(map){
     "fill-extrusion-vertical-gradient":true
    }
   },symbolBefore);
+  /* Overlay real sloping roof geometry only when the lightweight renderer is available.
+   * If unsupported or unavailable, MapLibre's native buildings remain in place. */
+  if(typeof window.installAlpineRoofLayer==="function"){
+   try{window.installAlpineRoofLayer(map,vectorSource,symbolBefore)}
+   catch{/* Leave the standard rooftops and navigation available. */}
+  }
  }catch(error){
   /* Partially installed decorative layers must not interrupt street navigation. */
   for(const id of ["birthday-rooftops","birthday-alpine-eaves","birthday-alpine-walls"]){
