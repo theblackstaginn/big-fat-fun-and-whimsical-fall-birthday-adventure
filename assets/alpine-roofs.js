@@ -139,8 +139,8 @@
    renderingMode:"3d",
    onAdd(map,gl){
     this.map=map;
-    const vs="precision highp float; attribute vec3 a_position; attribute vec3 a_color; uniform mat4 u_matrix; varying vec3 v_color; void main(){gl_Position=u_matrix*vec4(a_position,1.0);v_color=a_color;}";
-    const fs="precision mediump float; varying vec3 v_color; void main(){gl_FragColor=vec4(v_color,1.0);}";
+    const vs="#version 300 es\nprecision highp float; in vec3 a_position; in vec3 a_color; uniform mat4 u_matrix; out vec3 v_color; void main(){gl_Position=u_matrix*vec4(a_position,1.0);v_color=a_color;}";
+    const fs="#version 300 es\nprecision mediump float; in vec3 v_color; out vec4 fragColor; void main(){fragColor=vec4(v_color,1.0);}";
     const compile=(type,source)=>{
      const shader=gl.createShader(type);
      gl.shaderSource(shader,source);gl.compileShader(shader);
@@ -223,10 +223,10 @@
     map.on("moveend",this.refresh);
     this.refresh();
    },
-   render(arg,matrixArg){
+   render(gl,args){
     if(!this.count||!this.origin)return;
-    const gl=arg?.gl||arg;
-    const projection=arg?.modelViewProjectionMatrix||matrixArg;
+    /* MapLibre 5 passes (WebGL2RenderingContext, CustomRenderMethodInput). */
+    const projection=args?.defaultProjectionData?.mainMatrix;
     if(!gl||!projection)return;
     const s=this.scale,o=this.origin;
     const model=[
