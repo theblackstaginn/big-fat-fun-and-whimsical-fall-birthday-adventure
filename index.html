@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#211b18">
+  <meta name="description" content="A birthday quest through Helen, Georgia, made for Jess, the Rogue Witch. November 16, 2026.">
+  <title>Jess’s Big, Fat, Fun &amp; Whimsical Birthday Adventure</title>
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="adventure.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#quest">Skip to the adventure</a>
+  <header class="masthead">
+    <a class="brand" href="#top" aria-label="Birthday Adventure home"><span class="brand-mark" aria-hidden="true">✦</span><span>THE HUSBAND’S FIELD GUIDE</span></a>
+    <a class="date-chip" href="#quest">MONDAY · NOVEMBER 16, 2026</a>
+  </header>
+  <main id="top">
+    <section class="hero" aria-labelledby="title">
+      <div class="hero-copy">
+        <p class="eyebrow">A one-day adventure for one extraordinary human</p>
+        <h1 id="title">Jess’s Big, Fat,<br><em>Fun &amp; Whimsical</em><br>Birthday Adventure</h1>
+        <p class="hero-intro">To my favorite rogue-witch: today, Helen is our storybook village. There are old friends to find, curious doors to open, river magic to borrow, and a birthday feast at the end of the road.</p>
+        <p class="dedication">Prepared with love by your very devoted party wizard. <span aria-hidden="true">♥</span></p>
+        <a class="button button-gold" href="#quest">Begin the quest <span aria-hidden="true">↓</span></a>
+      </div>
+      <div class="hero-art"><div class="map-canvas"><img src="assets/helen-quest-map.svg" alt="An old-world fantasy role-playing map of an autumn mountain village, Bavarian rooftops, forest, river, and compass rose"><svg class="quest-trail" viewBox="0 0 1200 790" preserveAspectRatio="none" aria-hidden="true"><path id="trail-visited"/><path id="trail-to-next"/></svg><div id="map-hotspots" class="map-hotspots" aria-label="Unlocked map locations"></div></div><p class="map-caption">The mist lifts one chapter at a time · not a street map</p><button class="print-button" type="button" onclick="window.print()">Print the map</button></div>
+      <div class="hero-rule" aria-hidden="true"><span>❧</span></div>
+    </section>
+    <section class="quest-section" id="quest" aria-labelledby="quest-heading">
+      <div class="section-heading"><p class="eyebrow">Your birthday adventure</p><h2 id="quest-heading">The road is yours, <em>Rogue Witch.</em></h2><p>Only the next chapter is revealed. Explore the place you’re in, then complete it to discover what comes after.</p></div>
+      <div class="progress-card" aria-live="polite"><div class="progress-top"><span class="progress-title">Adventure progress</span><span id="progress-count">0 of 7 places visited</span></div><div class="progress-track" role="progressbar" aria-label="Adventure progress" aria-valuemin="0" aria-valuemax="7" aria-valuenow="0"><span id="progress-fill"></span></div><p id="progress-message">Your first place awaits discovery.</p><button id="reset-progress" class="text-button" type="button">Start the journey over</button></div>
+      <div class="adventure-layout"><div class="chapter-list" id="chapter-list" aria-label="Adventure chapters"></div><aside class="chapter-detail" id="chapter-detail" aria-live="polite" aria-label="Selected chapter details"><div class="detail-ornament" aria-hidden="true">✦</div><p class="eyebrow" id="detail-kicker">CHAPTER 01</p><h3 id="detail-title">Ruby Mae’s</h3><p class="detail-description" id="detail-description"></p><div class="clue-box"><span class="clue-label">THE CLUE</span><p id="detail-clue"></p></div><div class="detail-meta" id="detail-meta"></div><div class="direction-links" id="detail-directions"></div><button class="button button-ink complete-button" id="complete-button" type="button">Mark chapter complete</button></aside></div>
+      <p class="map-note"><strong>How the adventure unfolds:</strong> One place at a time. Complete the revealed stop to unveil the next marker, destination, clue, and directions. Progress is saved in this browser on this device. The fantasy map is for play; use the map links inside each revealed chapter for real-world directions.</p>
+    </section>
+    <section class="field-notes" aria-labelledby="field-heading"><div><p class="eyebrow">A quick adventurer’s note</p><h2 id="field-heading">Leave room for<br><em>the unexpected</em></h2></div><div class="notes-grid"><article><span class="note-num">I</span><h3>Begin with your party</h3><p>Take the time you need at the opening chapter. The rest of the quest can flex around the people you’re glad to see.</p></article><article><span class="note-num">II</span><h3>Some side quests need a booking</h3><p>A few experiences keep short hours or ask for a reservation. The revealed chapter will tell you what to check before setting out.</p></article><article><span class="note-num">III</span><h3>Follow the day, not a stopwatch</h3><p>Hours, weather, and river paths can change. Skip a side quest whenever the better choice is to stay a little longer where you are.</p></article></div></section>
+    <section class="finale" aria-labelledby="finale-heading"><div class="finale-star" aria-hidden="true">✧</div><p class="eyebrow">A note for the birthday girl</p><h2 id="finale-heading">The best treasure<br>is the one beside you.</h2><p>May the road be lovely, the snacks plentiful, the dice kind, and the whole wide world a little more enchanted because you’re in it.</p><span class="signoff">Happy birthday, my love. <span aria-hidden="true">♥</span></span></section>
+  </main>
+  <footer class="footer"><span>Made for Jess, with all my love.</span><span>Helen, Georgia · 2026</span></footer>
+</body>
+</html>
