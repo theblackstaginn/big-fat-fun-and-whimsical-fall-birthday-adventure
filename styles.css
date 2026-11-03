@@ -197,8 +197,9 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 /* RPG vector neighborhood: illustrated exploration view over a safe Leaflet fallback. */
 .rpg-fullscreen .street-map-frame #rpg-neighborhood-map{
  position:absolute;inset:0;z-index:4;width:100%;height:100%;
- background:#d5c7a6;overflow:hidden;
+ background:#d5c7a6;overflow:hidden;visibility:hidden;pointer-events:none;
 }
+.rpg-fullscreen .nearby-view.vector-ready #rpg-neighborhood-map{visibility:visible;pointer-events:auto}
 .rpg-fullscreen .street-map-frame #rpg-neighborhood-map .maplibregl-map{font-family:Georgia,serif}
 .rpg-fullscreen .street-map-frame #rpg-neighborhood-map .maplibregl-canvas{outline:none}
 .rpg-fullscreen .street-map-frame #rpg-neighborhood-map .maplibregl-control-container{
