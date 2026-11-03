@@ -26,7 +26,7 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .rpg-fullscreen .map-view{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
 .rpg-fullscreen .map-view[hidden]{display:none}
 .rpg-fullscreen .map-canvas{position:absolute;inset:0;overflow:hidden;background:#796d4e}
-.rpg-fullscreen .map-canvas>img{width:100%;height:100%;object-fit:cover;object-position:center}
+.rpg-fullscreen .map-canvas>img{width:100%;height:100%;object-fit:fill;object-position:center}
 .rpg-fullscreen .map-caption,.rpg-fullscreen .print-button{display:none}
 .rpg-fullscreen .map-hotspots{z-index:3}
 .rpg-fullscreen .quest-trail{z-index:2}
