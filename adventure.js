@@ -69,3 +69,39 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   renderProgress();
   document.querySelectorAll(".hero-art .print-button").forEach(button=>button.remove());
 })();
+
+
+/* Geographically grounded overworld: real satellite imagery, never invented street placement. */
+let worldMap=null,worldPins=null,worldRequest=0;
+function initWorldMap(L){
+ if(worldMap)return;
+ worldMap=L.map("world-map",{center:helenCenter,zoom:15,minZoom:12,maxZoom:19,zoomControl:false,scrollWheelZoom:false,preferCanvas:true});
+ L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community",crossOrigin:true}).addTo(worldMap);
+ worldPins=L.layerGroup().addTo(worldMap);
+ L.control.zoom({position:"topright"}).addTo(worldMap);
+ worldMap.whenReady(()=>document.querySelector(".map-canvas").classList.add("world-ready"));
+ worldMap.on("tileerror",()=>document.querySelector(".map-canvas").classList.remove("world-ready"));
+ setTimeout(()=>worldMap&&worldMap.invalidateSize(),100);
+}
+async function renderWorldMap(){
+ const request=++worldRequest,L=await loadLeaflet();
+ initWorldMap(L);
+ const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1);
+ const found=[];
+ for(const chapter of visible){
+  try{const point=await coordinatesFor(chapter);if(Number.isFinite(point[0])&&Number.isFinite(point[1])&&Math.abs(point[0]-helenCenter[0])<.1&&Math.abs(point[1]-helenCenter[1])<.1)found.push({chapter,point})}catch{/* Never fabricate a location if geocoding fails. */}
+ }
+ if(request!==worldRequest||!worldMap)return;
+ worldPins.clearLayers();
+ found.forEach(({chapter,point})=>{
+  const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id);
+  const icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42]});
+  L.marker(point,{icon,title:chapter.title}).on("click",()=>{selected=chapter;renderProgress();document.querySelector('[data-panel="quest"]')?.click()}).addTo(worldPins);
+ });
+ const active=found.find(x=>x.chapter.id===selected.id);
+ if(active)worldMap.setView(active.point,16,{animate:false});
+ else worldMap.setView(helenCenter,15,{animate:false});
+}
+const previousWorldProgress=renderProgress;
+renderProgress=function(){previousWorldProgress();renderWorldMap().catch(()=>{/* illustrated map remains as offline fallback */})};
+renderWorldMap().catch(()=>{});
