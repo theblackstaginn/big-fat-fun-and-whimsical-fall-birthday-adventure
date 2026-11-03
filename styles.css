@@ -111,3 +111,15 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
  50%{box-shadow:0 0 0 9px rgba(216,180,106,.1),0 0 35px 13px rgba(239,190,100,.5),0 8px 16px #120e0bbb}
 }
 @media(prefers-reduced-motion:reduce){#world-map .leaflet-marker-pane .street-quest-pin.current{animation:none}}
+
+/* Portrait asset activates only after its file loads; live satellite remains the fallback. */
+.rpg-fullscreen .map-canvas #portrait-overworld{position:absolute;inset:0;z-index:2;width:100%;height:100%;object-fit:cover;object-position:center;max-width:none;pointer-events:none}
+.rpg-fullscreen .map-canvas #portrait-overworld[hidden]{display:none!important}
+.rpg-fullscreen .map-canvas.portrait-loaded #world-map,
+.rpg-fullscreen .map-canvas.portrait-loaded .storybook-fallback{display:none!important}
+.rpg-fullscreen .map-canvas.portrait-loaded .quest-trail{display:none!important}
+.rpg-fullscreen .map-canvas.portrait-loaded .map-hotspots{display:block!important;z-index:4}
+.rpg-fullscreen .map-canvas.portrait-loaded::after{z-index:3;opacity:.35}
+.rpg-fullscreen .map-canvas.portrait-loaded .map-pin{box-shadow:0 0 0 5px #edc26c27,0 0 24px #ffd17991,0 5px 16px #000b;background:linear-gradient(155deg,#92643b,#4e2f25);border-color:#f7db8f}
+.rpg-fullscreen .map-canvas.portrait-loaded .map-pin .pin-label{border-radius:5px;background:#2d1c15ed;color:#fff0c8}
+@media(prefers-reduced-motion:reduce){.rpg-fullscreen .map-canvas.portrait-loaded .map-pin{animation:none}}
