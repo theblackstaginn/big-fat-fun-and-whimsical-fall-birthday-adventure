@@ -38,7 +38,7 @@ const homeTestLocation={lat:34.564025725501,lng:-83.673061413538,address:"774 Wi
 const CLEVELAND_HOME_SCENE={
  extent:{west:-83.6735,south:34.5636,east:-83.6726,north:34.5645},
  buildings:[
-  {height:7.4,pixels:[[520,118],[680,114],[696,238],[547,254]],roof:"#8d4935"},
+  {height:7.4,pixels:[[606,110],[742,270],[620,286],[484,150]],roof:"#8d4935"},
   {height:4.8,pixels:[[446,329],[596,339],[607,388],[456,379]],roof:"#744537"},
   {height:3.8,pixels:[[516,409],[644,413],[658,456],[524,452]],roof:"#98604a"}
  ],
