@@ -123,3 +123,72 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .rpg-fullscreen .map-canvas.portrait-loaded .map-pin{box-shadow:0 0 0 5px #edc26c27,0 0 24px #ffd17991,0 5px 16px #000b;background:linear-gradient(155deg,#92643b,#4e2f25);border-color:#f7db8f}
 .rpg-fullscreen .map-canvas.portrait-loaded .map-pin .pin-label{border-radius:5px;background:#2d1c15ed;color:#fff0c8}
 @media(prefers-reduced-motion:reduce){.rpg-fullscreen .map-canvas.portrait-loaded .map-pin{animation:none}}
+
+
+/* Village exploration layer: detailed real-world streets with enchanted cartography.
+   Pure presentation: keeps Leaflet's live road geometry, attribution, and quest state intact. */
+.rpg-fullscreen .nearby-view{background:#271e17;color:#f5e3c1}
+.rpg-fullscreen .street-map-frame{border:0;background:#b8a487}
+.rpg-fullscreen .street-map-frame #street-map{background:#b8a487}
+.rpg-fullscreen .street-map-frame .leaflet-tile-pane{filter:sepia(.38) saturate(.78) contrast(1.1) brightness(.91)}
+.rpg-fullscreen .street-map-frame::after{
+ content:"";position:absolute;inset:0;z-index:600;pointer-events:none;
+ border:3px solid rgba(116,75,37,.58);
+ box-shadow:inset 0 0 0 2px rgba(237,207,146,.37),
+            inset 0 0 54px 6px rgba(59,39,25,.25);
+}
+.rpg-fullscreen .nearby-heading{
+ top:calc(env(safe-area-inset-top,0px) + 127px);
+ left:12px;right:12px;max-width:470px;margin-inline:auto;
+ padding:.85rem 1rem .8rem;border:1px solid #ad8651;border-radius:12px;
+ background:linear-gradient(155deg,rgba(60,42,30,.97),rgba(29,23,20,.97));
+ color:#f0dbb1;box-shadow:0 0 0 3px #261b16b8,0 10px 28px #20140eb8;
+}
+.rpg-fullscreen .nearby-heading::before{
+ content:"✦  V I L L A G E   E X P L O R A T I O N";display:block;
+ margin-bottom:.45rem;color:#d3ad69;font:700 .52rem/1.4 system-ui,sans-serif;
+ letter-spacing:.18em;text-align:center;opacity:.88;
+}
+.rpg-fullscreen .nearby-eyebrow{color:#e4b974;letter-spacing:.12em;font-size:.61rem}
+.rpg-fullscreen .nearby-heading strong{font:700 clamp(1.15rem,4.5vw,1.45rem)/1.17 Georgia,serif;color:#fff0cc;text-shadow:0 2px 4px #150c07}
+.rpg-fullscreen .nearby-heading>span:last-child{font:.72rem/1.45 system-ui,sans-serif;color:#dbc7a7}
+.rpg-fullscreen .map-compass{
+ top:calc(env(safe-area-inset-top,0px) + 237px);
+ border:2px solid #d9b87b;background:radial-gradient(circle at 30% 25%,#594130,#271e18);
+ color:#f0d59c;box-shadow:0 0 0 3px #2b2118c9,0 4px 16px #180f0ca8;
+}
+.rpg-fullscreen .map-compass span{color:#f6d79c}
+.rpg-fullscreen .street-map-frame .leaflet-control-zoom a{
+ background:#3c2a20;color:#ecd29b;border-color:#a17d4e;
+ box-shadow:0 2px 8px #21140e91;
+}
+.rpg-fullscreen .street-map-frame .leaflet-control-attribution{
+ background:#241b17e3;color:#e0c798;border-radius:3px;
+}
+.rpg-fullscreen .street-map-frame .leaflet-control-attribution a{color:#f3d895}
+.rpg-fullscreen .street-quest-pin{
+ border:2px solid #ffe1a1;background:radial-gradient(circle at 32% 20%,#9f7449,#563827 76%);
+ box-shadow:0 0 0 4px #643e2780,0 0 22px #f6bd6073,0 4px 12px #24160cab;
+ color:#fff6da;font:700 1.05rem Georgia,serif;
+}
+.rpg-fullscreen .street-quest-pin.current{outline:3px solid #f6d28a;outline-offset:3px}
+.rpg-fullscreen .street-quest-pin.visited{background:radial-gradient(circle at 30% 20%,#819777,#3d5542 78%)}
+.rpg-fullscreen .street-map-frame .leaflet-popup-content-wrapper{
+ border:1px solid #d9b87b;border-radius:11px;
+ background:#2c211b;color:#f3dfb9;box-shadow:0 4px 22px #120d0bd9;
+ font: .8rem/1.5 system-ui,sans-serif;
+}
+.rpg-fullscreen .street-map-frame .leaflet-popup-tip{background:#2c211b}
+.rpg-fullscreen .street-map-frame .leaflet-popup-close-button{color:#f2d99e}
+.rpg-fullscreen .nearby-note{
+ bottom:calc(env(safe-area-inset-bottom,0px) + 120px);
+ border:1px solid #a2814a;border-radius:8px;
+ background:rgba(39,29,22,.94);color:#ebd6ac;
+ font:.63rem/1.45 system-ui,sans-serif;box-shadow:0 5px 16px #1a100bc2;
+}
+.rpg-fullscreen .nearby-note a{color:#f6d895}
+@media(max-width:480px){
+ .rpg-fullscreen .nearby-heading{padding:.65rem .8rem}
+ .rpg-fullscreen .nearby-heading::before{font-size:.45rem}
+ .rpg-fullscreen .map-compass{top:calc(env(safe-area-inset-top,0px) + 226px)}
+}
