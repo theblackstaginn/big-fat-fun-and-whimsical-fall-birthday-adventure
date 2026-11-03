@@ -139,7 +139,7 @@ async function renderVillageAtlas(center,features){
    center:[center[1],center[0]],zoom:17,minZoom:14,maxZoom:19,pitch:42,maxPitch:55,
    bearing:0,dragRotate:false,pitchWithRotate:false,renderWorldCopies:false
   });
-  neighborhoodMap.addControl(new ml.NavigationControl({showCompass:false}),"topleft");
+  neighborhoodMap.addControl(new ml.NavigationControl({showCompass:false}),"top-left");
   showAtlasDiagnostic("Loading vector style and tiles");
   neighborhoodMap.on("error",event=>showAtlasDiagnostic("Map event: "+(event?.error?.message||"unknown"),true));
   neighborhoodLoad=new Promise((resolve,reject)=>{
