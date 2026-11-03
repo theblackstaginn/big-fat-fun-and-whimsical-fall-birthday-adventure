@@ -43,8 +43,60 @@ function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(leafletPr
 const questAnchors=Object.freeze({ruby:[34.700059,-83.721920]});
 function coordinatesFor(chapter){const known=questAnchors[chapter.id];if(known)return Promise.resolve([...known]);const query=chapter.streetQuery||chapter.address;let cache={};try{cache=JSON.parse(localStorage.getItem(geocodeKey)||"{}")}catch{}if(cache[query])return Promise.resolve(cache[query]);if(geocodePending.has(query))return geocodePending.get(query);const task=geocodeChain.then(async()=>{const wait=Math.max(0,1150-(Date.now()-lastGeocodeAt));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));lastGeocodeAt=Date.now();const url=`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=us&q=${encodeURIComponent(query)}`;const response=await fetch(url,{headers:{Accept:"application/json"}});if(!response.ok)throw new Error("Address lookup unavailable");const matches=await response.json();if(!matches.length)throw new Error("This address was not found on the street map");const point=[Number(matches[0].lat),Number(matches[0].lon)];cache[query]=point;try{localStorage.setItem(geocodeKey,JSON.stringify(cache))}catch{}return point});geocodeChain=task.catch(()=>{});geocodePending.set(query,task);task.then(()=>geocodePending.delete(query),()=>geocodePending.delete(query));return task}
 function createMapGrid(L){const Grid=L.GridLayer.extend({createTile(){const tile=document.createElement("canvas"),size=this.getTileSize();tile.width=size.x;tile.height=size.y;const ctx=tile.getContext("2d");ctx.strokeStyle="rgba(102,69,39,.16)";ctx.lineWidth=1;ctx.setLineDash([3,5]);for(let p=0;p<=size.x;p+=48){ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,size.y);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(size.x,p);ctx.stroke()}return tile}});return new Grid({tileSize:256,interactive:false,opacity:.72})}
-function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
-async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false)}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
+
+/* RPG neighborhood geometry: optional real-world streets and building footprints.
+ * The image map and quest markers work even when the community Overpass API is busy. */
+let streetTerrain=null,villageRenderId=0,villageShownKey="",villageGeometryCache=new Map();
+async function paintVillageGeometry(point,L){
+ const lat=Number(point[0]),lon=Number(point[1]);
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat-helenCenter[0])>.1||Math.abs(lon-helenCenter[1])>.1)return;
+ const key=lat.toFixed(4)+","+lon.toFixed(4);
+ if(villageShownKey===key)return;
+ const request=++villageRenderId;
+ let task=villageGeometryCache.get(key);
+ if(!task){
+  const q='[out:json][timeout:12];(way["building"](around:320,'+lat+','+lon+');way["highway"~"^(primary|secondary|tertiary|residential|living_street|service|pedestrian|footway)$"](around:320,'+lat+','+lon+');way["waterway"](around:320,'+lat+','+lon+'););out geom;';
+  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),14000);
+  task=fetch("https://overpass-api.de/api/interpreter?data="+encodeURIComponent(q),{signal:controller.signal})
+   .then(response=>{if(!response.ok)throw new Error("Map detail unavailable");return response.json()})
+   .then(data=>Array.isArray(data.elements)?data.elements:[])
+   .catch(()=>[])
+   .finally(()=>clearTimeout(timeout));
+  villageGeometryCache.set(key,task);
+ }
+ const features=await task;
+ if(request!==villageRenderId||!streetTerrain)return;
+ streetTerrain.clearLayers();
+ villageShownKey=key;
+ function vertices(feature){
+  if(!Array.isArray(feature.geometry))return[];
+  return feature.geometry.filter(v=>Number.isFinite(v.lat)&&Number.isFinite(v.lon)).map(v=>[v.lat,v.lon]);
+ }
+ const rivers=features.filter(f=>f.tags?.waterway);
+ const roads=features.filter(f=>f.tags?.highway);
+ const buildings=features.filter(f=>f.tags?.building);
+ for(const feature of rivers){
+  const pts=vertices(feature);if(pts.length<2)continue;
+  L.polyline(pts,{pane:"village-geometry",color:"#17313a",weight:15,opacity:.9,interactive:false}).addTo(streetTerrain);
+  L.polyline(pts,{pane:"village-geometry",color:"#4a8992",weight:8,opacity:.83,interactive:false}).addTo(streetTerrain);
+ }
+ for(const feature of roads){
+  const pts=vertices(feature);if(pts.length<2)continue;
+  const main=/^(primary|secondary|tertiary)$/.test(feature.tags.highway);
+  const path=/^(pedestrian|footway)$/.test(feature.tags.highway);
+  const width=main?11:path?3:6;
+  L.polyline(pts,{pane:"village-geometry",color:"#3a2920",weight:width+3,opacity:.87,interactive:false}).addTo(streetTerrain);
+  L.polyline(pts,{pane:"village-geometry",color:"#bba27e",weight:width,opacity:.85,interactive:false}).addTo(streetTerrain);
+ }
+ for(const feature of buildings){
+  const pts=vertices(feature);if(pts.length<3)continue;
+  L.polygon(pts,{pane:"village-geometry",color:"#e9c893",weight:1.4,opacity:.95,
+   fillColor:"#7b4834",fillOpacity:.64,interactive:false,className:"village-roof"}).addTo(streetTerrain);
+ }
+}
+
+function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community · Vector detail © <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
+async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);paintVillageGeometry(current.point,L).catch(()=>{/* real imagery remains usable */})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
 function updateNearby(){const wasVisited=completed.includes(selected.id);document.querySelector("#nearby-context").textContent=wasVisited?"REAL STREETS · VISITED CHAPTER":"REAL STREETS · CURRENT CHAPTER";document.querySelector("#nearby-place").textContent=selected.title;document.querySelector("#nearby-address").textContent=selected.address;if(document.querySelector("#nearby-view").hidden)return;renderStreetMap().catch(error=>{setStreetStatus(`${error.message}. Use the chapter’s directions below.`)})}
 function renderProgress(){currentIndex=Math.min(completed.length,chapters.length-1);if(!completed.includes(selected.id)&&chapters.indexOf(selected)>currentIndex)selected=chapters[currentIndex];const count=completed.length;document.querySelector("#progress-count").textContent=`${count} of ${chapters.length} places visited`;document.querySelector(".progress-track").setAttribute("aria-valuenow",String(count));document.querySelector("#progress-fill").style.width=`${count/chapters.length*100}%`;document.querySelector("#progress-message").textContent=count===chapters.length?"Adventure complete. Jess has explored the whole map. Roll credits; cue kisses.":count===0?"The opening place is revealed. Explore it to discover the path ahead.":`${count} place${count===1?"":"s"} explored. A new destination has appeared on your map.`;renderList();renderMap();renderDetail();updateNearby()}
 function setMapMode(mode){const nearby=mode==="nearby";document.querySelector("#overview-view").hidden=nearby;document.querySelector("#nearby-view").hidden=!nearby;document.querySelector("#overview-view").classList.toggle("is-active",!nearby);document.querySelector("#nearby-view").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").classList.toggle("is-active",!nearby);document.querySelector("#mode-nearby").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").setAttribute("aria-pressed",String(!nearby));document.querySelector("#mode-nearby").setAttribute("aria-pressed",String(nearby));if(nearby){updateNearby();setTimeout(()=>streetMap&&streetMap.invalidateSize(),80)}}
