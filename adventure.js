@@ -75,7 +75,7 @@ function renderClevelandHomeSceneLeaflet(L){
  const palette=["#9b4f31","#b56b2e","#6c7642","#4d6855","#8b6b36"];
  CLEVELAND_HOME_SCENE.trees.forEach((pixel,index)=>{
   const point=homePixelToLatLng(pixel),color=palette[(index*7+Math.floor(pixel[0]/100))%palette.length];
-  const size=26+(index%4)*3;
+  const size=20+(index%4)*2;
   const html='<span class="rpg-home-tree" style="--tree-color:'+color+';--tree-size:'+size+'px"><i></i><b></b></span>';
   const icon=L.divIcon({className:"rpg-home-tree-shell",html,iconSize:[size+14,size+15],iconAnchor:[(size+14)/2,size+11]});
   L.marker(point,{pane:"markerPane",icon,keyboard:false,interactive:false,zIndexOffset:120}).addTo(trees);
@@ -102,7 +102,7 @@ function ensureLeafletHomeControl(L,map,questPoint){
   const wrap=L.DomUtil.create("div","leaflet-bar rpg-location-controls");
   wrap.innerHTML='<button type="button" aria-label="Show home and player test location" title="Show home and player test location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
   L.DomEvent.disableClickPropagation(wrap);
-  L.DomEvent.on(wrap.children[0],"click",event=>{L.DomEvent.preventDefault(event);map.setView([homeTestLocation.lat,homeTestLocation.lng],17,{animate:true})});
+  L.DomEvent.on(wrap.children[0],"click",event=>{L.DomEvent.preventDefault(event);map.setView([homeTestLocation.lat,homeTestLocation.lng],18.5,{animate:true})});
   L.DomEvent.on(wrap.children[1],"click",event=>{L.DomEvent.preventDefault(event);map.setView(control.questPoint||helenCenter,17,{animate:true})});
   return wrap;
  };
@@ -127,7 +127,7 @@ function ensureMapLibreHomeControl(ml,map,questCenter){
    this.map=mapInstance;
    this.container=document.createElement("div");this.container.className="maplibregl-ctrl maplibregl-ctrl-group rpg-location-controls";
    this.container.innerHTML='<button type="button" aria-label="Show home and player test location" title="Show home and player test location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
-   this.container.children[0].addEventListener("click",()=>mapInstance.flyTo({center:[homeTestLocation.lng,homeTestLocation.lat],zoom:16,pitch:42}));
+   this.container.children[0].addEventListener("click",()=>mapInstance.flyTo({center:[homeTestLocation.lng,homeTestLocation.lat],zoom:18.5,pitch:42}));
    this.container.children[1].addEventListener("click",()=>mapInstance.flyTo({center:this.questCenter,zoom:17,pitch:42}));
    return this.container;
   },
