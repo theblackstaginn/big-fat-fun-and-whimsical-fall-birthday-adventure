@@ -85,6 +85,21 @@ def run():
     # pixel noise. At this output scale, 3 pixels represent about 7 meters.
     binary = binary.filter(ImageFilter.MedianFilter(3))
     clean = binary.load()
+    # Miniature-golf putting surfaces near Ruby Mae's have low NDVI because
+    # the maintained turf is sparse/low contrast in 2023 NAIP. Within this
+    # hand-checked footprint only, preserve visibly green turf pixels. Roads,
+    # buildings, and mapped water remain above the resulting transparent mask.
+    turf_roi = {"west": -83.72355, "south": 34.69725,
+                "east": -83.72200, "north": 34.69835}
+    tx0 = max(0, int((turf_roi["west"] - WEST) / (EAST - WEST) * WIDTH))
+    tx1 = min(WIDTH, int((turf_roi["east"] - WEST) / (EAST - WEST) * WIDTH) + 1)
+    ty0 = max(0, int((NORTH - turf_roi["north"]) / (NORTH - SOUTH) * HEIGHT))
+    ty1 = min(HEIGHT, int((NORTH - turf_roi["south"]) / (NORTH - SOUTH) * HEIGHT) + 1)
+    for y in range(ty0, ty1):
+        for x in range(tx0, tx1):
+            n, r, g = nirpx[x, y], redpx[x, y], greenpx[x, y]
+            if n > 32 and g >= r + 8:
+                clean[x, y] = 255
     # Broad watercolor-like tonal patches replace per-pixel noise. The source
     # photograph is never copied into the published texture.
     coarse_w, coarse_h = max(4, WIDTH // 24), max(4, HEIGHT // 24)

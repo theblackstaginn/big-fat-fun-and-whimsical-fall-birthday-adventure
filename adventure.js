@@ -105,7 +105,7 @@ function installSyntheticHelenGround(map,layers){
  const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
  try{
   if(map.getLayer(layerId))return true;
-  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground7",document.baseURI).href;
+  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground8",document.baseURI).href;
   if(!map.getSource(sourceId))map.addSource(sourceId,{
    type:"image",url,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
