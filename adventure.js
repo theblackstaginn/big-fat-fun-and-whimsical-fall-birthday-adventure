@@ -49,19 +49,18 @@ function createMapGrid(L){const Grid=L.GridLayer.extend({createTile(){const tile
  * No live Overpass requests and no paid map keys. */
 let neighborhoodMap=null,neighborhoodLoad=null,neighborhoodLibrary=null,neighborhoodPins=[],neighborhoodRequest=0;
 function loadNeighborhoodLibrary(){
- if(window.maplibregl)return Promise.resolve(window.maplibregl);
  if(neighborhoodLibrary)return neighborhoodLibrary;
- neighborhoodLibrary=new Promise((resolve,reject)=>{
-  if(!document.querySelector("#maplibre-css")){
-   const link=document.createElement("link");link.rel="stylesheet";link.id="maplibre-css";
-   link.href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css";document.head.append(link);
-  }
-  const script=document.createElement("script");
-  script.src="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.js";
-  script.onload=()=>window.maplibregl?resolve(window.maplibregl):reject(new Error("MapLibre did not initialize"));
-  script.onerror=()=>reject(new Error("MapLibre could not load"));
-  document.head.append(script);
- }).catch(error=>{neighborhoodLibrary=null;throw error});
+ if(!document.querySelector("#maplibre-css")){
+  const link=document.createElement("link");link.rel="stylesheet";link.id="maplibre-css";
+  link.href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css";document.head.append(link);
+ }
+ // MapLibre GL JS v6 is ESM-only. The old dist/maplibre-gl.js UMD file does not exist.
+ neighborhoodLibrary=import("https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs")
+  .then(library=>{
+   if(typeof library.Map!=="function"||typeof library.Marker!=="function")throw new Error("MapLibre module exports unavailable");
+   return library;
+  })
+  .catch(error=>{neighborhoodLibrary=null;throw error});
  return neighborhoodLibrary;
 }
 function styleVillageAtlas(map){
