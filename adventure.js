@@ -105,9 +105,9 @@ function installSyntheticHelenGround(map){
  /* Ground images share the landscaping WebGL layer with trees. Keep their
   * transparent alpha so roads, roofs, parking, and water stay unobstructed. */
  map.__birthdayGroundLayers=[
-  {url:new URL("assets/helen-painted-ground.png?v=20261103-ground20",document.baseURI).href,
+  {url:new URL("assets/helen-painted-ground.png?v=20261103-ground21",document.baseURI).href,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],minzoom:12},
-  {url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground20",document.baseURI).href,
+  {url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground21",document.baseURI).href,
    coordinates:[[-83.732,34.708],[-83.717,34.708],[-83.717,34.694],[-83.732,34.694]],minzoom:14}
  ];
  return true;
@@ -276,17 +276,7 @@ function styleVillageAtlas(map){
    try{window.installHelenLandscaping(map,vectorSource,vegetationBefore)}
    catch{/* The core street map and existing roofs stay usable. */}
   }
-  /* Draw mapped parking below the NAIP renderer. Its alpha mask supplies only
-   * classified vegetation; tree placement separately excludes parking polygons.
-   * Real transport, water, paths, and buildings remain above both layers. */
-  const parkingBefore=layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore;
-  try{
-   if(!map.getLayer("birthday-parking-clear"))map.addLayer({
-    id:"birthday-parking-clear",type:"fill",source:vectorSource,"source-layer":"landuse",minzoom:12,
-    filter:["==",["get","class"],"parking"],
-    paint:{"fill-color":"#f5efe3","fill-outline-color":"#d6c6a4","fill-opacity":1}
-   },parkingBefore);
-  }catch{/* Keep source parking clear if the provider omits this optional layer. */}
+  /* Full-coverage illustrated grass remains beneath mapped roads, paths, water, and buildings. */
   if(typeof window.installHelenTreeOverlay==="function"){
    const treeBefore=layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore;
    try{window.installHelenTreeOverlay(map,treeBefore)}catch{/* Trees are decorative; retain map navigation. */}

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Generate car-free illustrated ground cover from public USDA/USGS NAIP imagery.
+"""Generate full-coverage storybook grass from public USDA/USGS NAIP imagery.
 
 RGB-NIR sample from 2023 Georgia NAIP is classified once at build time.
-NO photographed vehicles, buildings or aerial pixels are published. Only a
-synthetic colorized grass/woodland texture and a compact vegetation class mask
-are included in the static website. Pixel locations are approximate.
+No photographed vehicles, buildings or aerial pixels are published. The
+classification guides the tree mask and subtle texture variation only.
 """
 import io
 import math
@@ -90,6 +89,34 @@ def decorate_cover(image, mask, canopy, seed):
     image.alpha_composite(details)
     return image
 
+def decorate_full_ground(image, seed):
+    """Add a restrained, even carpet of grass strokes and autumn leaves."""
+    width, height = image.size
+    rng = random.Random(seed)
+    draw = ImageDraw.Draw(image, "RGBA")
+    leaf_colors = ((165, 91, 48, 170), (190, 132, 55, 170),
+                   (137, 70, 43, 165), (117, 126, 62, 165))
+    grass_colors = ((80, 108, 62, 92), (161, 151, 91, 88),
+                    (103, 128, 75, 84), (177, 137, 74, 80))
+    for _ in range(max(1200, width * height // 82)):
+        x, y = rng.randrange(width), rng.randrange(height)
+        length = rng.choice((2, 3, 4))
+        color = rng.choice(leaf_colors)
+        points = [(x - length, y), (x, y - 1), (x + length, y),
+                  (x, y + 1)]
+        draw.polygon(points, fill=color)
+        if rng.random() < 0.45:
+            draw.line((x - length + 1, y, x + length - 1, y),
+                      fill=(90, 72, 42, 130), width=1)
+    for _ in range(max(1600, width * height // 105)):
+        x, y = rng.randrange(width), rng.randrange(height)
+        color = rng.choice(grass_colors)
+        rise = rng.randint(2, 5)
+        draw.line((x, y, x + rng.choice((-1, 0, 1)), y - rise),
+                  fill=color, width=1)
+    return image
+
+
 def run():
     im = fetch_false_color()
     # When bandIds=3,0,1, the pixel's R is NIR and G is red.
@@ -166,7 +193,7 @@ def run():
         ImageFilter.GaussianBlur(0.5)
     )
     texture_px = texture.load()
-    ground = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    ground = Image.new("RGBA", im.size, (124, 146, 96, 255))
     data = Image.new("RGB", im.size, (0, 0, 0))
     gp = ground.load()
     dp = data.load()
@@ -186,13 +213,13 @@ def run():
             if woody:
                 canopy += 1
                 kind = 205
-                base = (72, 88, 62)
-                alpha = 228
+                base = (116, 138, 92)
+                alpha = 255
             else:
                 grass += 1
                 kind = 75
-                base = (119, 139, 92)
-                alpha = 216
+                base = (124, 146, 96)
+                alpha = 255
             # Gentle fine grain sits beneath the larger watercolor variation.
             patch = round((texture_px[x, y] - 128) * 0.22)
             grain = ((x * 37 + y * 91 + (x // 7) * 59) % 3) - 1
@@ -209,9 +236,8 @@ def run():
             "NAIP classification implausible; refusing to publish inaccurate landscaping"
         )
     # A very light edge antialias avoids halos while keeping vegetation borders crisp.
-    a = ground.getchannel("A").filter(ImageFilter.GaussianBlur(0.20))
-    ground.putalpha(a)
     decorate_cover(ground, binary, data.getchannel("R"), seed=7319)
+    decorate_full_ground(ground, seed=91731)
     os.makedirs(OUTPUT, exist_ok=True)
     ground_path = os.path.join(OUTPUT, "helen-painted-ground.png")
     mask_path = os.path.join(OUTPUT, "helen-vegetation-data.png")
@@ -261,7 +287,7 @@ def run():
         ImageFilter.GaussianBlur(0.5)
     )
     tex, mpx, canopy_px = texture.load(), core_mask.load(), canopy_mask.load()
-    core_ground = Image.new("RGBA", core.size, (0, 0, 0, 0))
+    core_ground = Image.new("RGBA", core.size, (124, 146, 96, 255))
     cgpx = core_ground.load()
     meadow_pixels = canopy_pixels = 0
     for y in range(core_height):
@@ -272,7 +298,7 @@ def run():
             # Blend broad class patches so canopy stays woodland-colored while
             # smooth green areas become continuous meadow instead of tree speckles.
             canopy = canopy_px[x, y] / 255
-            grass_rgb, wood_rgb = (129, 148, 97), (67, 84, 59)
+            grass_rgb, wood_rgb = (126, 147, 98), (116, 138, 92)
             base = tuple(round(grass_rgb[i] * (1 - canopy) + wood_rgb[i] * canopy)
                          for i in range(3))
             canopy_pixels += round(canopy)
@@ -282,9 +308,9 @@ def run():
             cgpx[x, y] = (max(0, min(255, base[0] + noise)),
                           max(0, min(255, base[1] + noise // 2)),
                           max(0, min(255, base[2] + noise // 3)),
-                          round(coverage * .96))
-    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.20)))
+                          255)
     decorate_cover(core_ground, core_mask, canopy_mask, seed=48117)
+    decorate_full_ground(core_ground, seed=91731)
     core_path = os.path.join(OUTPUT, "helen-painted-ground-downtown.png")
     core_ground.save(core_path, optimize=True)
     print(f"High-resolution downtown ground: meadow={meadow_pixels}, "
