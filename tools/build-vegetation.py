@@ -90,32 +90,56 @@ def decorate_cover(image, mask, canopy, seed):
     return image
 
 def decorate_full_ground(image, seed):
-    """Add a restrained, even carpet of grass strokes and autumn leaves."""
+    """Paint a quiet grass carpet with grouped, leaf-shaped autumn litter."""
     width, height = image.size
     rng = random.Random(seed)
-    draw = ImageDraw.Draw(image, "RGBA")
-    leaf_colors = ((165, 91, 48, 170), (190, 132, 55, 170),
-                   (137, 70, 43, 165), (117, 126, 62, 165))
-    grass_colors = ((80, 108, 62, 92), (161, 151, 91, 88),
-                    (103, 128, 75, 84), (177, 137, 74, 80))
-    for _ in range(max(1200, width * height // 82)):
-        x, y = rng.randrange(width), rng.randrange(height)
-        length = rng.choice((2, 3, 4))
-        color = rng.choice(leaf_colors)
-        points = [(x - length, y), (x, y - 1), (x + length, y),
-                  (x, y + 1)]
-        draw.polygon(points, fill=color)
-        if rng.random() < 0.45:
-            draw.line((x - length + 1, y, x + length - 1, y),
-                      fill=(90, 72, 42, 130), width=1)
-    for _ in range(max(1600, width * height // 105)):
-        x, y = rng.randrange(width), rng.randrange(height)
-        color = rng.choice(grass_colors)
-        rise = rng.randint(2, 5)
-        draw.line((x, y, x + rng.choice((-1, 0, 1)), y - rise),
-                  fill=color, width=1)
-    return image
+    details = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(details, "RGBA")
 
+    # A few clustered leaves read as fallen foliage; isolated tiny dashes read
+    # as confetti, so each cluster stays together and has no drawn vein/stem.
+    leaf_palette = (
+        (177, 91, 45, 195), (205, 139, 55, 195),
+        (143, 67, 42, 185), (190, 111, 54, 185),
+        (130, 127, 66, 175),
+    )
+    clusters = max(90, width * height // 420)
+    for _ in range(clusters):
+        cx, cy = rng.randrange(width), rng.randrange(height)
+        count = rng.choices((2, 3, 4), weights=(5, 4, 1), k=1)[0]
+        for _ in range(count):
+            x = cx + rng.randint(-4, 4)
+            y = cy + rng.randint(-3, 3)
+            length = rng.uniform(2.2, 4.2)
+            half_width = rng.uniform(1.0, 1.8)
+            angle = rng.uniform(0, math.tau)
+            dx, dy = math.cos(angle), math.sin(angle)
+            px, py = -dy * half_width, dx * half_width
+            points = (
+                (x - dx * length, y - dy * length),
+                (x + px, y + py),
+                (x + dx * length, y + dy * length),
+                (x - px, y - py),
+            )
+            draw.polygon(points, fill=rng.choice(leaf_palette))
+
+    # Low-contrast tufts soften the flat base without turning into uniform
+    # stripes or competing with the trees, roads, paths, and building shapes.
+    tuft_palette = (
+        (80, 105, 61, 30), (157, 150, 94, 28),
+        (105, 126, 75, 25), (177, 139, 78, 22),
+    )
+    for _ in range(max(100, width * height // 260)):
+        cx, cy = rng.randrange(width), rng.randrange(height)
+        color = rng.choice(tuft_palette)
+        for _ in range(rng.randint(2, 3)):
+            x = cx + rng.randint(-2, 2)
+            y = cy + rng.randint(-2, 2)
+            radius = rng.choice((0.7, 1.0, 1.2))
+            draw.ellipse((x-radius, y-radius, x+radius, y+radius),
+                         fill=color)
+    image.alpha_composite(details)
+    return image
 
 def run():
     im = fetch_false_color()
