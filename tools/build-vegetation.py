@@ -14,7 +14,7 @@ import sys
 import urllib.parse
 import urllib.request
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 WEST, SOUTH, EAST, NORTH = -83.739, 34.691, -83.709, 34.713
 WIDTH, HEIGHT = 1152, 1024
@@ -61,6 +61,34 @@ def fetch_false_color(west=WEST, south=SOUTH, east=EAST, north=NORTH,
             print(f"NAIP source failed: {errors[-1]}", file=sys.stderr)
     raise RuntimeError("Unable to acquire public imagery: " + "; ".join(errors))
 
+
+def decorate_cover(image, mask, canopy, seed):
+    """Paint small grass and leaf strokes inside vegetation, clipped to its mask."""
+    width, height = image.size
+    rng = random.Random(seed)
+    details = Image.new("RGBA", image.size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(details)
+    grass_palette = ((77, 99, 62, 72), (157, 151, 97, 68),
+                     (111, 130, 78, 60), (176, 145, 83, 48))
+    woodland_palette = ((48, 68, 46, 72), (100, 115, 72, 64),
+                        (136, 117, 72, 50), (77, 94, 61, 60))
+    for _ in range(max(700, width * height // 430)):
+        x, y = rng.randrange(width), rng.randrange(height)
+        if mask.getpixel((x, y)) < 210:
+            continue
+        palette = woodland_palette if canopy.getpixel((x, y)) > 140 else grass_palette
+        for _ in range(rng.randint(2, 4)):
+            color = rng.choice(palette)
+            dx, rise = rng.randint(-2, 2), rng.randint(3, 8)
+            draw.line((x + dx, y, x + dx + rng.randint(-2, 2), y - rise),
+                      fill=color, width=1)
+        if rng.random() < 0.24:
+            color = rng.choice(palette)
+            radius = rng.choice((1, 1, 2))
+            draw.ellipse((x-radius, y-radius, x+radius, y+radius), fill=color)
+    details.putalpha(ImageChops.multiply(details.getchannel("A"), mask))
+    image.alpha_composite(details)
+    return image
 
 def run():
     im = fetch_false_color()
@@ -129,13 +157,13 @@ def run():
                 clean[x, y] = 255
     # Broad watercolor-like tonal patches replace per-pixel noise. The source
     # photograph is never copied into the published texture.
-    coarse_w, coarse_h = max(4, WIDTH // 24), max(4, HEIGHT // 24)
+    coarse_w, coarse_h = max(4, WIDTH // 12), max(4, HEIGHT // 12)
     texture_rng = random.Random(7319)
     coarse = Image.new("L", (coarse_w, coarse_h))
     coarse.putdata([128 + texture_rng.randint(-18, 18)
                     for _ in range(coarse_w * coarse_h)])
     texture = coarse.resize(im.size, Image.Resampling.BICUBIC).filter(
-        ImageFilter.GaussianBlur(6)
+        ImageFilter.GaussianBlur(2.0)
     )
     texture_px = texture.load()
     ground = Image.new("RGBA", im.size, (0, 0, 0, 0))
@@ -158,12 +186,12 @@ def run():
             if woody:
                 canopy += 1
                 kind = 205
-                base = (65, 92, 58)
+                base = (72, 88, 62)
                 alpha = 228
             else:
                 grass += 1
                 kind = 75
-                base = (124, 147, 92)
+                base = (119, 139, 92)
                 alpha = 216
             # Gentle fine grain sits beneath the larger watercolor variation.
             patch = round((texture_px[x, y] - 128) * 0.65)
@@ -181,8 +209,9 @@ def run():
             "NAIP classification implausible; refusing to publish inaccurate landscaping"
         )
     # Subtle feathering makes polygon boundaries read as painterly ground.
-    a = ground.getchannel("A").filter(ImageFilter.GaussianBlur(1.35))
+    a = ground.getchannel("A").filter(ImageFilter.GaussianBlur(0.55))
     ground.putalpha(a)
+    decorate_cover(ground, binary, data.getchannel("R"), seed=7319)
     os.makedirs(OUTPUT, exist_ok=True)
     ground_path = os.path.join(OUTPUT, "helen-painted-ground.png")
     mask_path = os.path.join(OUTPUT, "helen-vegetation-data.png")
@@ -222,17 +251,16 @@ def run():
     # Close tiny spectral gaps inside lawns, then feather only the ground edges.
     # The 7 px closing is roughly a 7 m detail at this crop scale; roads and
     # parking aisles remain open, while grass no longer breaks into tree-like dots.
-    core_mask = core_mask.filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))
-    core_mask = core_mask.filter(ImageFilter.GaussianBlur(1.5))
+    core_mask = core_mask.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))
+    core_mask = core_mask.filter(ImageFilter.GaussianBlur(0.65))
     # Woodland is a regional texture class, not a pixel-by-pixel tree scatter.
-    canopy_mask = canopy_mask.filter(ImageFilter.MedianFilter(7))
-    canopy_mask = canopy_mask.filter(ImageFilter.GaussianBlur(2.8))
+    canopy_mask = canopy_mask.filter(ImageFilter.MedianFilter(5))
     rng = random.Random(48117)
-    coarse = Image.new("L", (core_width // 24, core_height // 24))
+    coarse = Image.new("L", (core_width // 12, core_height // 12))
     coarse.putdata([128 + rng.randint(-18, 18)
                     for _ in range(coarse.width * coarse.height)])
     texture = coarse.resize(core.size, Image.Resampling.BICUBIC).filter(
-        ImageFilter.GaussianBlur(6)
+        ImageFilter.GaussianBlur(2.0)
     )
     tex, mpx, canopy_px = texture.load(), core_mask.load(), canopy_mask.load()
     core_ground = Image.new("RGBA", core.size, (0, 0, 0, 0))
@@ -246,7 +274,7 @@ def run():
             # Blend broad class patches so canopy stays woodland-colored while
             # smooth green areas become continuous meadow instead of tree speckles.
             canopy = canopy_px[x, y] / 255
-            grass_rgb, wood_rgb = (145, 171, 94), (48, 73, 43)
+            grass_rgb, wood_rgb = (129, 148, 97), (67, 84, 59)
             base = tuple(round(grass_rgb[i] * (1 - canopy) + wood_rgb[i] * canopy)
                          for i in range(3))
             canopy_pixels += round(canopy)
@@ -257,7 +285,8 @@ def run():
                           max(0, min(255, base[1] + noise // 2)),
                           max(0, min(255, base[2] + noise // 3)),
                           round(coverage * .96))
-    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.45)))
+    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.55)))
+    decorate_cover(core_ground, core_mask, canopy_mask, seed=48117)
     core_path = os.path.join(OUTPUT, "helen-painted-ground-downtown.png")
     core_ground.save(core_path, optimize=True)
     print(f"High-resolution downtown ground: meadow={meadow_pixels}, "
