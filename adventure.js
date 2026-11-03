@@ -207,6 +207,11 @@ function styleVillageAtlas(map){
  const vectorSource=Object.keys(style?.sources||{}).find(key=>style.sources[key].type==="vector");
  if(!vectorSource||map.getLayer("birthday-rooftops"))return;
  const symbolBefore=layers.find(layer=>layer.type==="symbol")?.id;
+ /* Place grass and tree geometry below mapped water, roads, footways, and buildings.
+  * The first of these source layers is the z-order boundary; their actual map
+  * geometry then draws over any imperfect NAIP edge or canopy classification. */
+ const surfaceLayers=new Set(["water","waterway","transportation","building"]);
+ const vegetationBefore=layers.find(layer=>surfaceLayers.has(layer["source-layer"]))?.id||symbolBefore;
  /* Pattern only true OSM woodland polygons: it never paints trees onto streets. */
  try{
   const woods=makeAutumnCanopyTile();
@@ -268,7 +273,7 @@ function styleVillageAtlas(map){
   /* Autumn trees appear only in mapped vegetation areas, away from streets.
    * Keep the renderer completely optional for older iOS browsers. */
   if(typeof window.installHelenLandscaping==="function"){
-   try{window.installHelenLandscaping(map,vectorSource,symbolBefore)}
+   try{window.installHelenLandscaping(map,vectorSource,vegetationBefore)}
    catch{/* The core street map and existing roofs stay usable. */}
   }
   /* Overlay real sloping roof geometry only when the lightweight renderer is available.
