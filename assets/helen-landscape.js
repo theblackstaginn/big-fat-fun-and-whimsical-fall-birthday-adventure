@@ -310,7 +310,7 @@
     for(const ground of this.grounds){
      const image=new Image();ground.image=image;
      image.onload=()=>{
-      if(!this.map||!gl.isTexture(ground.texture))return;
+      if(!this.map)return;
       gl.bindTexture(gl.TEXTURE_2D,ground.texture);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL,false);
