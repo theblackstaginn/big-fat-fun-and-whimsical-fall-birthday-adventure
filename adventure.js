@@ -39,14 +39,16 @@ let streetHomeControl=null,neighborhoodHomeControl=null;
 function ensurePlayerTestStyles(){
  if(document.querySelector("#rpg-player-test-styles"))return;
  const style=document.createElement("style");style.id="rpg-player-test-styles";
- style.textContent=".rpg-home-marker-shell,.rpg-player-marker-shell{background:transparent!important;border:0!important}.rpg-home-marker{width:34px;height:38px;display:grid;place-items:center;background:#80502f;border:2px solid #f2d58f;border-radius:50% 50% 50% 5px;transform:rotate(-45deg);box-shadow:0 3px 9px #17110db3;color:#f8e9c7}.rpg-home-marker span{font:700 22px/1 Georgia,serif;transform:rotate(45deg)}.rpg-player-marker{width:36px;height:36px;display:grid;place-items:center;background:#315a56;border:3px solid #f2d58f;border-radius:50%;box-shadow:0 2px 9px #17110dcc;color:#fff4d7}.rpg-player-marker svg{width:20px;height:20px}.rpg-location-controls{display:flex;gap:3px;padding:3px!important;background:#38271fd9!important}.rpg-location-controls button{width:40px;height:38px;padding:0;border:0;background:#f5e7c8;color:#39271d;font:700 21px/1 Georgia,serif;cursor:pointer}.rpg-location-controls button:focus-visible{outline:3px solid #c18d45;outline-offset:1px}.maplibregl-ctrl-group.rpg-location-controls{display:flex}.maplibregl-ctrl-group.rpg-location-controls button{border-radius:2px}.rpg-player-marker-shell{z-index:20!important}";
+ style.textContent=".rpg-home-marker-shell,.rpg-player-marker-shell{background:transparent!important;border:0!important}.rpg-home-marker{width:34px;height:38px;display:grid;place-items:center;background:#80502f;border:2px solid #f2d58f;border-radius:50% 50% 50% 5px;transform:rotate(-45deg);box-shadow:0 3px 9px #17110db3;color:#f8e9c7}.rpg-home-marker svg{width:19px;height:19px;transform:rotate(45deg)}.rpg-location-controls svg{width:20px;height:20px;display:block;margin:auto}.rpg-player-marker{width:36px;height:36px;display:grid;place-items:center;background:#315a56;border:3px solid #f2d58f;border-radius:50%;box-shadow:0 2px 9px #17110dcc;color:#fff4d7}.rpg-player-marker svg{width:20px;height:20px}.rpg-location-controls{display:flex;gap:3px;padding:3px!important;background:#38271fd9!important}.rpg-location-controls button{width:40px;height:38px;padding:0;border:0;background:#f5e7c8;color:#39271d;font:700 21px/1 Georgia,serif;cursor:pointer}.rpg-location-controls button:focus-visible{outline:3px solid #c18d45;outline-offset:1px}.maplibregl-ctrl-group.rpg-location-controls{display:flex}.maplibregl-ctrl-group.rpg-location-controls button{border-radius:2px}.rpg-player-marker-shell{z-index:20!important}";
  style.textContent+=".maplibregl-ctrl-top-right .rpg-location-controls{margin-top:430px!important;margin-right:8px!important}.leaflet-top.leaflet-right .rpg-location-controls{margin-top:430px!important;margin-right:8px!important}";document.head.append(style);
 }
+function homeIconSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2M5.7 9.1V20h12.6V9.1M9.5 20v-6.2h5V20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
+function returnIconSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 3.5 10.5 9 16M4 10.5h9a7 7 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2)"/></svg>'}
 function playerMarkerSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" fill="currentColor"/><path d="M5.2 21v-2.1a6.8 6.8 0 0 1 13.6 0V21z" fill="currentColor"/></svg>'}
 function addLeafletHomePlayerMarkers(L,map,layer){
  ensurePlayerTestStyles();
  const point=[homeTestLocation.lat,homeTestLocation.lng];
- const home=L.divIcon({className:"rpg-home-marker-shell",html:'<span class="rpg-home-marker" aria-hidden="true"><span>⌂</span></span>',iconSize:[48,46],iconAnchor:[44,43]});
+ const home=L.divIcon({className:"rpg-home-marker-shell",html:'<span class="rpg-home-marker" aria-hidden="true">'+homeIconSvg()+'</span>',iconSize:[48,46],iconAnchor:[44,43]});
  const player=L.divIcon({className:"rpg-player-marker-shell",html:'<span class="rpg-player-marker" aria-hidden="true">'+playerMarkerSvg()+'</span>',iconSize:[48,48],iconAnchor:[4,24]});
  L.marker(point,{icon:home,title:"Home test location",keyboard:true,zIndexOffset:800}).bindPopup("<strong>Home test location</strong><br>"+homeTestLocation.address).addTo(layer);
  L.marker(point,{icon:player,title:"Player icon test",keyboard:true,zIndexOffset:900}).bindPopup("<strong>Player icon test</strong><br>Player position set to home.").addTo(layer);
@@ -58,7 +60,7 @@ function ensureLeafletHomeControl(L,map,questPoint){
  control.questPoint=questPoint;
  control.onAdd=function(){
   const wrap=L.DomUtil.create("div","leaflet-bar rpg-location-controls");
-  wrap.innerHTML='<button type="button" aria-label="Show home and player test location" title="Show home and player test location">⌂</button><button type="button" aria-label="Return to current quest" title="Return to current quest">↩</button>';
+  wrap.innerHTML='<button type="button" aria-label="Show home and player test location" title="Show home and player test location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
   L.DomEvent.disableClickPropagation(wrap);
   L.DomEvent.on(wrap.children[0],"click",event=>{L.DomEvent.preventDefault(event);map.setView([homeTestLocation.lat,homeTestLocation.lng],17,{animate:true})});
   L.DomEvent.on(wrap.children[1],"click",event=>{L.DomEvent.preventDefault(event);map.setView(control.questPoint||helenCenter,17,{animate:true})});
@@ -69,7 +71,7 @@ function ensureLeafletHomeControl(L,map,questPoint){
 function addMapLibreHomePlayerMarkers(ml,map){
  ensurePlayerTestStyles();
  const home=document.createElement("button");home.type="button";home.className="rpg-home-marker-shell";home.setAttribute("aria-label","Home test location");
- home.innerHTML='<span class="rpg-home-marker" aria-hidden="true"><span>⌂</span></span>';
+ home.innerHTML='<span class="rpg-home-marker" aria-hidden="true">'+homeIconSvg()+'</span>';
  const player=document.createElement("button");player.type="button";player.className="rpg-player-marker-shell";player.setAttribute("aria-label","Player icon test");
  player.innerHTML='<span class="rpg-player-marker" aria-hidden="true">'+playerMarkerSvg()+'</span>';
  const homeMarker=new ml.Marker({element:home,anchor:"bottom",offset:[-16,0]}).setLngLat([homeTestLocation.lng,homeTestLocation.lat]).setPopup(new ml.Popup({offset:28}).setText("Home test location · "+homeTestLocation.address)).addTo(map);
@@ -84,7 +86,7 @@ function ensureMapLibreHomeControl(ml,map,questCenter){
   onAdd(mapInstance){
    this.map=mapInstance;
    this.container=document.createElement("div");this.container.className="maplibregl-ctrl maplibregl-ctrl-group rpg-location-controls";
-   this.container.innerHTML='<button type="button" aria-label="Show home and player test location" title="Show home and player test location">⌂</button><button type="button" aria-label="Return to current quest" title="Return to current quest">↩</button>';
+   this.container.innerHTML='<button type="button" aria-label="Show home and player test location" title="Show home and player test location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
    this.container.children[0].addEventListener("click",()=>mapInstance.flyTo({center:[homeTestLocation.lng,homeTestLocation.lat],zoom:16,pitch:42}));
    this.container.children[1].addEventListener("click",()=>mapInstance.flyTo({center:this.questCenter,zoom:17,pitch:42}));
    return this.container;
