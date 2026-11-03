@@ -276,10 +276,10 @@ function styleVillageAtlas(map){
    try{window.installHelenLandscaping(map,vectorSource,vegetationBefore)}
    catch{/* The core street map and existing roofs stay usable. */}
   }
-  /* MapLibre's Liberty style leaves landuse=parking unpainted. Restore a clean,
-   * car-free paved surface over the NAIP ground texture while keeping road/path
-   * linework above it. Tree placement already excludes these parking polygons. */
-  const parkingBefore=layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore;
+  /* Draw mapped parking below the NAIP renderer. Its alpha mask supplies only
+   * classified vegetation; tree placement separately excludes parking polygons.
+   * Real transport, water, paths, and buildings remain above both layers. */
+  const parkingBefore=map.getLayer("birthday-landscaping")?"birthday-landscaping":(layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore);
   try{
    if(!map.getLayer("birthday-parking-clear"))map.addLayer({
     id:"birthday-parking-clear",type:"fill",source:vectorSource,"source-layer":"landuse",minzoom:12,
