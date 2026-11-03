@@ -81,8 +81,9 @@ def run():
             ndvi_bytes[k] = max(0, min(255, round((ndvi + 0.05) * 320)))
             if n > 48 and ndvi > .155:
                 binpx[x, y] = 255
-    # Remove isolated sensor noise without expanding vegetation into roads.
-    binary = binary.filter(ImageFilter.MedianFilter(3))
+    # Remove pixel-scale noise without expanding vegetation into roads.
+    # At this output scale a 5-pixel window represents roughly 12 meters.
+    binary = binary.filter(ImageFilter.MedianFilter(5))
     clean = binary.load()
     # Broad watercolor-like tonal patches replace per-pixel noise. The source
     # photograph is never copied into the published texture.
@@ -124,7 +125,7 @@ def run():
                 alpha = 216
             # Gentle fine grain sits beneath the larger watercolor variation.
             patch = round((texture_px[x, y] - 128) * 0.65)
-            grain = ((x * 37 + y * 91 + (x // 7) * 59) % 5) - 2
+            grain = ((x * 37 + y * 91 + (x // 7) * 59) % 3) - 1
             noise = patch + grain
             gp[x, y] = (max(0, min(255, base[0] + noise)),
                          max(0, min(255, base[1] + noise // 2)),
@@ -138,7 +139,7 @@ def run():
             "NAIP classification implausible; refusing to publish inaccurate landscaping"
         )
     # Subtle feathering makes polygon boundaries read as painterly ground.
-    a = ground.getchannel("A").filter(ImageFilter.GaussianBlur(.65))
+    a = ground.getchannel("A").filter(ImageFilter.GaussianBlur(1.35))
     ground.putalpha(a)
     os.makedirs(OUTPUT, exist_ok=True)
     ground_path = os.path.join(OUTPUT, "helen-painted-ground.png")
