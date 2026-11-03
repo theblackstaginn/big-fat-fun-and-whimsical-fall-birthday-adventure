@@ -64,3 +64,15 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .rpg-settings p{margin:0 0 8px}
 @media(min-width:760px){.rpg-sheet{left:50%;right:auto;width:min(720px,95vw);transform:translateX(-50%)}.rpg-fullscreen .map-canvas>img{object-fit:contain;background:#33271c}}
 @media print{body.rpg-fullscreen{height:auto;overflow:visible}.rpg-fullscreen .hero-art{position:static;height:auto;overflow:visible}.rpg-fullscreen .map-canvas{position:relative}.rpg-fullscreen .map-canvas>img{height:auto;object-fit:contain}.rpg-fullscreen .rpg-hud,.rpg-shade,.rpg-sheet{display:none!important}}
+
+/* Real Helen satellite overworld, with restrained enchanted-map grading. */
+.rpg-fullscreen .map-canvas #world-map{position:absolute;inset:0;width:100%;height:100%;z-index:1;background:#293e33}
+.rpg-fullscreen .map-canvas .storybook-fallback{position:absolute;inset:0;z-index:0}
+.rpg-fullscreen .map-canvas:not(.world-ready) #world-map{visibility:hidden}
+.rpg-fullscreen .map-canvas.world-ready .storybook-fallback{display:none}
+.rpg-fullscreen .map-canvas.world-ready .quest-trail,.rpg-fullscreen .map-canvas.world-ready .map-hotspots{display:none}
+#world-map .leaflet-tile-pane{filter:saturate(.84) sepia(.1) contrast(1.09)}
+#world-map .leaflet-control-attribution{font-size:9px;background:#f1e6cbdc;color:#493d2e}
+#world-map .leaflet-control-attribution a{color:#493d2e}
+#world-map .leaflet-control-zoom a{background:#34271e;color:#f0d798;border-color:#b98e53}
+#world-map .leaflet-container{background:#293e33}
