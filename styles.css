@@ -118,7 +118,8 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .rpg-fullscreen .map-canvas.portrait-loaded #world-map,
 .rpg-fullscreen .map-canvas.portrait-loaded .storybook-fallback{display:none!important}
 .rpg-fullscreen .map-canvas.portrait-loaded .quest-trail{display:none!important}
-.rpg-fullscreen .map-canvas.portrait-loaded .map-hotspots{display:block!important;z-index:4}
+/* The portrait depicts central Helen only: old SVG chapter pins are not geographically valid here. */
+.rpg-fullscreen .map-canvas.portrait-loaded .map-hotspots{display:none!important;pointer-events:none}
 .rpg-fullscreen .map-canvas.portrait-loaded::after{z-index:3;opacity:.35}
 .rpg-fullscreen .map-canvas.portrait-loaded .map-pin{box-shadow:0 0 0 5px #edc26c27,0 0 24px #ffd17991,0 5px 16px #000b;background:linear-gradient(155deg,#92643b,#4e2f25);border-color:#f7db8f}
 .rpg-fullscreen .map-canvas.portrait-loaded .map-pin .pin-label{border-radius:5px;background:#2d1c15ed;color:#fff0c8}
