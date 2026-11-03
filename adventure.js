@@ -276,6 +276,17 @@ function styleVillageAtlas(map){
    try{window.installHelenLandscaping(map,vectorSource,vegetationBefore)}
    catch{/* The core street map and existing roofs stay usable. */}
   }
+  /* MapLibre's Liberty style leaves landuse=parking unpainted. Restore a clean,
+   * car-free paved surface over the NAIP ground texture while keeping road/path
+   * linework above it. Tree placement already excludes these parking polygons. */
+  const parkingBefore=layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore;
+  try{
+   if(!map.getLayer("birthday-parking-clear"))map.addLayer({
+    id:"birthday-parking-clear",type:"fill",source:vectorSource,"source-layer":"landuse",minzoom:12,
+    filter:["==",["get","class"],"parking"],
+    paint:{"fill-color":"#f5efe3","fill-outline-color":"#d6c6a4","fill-opacity":1}
+   },parkingBefore);
+  }catch{/* Keep source parking clear if the provider omits this optional layer. */}
   /* Overlay real sloping roof geometry only when the lightweight renderer is available.
    * If unsupported or unavailable, MapLibre's native buildings remain in place. */
   if(typeof window.installAlpineRoofLayer==="function"){
