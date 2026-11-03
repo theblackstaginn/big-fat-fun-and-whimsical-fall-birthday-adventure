@@ -110,8 +110,44 @@ function makeAutumnCanopyTile(){
  }
  return ctx.getImageData(0,0,128,128);
 }
+/* Real aerial ground reference, underneath the existing illustrated 3D village.
+ * This uses the same imagery service already present in the Leaflet fallback.
+ * It is deliberately desaturated so roof models and quest markers stay dominant.
+ * Satellite imagery is historical reference, not a live view of Helen. */
+function installAerialVillageGround(map,layers){
+ const rasterId="birthday-real-ground";
+ const sourceId="birthday-aerial-imagery";
+ try{
+  if(map.getLayer(rasterId))return true;
+  if(!map.getSource(sourceId))map.addSource(sourceId,{
+   type:"raster",
+   tiles:["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+   tileSize:256,minzoom:0,maxzoom:19,
+   attribution:"Aerial imagery © Esri, Vantor, Earthstar Geographics and the GIS User Community"
+  });
+  const firstDrawingLayer=layers.find(layer=>layer.type!=="background")?.id;
+  map.addLayer({
+   id:rasterId,type:"raster",source:sourceId,minzoom:14,
+   paint:{
+    "raster-opacity":.88,
+    "raster-saturation":-.38,
+    "raster-contrast":-.04,
+    "raster-brightness-min":.035,
+    "raster-brightness-max":.94,
+    "raster-fade-duration":450
+   }
+  },firstDrawingLayer);
+  return true;
+ }catch{
+  /* Original OpenFreeMap illustrated surface remains the safe fallback. */
+  try{if(map.getLayer(rasterId))map.removeLayer(rasterId)}catch{}
+  return false;
+ }
+}
+
 function styleVillageAtlas(map){
  const style=map.getStyle(),layers=style?.layers||[];
+ const aerialGround=installAerialVillageGround(map,layers);
  /* Warm late-autumn color grading, without losing real roads or river placement. */
  for(const layer of layers){
   const source=layer["source-layer"];
@@ -124,12 +160,12 @@ function styleVillageAtlas(map){
     }else if(source==="landcover"){
      map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
       "wood","#586f50","grass","#a8aa72","sand","#dac79c","wetland","#78927b","#88936a"]);
-     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",.87);
+     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",aerialGround?.15:.87);
     }else if(source==="landuse"){
      map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
       "park","#909f72","residential","#d6c8a7","forest","#6b7855",
       "cemetery","#a29a78","pitch","#b9ae85","#b4ad8f"]);
-     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",.75);
+     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",aerialGround?.12:.75);
     }else if(source==="building"){
      map.setPaintProperty(layer.id,"fill-color","#a78a68");
      map.setPaintProperty(layer.id,"fill-opacity",.9);

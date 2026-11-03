@@ -314,3 +314,18 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
  mix-blend-mode:soft-light;
 }
 .rpg-fullscreen .street-map-frame #rpg-neighborhood-map{background:#aaa88b}
+
+
+/* Leave the imagery/O​SM credits accessible above the mobile RPG toolbar.
+ * This is a positioning tweak only; no interaction or map coordinates change. */
+.rpg-fullscreen #rpg-neighborhood-map .maplibregl-ctrl-bottom-right{
+ bottom:calc(env(safe-area-inset-bottom,0px) + 113px);
+ right:8px;
+}
+.rpg-fullscreen #rpg-neighborhood-map .maplibregl-ctrl-attrib{
+ max-width:calc(100vw - 32px);
+ font-size:9px;
+ background:rgba(31,25,20,.8);
+ color:#f0ddba;
+}
+.rpg-fullscreen #rpg-neighborhood-map .maplibregl-ctrl-attrib a{color:#f1d28f}
