@@ -1,6 +1,6 @@
 # Jess’s Big, Fat, Fun & Whimsical Birthday Adventure
 
-A mobile-first fantasy adventure for Jess’s birthday in Helen, Georgia, on Monday, November 16, 2026. Built as static HTML, CSS, JavaScript, and original SVG artwork for GitHub Pages.
+A mobile-first fantasy adventure for Jess’s birthday in Helen, Georgia, on Monday, November 16, 2026. Built as static HTML, CSS, JavaScript, and original SVG artwork for GitHub Pages. The eight sequential chapters begin with candle-making, go south to Ruby Mae's and Wonderland, then turn north through Helen to an Unicoi Hill Park-area finale. Four illustrated scenes unlock only as their first chapter is reached.
 
 ## Preview locally
 

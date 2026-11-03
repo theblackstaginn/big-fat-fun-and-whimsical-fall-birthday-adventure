@@ -1,40 +1,52 @@
-# Route research and open logistics
+# Jess's Birthday Adventure: route and research
+Updated November 3, 2026. Adventure date: Monday, November 16, 2026.
 
-Checked November 2, 2026. Monday is the relevant business day (November 16). Posted hours can change, especially between seasons; call or check each business shortly before the visit. No walking distances are stated because reliable point-to-point walking distances were not available for every stop. Use the individual Google Maps or Apple Maps links in the chapters for live routing.
+## Confirmed direction
 
-## Practical chapter order
+The day deliberately begins at Crafty Mountain Candle Co. (Brucken Strasse), travels SOUTH to Ruby Mae's and Wonderland on South Main, then turns and continues NORTH through downtown. We finish at the Unicoi Hill Park AREA after the shops, riverside pause, dinner and sweets. This is an intentional early detour to make the time-sensitive workshop first, NOT a fully monotonic south-to-north route. Do not misrepresent it as one-way.
 
-1. **Ruby Mae’s** — opening visit with friends; confirm the meet-up time directly. The Helen visitors bureau lists 8160 S Main Street, Unit A-4.
-2. **Wonderland Antiques & Curiosities** — 8251 S Main Street. It is on the South Main stretch near the opening stop. Its official site lists a phone number but does not publish Monday hours; call before planning around it.
-3. **Crafty Mountain Candle Co.** — downtown. Published Monday hours are 11:30 a.m.–3 p.m. Reservations are recommended, while walk-ins depend on space. Confirm that a candle-making session is actually offered on Monday and reserve a time that leaves room for Ruby Mae’s.
-4. **Curiosity Walk** — The Glassblowing Shop (8600 N Main Street, Unit 1), ZuZu’s Petals Rock Shop (8660 N Main Street), and nearby village storefronts. The Alpine Festival of Arts and Crafts publishes Monday 10 a.m.–6 p.m. The Glassblowing Shop and ZuZu’s listings confirm addresses; their Monday hours should be checked directly because the sources found for hours were third-party listings.
-5. **Chattahoochee pause** — downtown has short river paths, boardwalks, and footbridges rather than one uninterrupted riverwalk. The longer Helen-to-Hardman Heritage Trail is about one mile each way and closes at dusk; keep this birthday stop to a short downtown riverside pause unless there is plenty of daylight.
-6. **The Heidelberg** — 8660 N Main Street. Explore Georgia lists Monday 11 a.m.–9 p.m. and reservations accepted. Confirm a dinner time with the restaurant.
-7. **Hansel & Gretel Candy Kitchen** — 8651 N Main Street. The Helen visitors bureau confirms the address; current Monday hours should be checked with the shop before making it the final stop.
+## Eight sequential chapters
 
-The first two stops are both on South Main; then travel to downtown and park once for the central village, river paths, dinner, and dessert. A downtown walking-map guide describes the central visitor area as about a ten-minute walk end to end; the South Main opening stops are outside that compact central stroll. This order keeps the required Ruby Mae’s opening intact and places the reservation-dependent candle workshop before its posted Monday closing time. If the workshop cannot be booked, skip that chapter and let the afternoon breathe.
+1. **The First Flame — Crafty Mountain Candle Co.**, 705 Brucken Strasse, Building 101. Open Monday 11:30 a.m.–3 p.m. on the business's official site. The candle bar takes approximately an hour and the business recommends a reservation. Try to book the first available session, ideally 11:30 a.m., but do not imply a booking has been made. Allow for cooling or pickup time.
+2. **The Gathering of Friends — Ruby Mae's**, 8160 S Main St, Unit A-4. Head south after candle-making to meet friends and collect the birthday keepsake. Confirm the meet-up time.
+3. **The Cabinet of Curious Things — Wonderland Antiques & Curiosities**, 8251 S Main St. Visit after Ruby Mae's, subject to its Monday hours. Its website does not provide Monday hours; if closed, the outdoor observation clue can be completed without access.
+4. **The Curious Village — Downtown shops**, The Glassblowing Shop at 8600 N Main St, ZuZu's Petals at 8660 N Main St and nearby storefronts. Head north through the village.
+5. **The Chattahoochee Pause**, downtown around the Chattahoochee at River Street / Fussen Platz. Do this before sunset, not on an unlit trail.
+6. **Bavarian Birthday Dinner — The Heidelberg**, 8660 N Main St. Confirm Monday seating/reservation policy and timing.
+7. **The Sweet Interlude — Hansel & Gretel Candy Kitchen**, 8651 N Main St. Check its evening hours and collect a treat on North Main.
+8. **The Moonlit Finale — Unicoi Hill Park area**, N Main St / Pete's Park Rd. Park coordinates approximately 34.70286, -83.73157. After-dark gazebo/park access has not been confirmed; use the publicly accessible Main Street surroundings if the park is closed. No unlit paths or trails.
+
+## Unlockable artwork scene boundaries
+
+- **Scene I · The First Flame:** chapter 1 only; unlocked at the start, all other scenes hidden.
+- **Scene II · The Gathering:** chapters 2 and 3; revealed by completing candle-making.
+- **Scene III · The Curious Village:** chapter 4; revealed by completing Wonderland.
+- **Scene IV · The Lanternlit North End:** chapters 5–8; revealed by completing the Curiosity Walk, including the final Unicoi Hill Park chapter.
+
+Scene images must remain unavailable until their first chapter is unlocked. Keep any standalone downtown art off the first two scenes, since it does not show the South Main locations.
+
+## Open logistics and safety
+
+- Crafty Mountain publishes Monday 11:30 a.m.–3 p.m.; its approximately one-hour candle bar is reservable and it recommends advance booking.
+- Shop hours and the opening time for Wonderland must be confirmed closer to the birthday.
+- Sunset in Helen on November 16 is about 5:29 p.m. EST, civil twilight ends about 5:56 p.m. Avoid river/forest trail use after dark.
+- The preferred night finish is at the town's **Unicoi Hill Park** area, NOT Unicoi State Park outside the village. No access permission for the park itself has been verified for nighttime.
+- Keep street-mapping directions and GPS separate from the fantasy artwork. Only geographic markers are placed on real map coordinates.
+- The route has one early return south after the candle booking, then moves generally north through Helen. No travel times are claimed without a route calculation.
 
 ## Sources
+- [Crafty Mountain official location and Monday hours](https://craftymountain.com/pages/our-location)
+- [Crafty Mountain booking, duration, and candle cooling instructions](https://craftymountain.com/products/candle-bar)
+- [Wonderland official site](https://antiqueshelen.com/)
+- [Ruby Mae's Helen visitors bureau listing](https://helenga.org/ruby-maes-appalachian-alchemy-mountain-mysticism/)
+- [Glassblowing shop](https://helenga.org/glassblowing-shop/)
+- [ZuZu's Petals](https://helenga.org/zuzus-petals-rock-shop/)
+- [Downtown Helen walking map](https://downtownhelen.com/walking-map/)
+- [Unicoi Hill Park map coordinates](https://mapcarta.com/N2780733138)
+- [November 16, 2026 sunset](https://sunrise-sunset.org/us/helen-ga)
 
-- [Ruby Mae’s Appalachian Alchemy & Mountain Mysticism — Helen visitors bureau listing](https://helenga.org/ruby-maes-appalachian-alchemy-mountain-mysticism/) — address and phone.
-- [Wonderland Antiques & Curiosities — official site](https://antiqueshelen.com/) — address, phone, description; no Monday hours posted.
-- [Wonderland Antiques — Helen Chamber listing](https://helenchamber.com/business-directory/wonderland-antiques-and-curiosities/) — address and phone.
-- [Crafty Mountain Candle Co. — location and hours](https://craftymountain.com/pages/our-location) — Monday 11:30 a.m.–3 p.m.
-- [Crafty Mountain Candle Co. — candle bar experience](https://craftymountain.com/products/candle-bar) — advance booking recommended; walk-ins when space allows.
-- [The Glassblowing Shop — Helen visitors bureau listing](https://helenga.org/glassblowing-shop/) — address and phone.
-- [ZuZu’s Petals Rock Shop — Helen visitors bureau listing](https://helenga.org/zuzus-petals-rock-shop/) — address and description.
-- [Alpine Festival of Arts and Crafts — official site](https://alpinefestivalhelen.com/) — address and Monday hours 10 a.m.–6 p.m.
-- [Helen river walk and Heritage Trail guide](https://explorehelen.com/guide/attractions/river-walk/) — downtown river paths and Heritage Trail length/access notes.
-- [Downtown Helen walking map](https://downtownhelen.com/walking-map/) — street layout and an approximate central-downtown walk length; not a route estimate between the South Main stops and central Helen.
-- [Helen-to-Hardman Heritage Trail — Helen visitors bureau](https://helenga.org/helen-to-hardman-heritage-trail/) — trail overview.
-- [The Heidelberg — Explore Georgia listing](https://exploregeorgia.org/helen/food-drink/casual-full-service/the-heidelberg-german-restaurant-pub-music-hall) — Monday hours and reservation availability.
-- [Hansel & Gretel Candy Kitchen — Helen visitors bureau listing](https://helenga.org/hansel-gretel-candy-kitchen/) — address and phone.
-
-## Confirm before the birthday
-
-- Ruby Mae’s meet-up start time with the friends hosting the visit.
-- Wonderland Antiques’ Monday opening and whether it fits before/after the first stop.
-- Candle-making availability, workshop duration, and reservation time on Monday, November 16.
-- Monday hours for the Glassblowing Shop, ZuZu’s Petals, and Hansel & Gretel Candy Kitchen.
-- Dinner reservation/time at The Heidelberg.
-- Weather, sunset, and river-path conditions; the Heritage Trail closes at dusk.
+## Remaining confirmations
+- Book candle workshop (no reservation made yet).
+- Agree on Ruby Mae's meeting time after candle-making.
+- Check Wonderland and other Monday store hours.
+- Confirm Heidelberg seating, candy shop evening hours, and whether the park/gazebo is accessible at night.
