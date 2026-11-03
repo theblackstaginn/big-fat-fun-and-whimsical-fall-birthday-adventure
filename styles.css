@@ -262,3 +262,43 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 @media(prefers-reduced-motion:reduce){
  .rpg-fullscreen .street-map-frame .rpg-neighborhood-pin{animation:none}
 }
+
+
+/* Nearby streets HUD refinement: keep the 3D village visible on mobile.
+   Only the exploration interface changes; map coordinates and quest logic do not. */
+.rpg-fullscreen .nearby-heading{
+ top:calc(env(safe-area-inset-top,0px) + 128px);
+ left:12px;right:12px;max-width:470px;
+ padding:.5rem .75rem .55rem;gap:.08rem;
+ border-radius:10px;
+ box-shadow:0 0 0 2px #261b16b8,0 5px 15px #20140e90;
+}
+.rpg-fullscreen .nearby-heading::before{display:none}
+.rpg-fullscreen .nearby-eyebrow{
+ font-size:.53rem;letter-spacing:.12em;line-height:1.15;
+}
+.rpg-fullscreen .nearby-heading strong{
+ font:700 clamp(1.05rem,4.2vw,1.22rem)/1.14 Georgia,serif;
+}
+.rpg-fullscreen .nearby-heading>span:last-child{
+ font:.61rem/1.3 system-ui,sans-serif;
+}
+.rpg-fullscreen .nearby-view.vector-ready .nearby-note{
+ display:none;
+}
+.rpg-fullscreen .nearby-view:not(.vector-ready) .nearby-note{
+ left:10px;right:10px;
+ padding:.4rem .65rem;
+ font-size:.59rem;line-height:1.35;
+}
+.rpg-fullscreen .nearby-view.vector-ready .map-compass{
+ top:calc(env(safe-area-inset-top,0px) + 218px);
+}
+@media(max-width:480px){
+ .rpg-fullscreen .nearby-heading{
+  top:calc(env(safe-area-inset-top,0px) + 128px);
+  padding:.43rem .68rem .48rem;
+ }
+ .rpg-fullscreen .nearby-heading strong{font-size:1.08rem}
+ .rpg-fullscreen .nearby-heading>span:last-child{font-size:.59rem}
+}
