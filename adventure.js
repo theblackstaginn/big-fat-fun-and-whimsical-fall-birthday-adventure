@@ -224,7 +224,7 @@ function styleVillageAtlas(map){
     id:"birthday-autumn-woods",type:"fill",source:vectorSource,"source-layer":"landcover",minzoom:12,
     filter:["==",["get","class"],"wood"],
     paint:{"fill-pattern":"birthday-autumn-canopy","fill-opacity":.8}
-   },roads?.id||symbolBefore);
+   },vegetationBefore||roads?.id||symbolBefore);
   }
  }catch{/* Woodland texture is optional; vector map remains available. */}
  /* Village paving uses only mapped pedestrian paths and service-lane edges. */
