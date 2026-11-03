@@ -215,7 +215,11 @@ def run():
             if n > 28 and ndvi > .055 and g >= r + 3:
                 cm[x, y] = 255
                 downtown_pixels += 1
-    core_mask = core_mask.filter(ImageFilter.MedianFilter(3))
+    # Close tiny spectral gaps inside lawns, then feather only the ground edges.
+    # The 7 px closing is roughly a 7 m detail at this crop scale; roads and
+    # parking aisles remain open, while grass no longer breaks into tree-like dots.
+    core_mask = core_mask.filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))
+    core_mask = core_mask.filter(ImageFilter.GaussianBlur(1.5))
     rng = random.Random(48117)
     coarse = Image.new("L", (core_width // 24, core_height // 24))
     coarse.putdata([128 + rng.randint(-18, 18)
@@ -229,7 +233,8 @@ def run():
     meadow_pixels = canopy_pixels = 0
     for y in range(core_height):
         for x in range(core_width):
-            if mpx[x, y] < 128:
+            coverage = mpx[x, y]
+            if coverage < 12:
                 continue
             n, r = cn[x, y], cr[x, y]
             ndvi = (n - r) / max(1, n + r)
@@ -238,21 +243,20 @@ def run():
             # woodland palette for high-NDVI patches with strong crown texture.
             woody = ndvi > .32 and contrast > 16
             if woody:
-                base = (49, 76, 46)
+                base = (48, 73, 43)
                 canopy_pixels += 1
             else:
-                base = (126, 158, 82)
+                # Sage and golden green, deliberately distinct from the tree crowns.
+                base = (145, 171, 94)
                 meadow_pixels += 1
-            noise = round((tex[x, y] - 128) * .9)
-            # A fine, deterministic grain keeps open grass readable at mobile
-            # zoom without turning lawn pixels into miniature tree crowns.
-            seed = (x * 374761393 + y * 668265263) & 0xffffffff
-            seed = ((seed ^ (seed >> 13)) * 1274126177) & 0xffffffff
-            grain = ((seed >> 24) - 128) // 20
-            cgpx[x, y] = (max(0, min(255, base[0] + noise + grain)),
-                          max(0, min(255, base[1] + noise // 2 + grain)),
-                          max(0, min(255, base[2] + noise // 3 + grain // 2)), 248)
-    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.6)))
+            # Broad, soft tonal shifts give lawns a painted ground texture instead
+            # of one speckled canopy-like fill.
+            noise = round((tex[x, y] - 128) * .85)
+            cgpx[x, y] = (max(0, min(255, base[0] + noise)),
+                          max(0, min(255, base[1] + noise // 2)),
+                          max(0, min(255, base[2] + noise // 3)),
+                          round(coverage * .96))
+    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.45)))
     core_path = os.path.join(OUTPUT, "helen-painted-ground-downtown.png")
     core_ground.save(core_path, optimize=True)
     print(f"High-resolution downtown ground: meadow={meadow_pixels}, "
