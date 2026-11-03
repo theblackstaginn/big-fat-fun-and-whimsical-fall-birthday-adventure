@@ -30,6 +30,10 @@ jobs:
           mkdir dist
           cp index.html styles.css adventure.js dist/
           cp -R assets dist/assets
+      - name: Render synthetic vegetation from 2023 USDA NAIP
+        run: |
+          python -m pip install Pillow==11.3.0
+          python tools/build-vegetation.py
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
