@@ -155,15 +155,15 @@ def run():
             n, r, g = nirpx[x, y], redpx[x, y], greenpx[x, y]
             if n > 32 and g >= r + 8:
                 clean[x, y] = 255
-    # Broad watercolor-like tonal patches replace per-pixel noise. The source
-    # photograph is never copied into the published texture.
+    # Keep vegetation color even across each mapped patch. A small residual
+    # texture keeps it storybook-like without soft, cloudy color blooms.
     coarse_w, coarse_h = max(4, WIDTH // 12), max(4, HEIGHT // 12)
     texture_rng = random.Random(7319)
     coarse = Image.new("L", (coarse_w, coarse_h))
-    coarse.putdata([128 + texture_rng.randint(-18, 18)
+    coarse.putdata([128 + texture_rng.randint(-6, 6)
                     for _ in range(coarse_w * coarse_h)])
     texture = coarse.resize(im.size, Image.Resampling.BICUBIC).filter(
-        ImageFilter.GaussianBlur(2.0)
+        ImageFilter.GaussianBlur(0.5)
     )
     texture_px = texture.load()
     ground = Image.new("RGBA", im.size, (0, 0, 0, 0))
@@ -194,7 +194,7 @@ def run():
                 base = (119, 139, 92)
                 alpha = 216
             # Gentle fine grain sits beneath the larger watercolor variation.
-            patch = round((texture_px[x, y] - 128) * 0.65)
+            patch = round((texture_px[x, y] - 128) * 0.22)
             grain = ((x * 37 + y * 91 + (x // 7) * 59) % 3) - 1
             noise = patch + grain
             gp[x, y] = (max(0, min(255, base[0] + noise)),
@@ -208,8 +208,8 @@ def run():
         raise RuntimeError(
             "NAIP classification implausible; refusing to publish inaccurate landscaping"
         )
-    # Subtle feathering makes polygon boundaries read as painterly ground.
-    a = ground.getchannel("A").filter(ImageFilter.GaussianBlur(0.55))
+    # A very light edge antialias avoids halos while keeping vegetation borders crisp.
+    a = ground.getchannel("A").filter(ImageFilter.GaussianBlur(0.20))
     ground.putalpha(a)
     decorate_cover(ground, binary, data.getchannel("R"), seed=7319)
     os.makedirs(OUTPUT, exist_ok=True)
@@ -248,19 +248,17 @@ def run():
                 downtown_pixels += 1
                 if ndvi > .32 and contrast > 22:
                     wm[x, y] = 255
-    # Close tiny spectral gaps inside lawns, then feather only the ground edges.
-    # The 7 px closing is roughly a 7 m detail at this crop scale; roads and
-    # parking aisles remain open, while grass no longer breaks into tree-like dots.
+    # Close tiny spectral gaps inside lawns. Keep the binary edge firm so the
+    # painted cover ends cleanly at parking and road margins.
     core_mask = core_mask.filter(ImageFilter.MaxFilter(5)).filter(ImageFilter.MinFilter(5))
-    core_mask = core_mask.filter(ImageFilter.GaussianBlur(0.65))
     # Woodland is a regional texture class, not a pixel-by-pixel tree scatter.
     canopy_mask = canopy_mask.filter(ImageFilter.MedianFilter(5))
     rng = random.Random(48117)
     coarse = Image.new("L", (core_width // 12, core_height // 12))
-    coarse.putdata([128 + rng.randint(-18, 18)
+    coarse.putdata([128 + rng.randint(-6, 6)
                     for _ in range(coarse.width * coarse.height)])
     texture = coarse.resize(core.size, Image.Resampling.BICUBIC).filter(
-        ImageFilter.GaussianBlur(2.0)
+        ImageFilter.GaussianBlur(0.5)
     )
     tex, mpx, canopy_px = texture.load(), core_mask.load(), canopy_mask.load()
     core_ground = Image.new("RGBA", core.size, (0, 0, 0, 0))
@@ -279,13 +277,13 @@ def run():
                          for i in range(3))
             canopy_pixels += round(canopy)
             meadow_pixels += 1 - round(canopy)
-            # Broad, soft tonal shifts give lawns a painted ground texture.
-            noise = round((tex[x, y] - 128) * .62)
+            # Restrained tonal variation keeps lawns consistent while fine marks add grain.
+            noise = round((tex[x, y] - 128) * .18)
             cgpx[x, y] = (max(0, min(255, base[0] + noise)),
                           max(0, min(255, base[1] + noise // 2)),
                           max(0, min(255, base[2] + noise // 3)),
                           round(coverage * .96))
-    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.55)))
+    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.20)))
     decorate_cover(core_ground, core_mask, canopy_mask, seed=48117)
     core_path = os.path.join(OUTPUT, "helen-painted-ground-downtown.png")
     core_ground.save(core_path, optimize=True)

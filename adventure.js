@@ -105,9 +105,9 @@ function installSyntheticHelenGround(map){
  /* Ground images share the landscaping WebGL layer with trees. Keep their
   * transparent alpha so roads, roofs, parking, and water stay unobstructed. */
  map.__birthdayGroundLayers=[
-  {url:new URL("assets/helen-painted-ground.png?v=20261103-ground19",document.baseURI).href,
+  {url:new URL("assets/helen-painted-ground.png?v=20261103-ground20",document.baseURI).href,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],minzoom:12},
-  {url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground19",document.baseURI).href,
+  {url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground20",document.baseURI).href,
    coordinates:[[-83.732,34.708],[-83.717,34.708],[-83.717,34.694],[-83.732,34.694]],minzoom:14}
  ];
  return true;
