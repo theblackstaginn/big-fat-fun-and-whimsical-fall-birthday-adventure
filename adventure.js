@@ -105,19 +105,16 @@ function installSyntheticHelenGround(map,layers){
  const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
  try{
   if(map.getLayer(layerId))return true;
-  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground5",document.baseURI).href;
+  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground6",document.baseURI).href;
   if(!map.getSource(sourceId))map.addSource(sourceId,{
    type:"image",url,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
    attribution:"Synthetic vegetation derived from 2023 USDA NAIP aerial imagery"
   });
-  /* The NAIP image contains only classified vegetation pixels with alpha.
-   * Draw it above landuse/landcover fills so the illustration can be seen, but
-   * below river, street, building, and label layers so mapped features stay clear. */
-  const clearFeatureLayer=layers.find(layer=>{
-   const sourceLayer=layer["source-layer"];
-   return ["waterway","water","transportation","building"].includes(sourceLayer)||layer.type==="symbol";
-  })?.id;
+  /* The NAIP overlay is transparent outside classified vegetation.
+   * Place it above base map fills, while labels remain crisp above it. Roads and
+   * buildings are preserved by the transparent mask and by the OSM outlines. */
+  const clearFeatureLayer=layers.find(layer=>layer.type==="symbol")?.id;
   map.addLayer({id:layerId,type:"raster",source:sourceId,minzoom:12,
    paint:{"raster-opacity":1,"raster-fade-duration":250}},clearFeatureLayer);
   return true;
@@ -127,9 +124,55 @@ function installSyntheticHelenGround(map,layers){
  }
 }
 
+/* A repeating meadow wash gives mapped parks and grass a visible storybook
+ * ground texture even where NAIP classification is soft or partly transparent. */
+function makeAutumnMeadowTile(){
+ const canvas=document.createElement("canvas");
+ canvas.width=canvas.height=128;
+ const ctx=canvas.getContext("2d");
+ if(!ctx)return null;
+ let seed=80421;
+ const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};
+ ctx.fillStyle="#aeb889";ctx.fillRect(0,0,128,128);
+ const blades=["#788a5b","#89996a","#c6bd83","#d2c48d","#94a373"];
+ for(let i=0;i<310;i++){
+  const x=random()*128,y=random()*128,len=2+random()*5;
+  ctx.strokeStyle=blades[Math.floor(random()*blades.length)];
+  ctx.globalAlpha=.24+random()*.24;ctx.lineWidth=.7+random()*.6;
+  for(const ox of [-128,0,128])for(const oy of [-128,0,128]){
+   ctx.beginPath();ctx.moveTo(x+ox,y+oy);ctx.lineTo(x+ox+(random()-.5)*2,y+oy-len);ctx.stroke();
+  }
+ }
+ const leaves=["#bd8751","#d1aa65","#967146"];
+ for(let i=0;i<22;i++){
+  const x=random()*128,y=random()*128;
+  ctx.fillStyle=leaves[Math.floor(random()*leaves.length)];ctx.globalAlpha=.62;
+  for(const ox of [-128,0,128])for(const oy of [-128,0,128]){
+   ctx.beginPath();ctx.ellipse(x+ox,y+oy,1.6,1,.6,0,Math.PI*2);ctx.fill();
+  }
+ }
+ ctx.globalAlpha=1;
+ return ctx.getImageData(0,0,128,128);
+}
 function styleVillageAtlas(map){
  const style=map.getStyle(),layers=style?.layers||[];
  const paintedGround=installSyntheticHelenGround(map,layers);
+ /* Soft illustrated ground detail is used only in mapped park and grass polygons. */
+ try{
+  const meadow=makeAutumnMeadowTile();
+  if(meadow&&!map.hasImage("birthday-autumn-meadow"))map.addImage("birthday-autumn-meadow",meadow,{pixelRatio:2});
+  if(meadow)for(const layer of layers){
+   if(layer.type!=="fill")continue;
+   const source=layer["source-layer"],filter=JSON.stringify(layer.filter||[]);
+   const mappedPark=source==="park";
+   const mappedGrass=source==="landcover"&&filter.includes('"grass"');
+   const mappedGarden=source==="landuse"&&/(park|garden|village_green|grass|meadow|orchard)/.test(filter);
+   if(mappedPark||mappedGrass||mappedGarden){
+    map.setPaintProperty(layer.id,"fill-pattern","birthday-autumn-meadow");
+    map.setPaintProperty(layer.id,"fill-opacity",.78);
+   }
+  }
+ }catch{/* Ground texture is decorative; base map remains usable. */}
  /* Warm late-autumn color grading, without losing real roads or river placement. */
  for(const layer of layers){
   const source=layer["source-layer"];
@@ -142,14 +185,14 @@ function styleVillageAtlas(map){
     }else if(source==="landcover"){
      map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
       "wood","#586f50","grass","#a8aa72","sand","#dac79c","wetland","#78927b","#88936a"]);
-     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",paintedGround?.08:.87);
+     map.setPaintProperty(layer.id,"fill-opacity",paintedGround?.52:.78);
     }else if(source==="landuse"){
      map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
       "park","#909f72","residential","#d6c8a7","forest","#6b7855",
       "cemetery","#a29a78","pitch","#b9ae85","#b4ad8f"]);
      if(!layer.paint?.["fill-pattern"]){
       const softLanduses=["park","garden","village_green","orchard","forest","grass","meadow","cemetery","residential"];
-      map.setPaintProperty(layer.id,"fill-opacity",paintedGround?["case",["in",["get","class"],["literal",softLanduses]],.08,1]:.75);
+      map.setPaintProperty(layer.id,"fill-opacity",paintedGround?["case",["in",["get","class"],["literal",softLanduses]],.42,1]:.75);
      }
     }else if(source==="building"){
      map.setPaintProperty(layer.id,"fill-color","#a78a68");
