@@ -24,7 +24,7 @@
     resolve(vegetationMask);
    };
    image.onerror=()=>resolve(null);
-   image.src=new URL("assets/helen-vegetation-data.png?v=20261103-ground8",document.baseURI).href;
+   image.src=new URL("assets/helen-vegetation-data.png?v=20261103-ground9",document.baseURI).href;
   });
  }
  function hash(a,b,salt=0){

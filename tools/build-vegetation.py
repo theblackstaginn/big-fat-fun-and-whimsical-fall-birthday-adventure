@@ -14,7 +14,7 @@ import sys
 import urllib.parse
 import urllib.request
 
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 WEST, SOUTH, EAST, NORTH = -83.739, 34.691, -83.709, 34.713
 WIDTH, HEIGHT = 1152, 1024
@@ -85,6 +85,31 @@ def run():
     # Preserve narrower downtown lawns and planted strips while removing isolated
     # pixel noise. At this output scale, 3 pixels represent about 7 meters.
     binary = binary.filter(ImageFilter.MedianFilter(3))
+    # Digitized small fairway/putting-green patches from the 2023 NAIP detail
+    # crop around Bavarian Mountain Mini Golf. The crop is 1024 px for
+    # (-83.7237, 34.6965, -83.7205, 34.6995); these are green turf islands,
+    # not the asphalt approaches or roof footprints.
+    turf_crop = {"west": -83.7237, "south": 34.6965,
+                 "east": -83.7205, "north": 34.6995}
+    turf_patches = [
+        [(131.6,466),(153.5,450.6),(178.7,453.9),(190.8,470.3),(176.5,486.8),(149.1,489),(133.8,479.1)],
+        [(194.1,449.5),(224.8,453.9),(244.5,469.2),(237.9,483.5),(211.6,480.2),(195.2,467)],
+        [(253.3,471.4),(279.6,476.9),(303.7,496.7),(293.8,513.1),(270.8,505.4),(254.4,489)],
+        [(300.4,514.2),(327.8,526.3),(346.4,548.2),(342.1,567.9),(321.2,565.7),(303.7,544.9),(290.5,528.4)],
+        [(302.6,567.9),(330,576.7),(337.7,594.2),(320.1,604.1),(301.5,590.9),(290.5,578.9)],
+        [(235.7,599.7),(262,596.4),(280.7,610.7),(274.1,629.3),(251.1,635.9),(231.3,621.6)],
+        [(193,567.9),(212.7,558),(231.3,573.4),(228,593.1),(209.4,600.8),(194.1,589.8)],
+        [(149.1,510.9),(173.2,496.7),(193,513.1),(187.5,532.8),(168.8,542.7),(150.2,530.6)]
+    ]
+    draw = ImageDraw.Draw(binary)
+    for patch in turf_patches:
+        pixels=[]
+        for sx,sy in patch:
+            lon=turf_crop["west"]+sx/1024*(turf_crop["east"]-turf_crop["west"])
+            lat=turf_crop["north"]-sy/1024*(turf_crop["north"]-turf_crop["south"])
+            pixels.append(((lon-WEST)/(EAST-WEST)*WIDTH,
+                           (NORTH-lat)/(NORTH-SOUTH)*HEIGHT))
+        draw.polygon(pixels,fill=255)
     clean = binary.load()
     # Miniature-golf putting surfaces near Ruby Mae's have low NDVI because
     # the maintained turf is sparse/low contrast in 2023 NAIP. Within this
