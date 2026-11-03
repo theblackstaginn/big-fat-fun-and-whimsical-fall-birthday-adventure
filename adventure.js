@@ -44,9 +44,8 @@ const questAnchors=Object.freeze({ruby:[34.700059,-83.721920]});
 function coordinatesFor(chapter){const known=questAnchors[chapter.id];if(known)return Promise.resolve([...known]);const query=chapter.streetQuery||chapter.address;let cache={};try{cache=JSON.parse(localStorage.getItem(geocodeKey)||"{}")}catch{}if(cache[query])return Promise.resolve(cache[query]);if(geocodePending.has(query))return geocodePending.get(query);const task=geocodeChain.then(async()=>{const wait=Math.max(0,1150-(Date.now()-lastGeocodeAt));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));lastGeocodeAt=Date.now();const url=`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=us&q=${encodeURIComponent(query)}`;const response=await fetch(url,{headers:{Accept:"application/json"}});if(!response.ok)throw new Error("Address lookup unavailable");const matches=await response.json();if(!matches.length)throw new Error("This address was not found on the street map");const point=[Number(matches[0].lat),Number(matches[0].lon)];cache[query]=point;try{localStorage.setItem(geocodeKey,JSON.stringify(cache))}catch{}return point});geocodeChain=task.catch(()=>{});geocodePending.set(query,task);task.then(()=>geocodePending.delete(query),()=>geocodePending.delete(query));return task}
 function createMapGrid(L){const Grid=L.GridLayer.extend({createTile(){const tile=document.createElement("canvas"),size=this.getTileSize();tile.width=size.x;tile.height=size.y;const ctx=tile.getContext("2d");ctx.strokeStyle="rgba(102,69,39,.16)";ctx.lineWidth=1;ctx.setLineDash([3,5]);for(let p=0;p<=size.x;p+=48){ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,size.y);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(size.x,p);ctx.stroke()}return tile}});return new Grid({tileSize:256,interactive:false,opacity:.72})}
 
-/* Interactive RPG street atlas: real OSM vector building shapes, roads, and water.
- * MapLibre/OpenFreeMap is optional; Leaflet aerial navigation remains a working fallback.
- * No live Overpass requests and no paid map keys. */
+/* Interactive RPG street atlas: real OSM roads, buildings, and water.
+ * MapLibre/OpenFreeMap provides the 3D village; Leaflet uses car-free OSM tiles as fallback. */
 let neighborhoodMap=null,neighborhoodLoad=null,neighborhoodLibrary=null,neighborhoodPins=[],neighborhoodRequest=0;
 /* Temporary on-screen atlas diagnostic for iPhone / embedded browsers.
  * Reports only map-loading stages, never visitor location or personal data. */
@@ -74,7 +73,7 @@ function loadNeighborhoodLibrary(){
   link.href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css";document.head.append(link);
  }
  // Pin v5.24.0 while diagnosing a real-iOS crash in the v6 neighborhood renderer.
- // The existing Leaflet satellite map remains the safe fallback.
+ // Leaflet uses car-free OpenStreetMap tiles as the safe fallback.
  neighborhoodLibrary=new Promise((resolve,reject)=>{
   const script=document.createElement("script");
   script.src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js";
@@ -86,7 +85,7 @@ function loadNeighborhoodLibrary(){
  return neighborhoodLibrary;
 }
 /* Autumn alpine environment: enhancements stay in the vector map only.
- * The real streets, quest pins, saved progress and aerial fallback are untouched. */
+ * Real streets, quest pins, and saved progress remain intact. */
 function makeAutumnCanopyTile(){
  const canvas=document.createElement("canvas");
  canvas.width=canvas.height=128;
@@ -110,44 +109,31 @@ function makeAutumnCanopyTile(){
  }
  return ctx.getImageData(0,0,128,128);
 }
-/* Real aerial ground reference, underneath the existing illustrated 3D village.
- * This uses the same imagery service already present in the Leaflet fallback.
- * It is deliberately desaturated so roof models and quest markers stay dominant.
- * Satellite imagery is historical reference, not a live view of Helen. */
-function installAerialVillageGround(map,layers){
- const rasterId="birthday-real-ground";
- const sourceId="birthday-aerial-imagery";
+/* Synthetic, car-free ground cover classified from 2023 USDA NAIP.
+ * OSM roads, buildings, and water are drawn above this transparent image. */
+function installSyntheticHelenGround(map,layers){
+ const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
  try{
-  if(map.getLayer(rasterId))return true;
+  if(map.getLayer(layerId))return true;
+  const url=new URL("assets/helen-painted-ground.png",document.baseURI).href;
   if(!map.getSource(sourceId))map.addSource(sourceId,{
-   type:"raster",
-   tiles:["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
-   tileSize:256,minzoom:0,maxzoom:19,
-   attribution:"Aerial imagery © Esri, Vantor, Earthstar Geographics and the GIS User Community"
+   type:"image",url,
+   coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
+   attribution:"Synthetic vegetation derived from 2023 USDA NAIP aerial imagery"
   });
   const firstDrawingLayer=layers.find(layer=>layer.type!=="background")?.id;
-  map.addLayer({
-   id:rasterId,type:"raster",source:sourceId,minzoom:14,
-   paint:{
-    "raster-opacity":.88,
-    "raster-saturation":-.38,
-    "raster-contrast":-.04,
-    "raster-brightness-min":.035,
-    "raster-brightness-max":.94,
-    "raster-fade-duration":450
-   }
-  },firstDrawingLayer);
+  map.addLayer({id:layerId,type:"raster",source:sourceId,minzoom:12,
+   paint:{"raster-opacity":1,"raster-fade-duration":250}},firstDrawingLayer);
   return true;
  }catch{
-  /* Original OpenFreeMap illustrated surface remains the safe fallback. */
-  try{if(map.getLayer(rasterId))map.removeLayer(rasterId)}catch{}
+  try{if(map.getLayer(layerId))map.removeLayer(layerId)}catch{}
   return false;
  }
 }
 
 function styleVillageAtlas(map){
  const style=map.getStyle(),layers=style?.layers||[];
- const aerialGround=installAerialVillageGround(map,layers);
+ const paintedGround=installSyntheticHelenGround(map,layers);
  /* Warm late-autumn color grading, without losing real roads or river placement. */
  for(const layer of layers){
   const source=layer["source-layer"];
@@ -160,12 +146,15 @@ function styleVillageAtlas(map){
     }else if(source==="landcover"){
      map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
       "wood","#586f50","grass","#a8aa72","sand","#dac79c","wetland","#78927b","#88936a"]);
-     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",aerialGround?.15:.87);
+     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",paintedGround?.08:.87);
     }else if(source==="landuse"){
      map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
       "park","#909f72","residential","#d6c8a7","forest","#6b7855",
       "cemetery","#a29a78","pitch","#b9ae85","#b4ad8f"]);
-     if(!layer.paint?.["fill-pattern"])map.setPaintProperty(layer.id,"fill-opacity",aerialGround?.12:.75);
+     if(!layer.paint?.["fill-pattern"]){
+      const softLanduses=["park","garden","village_green","orchard","forest","grass","meadow","cemetery","residential"];
+      map.setPaintProperty(layer.id,"fill-opacity",paintedGround?["case",["in",["get","class"],["literal",softLanduses]],.08,1]:.75);
+     }
     }else if(source==="building"){
      map.setPaintProperty(layer.id,"fill-color","#a78a68");
      map.setPaintProperty(layer.id,"fill-opacity",.9);
@@ -315,7 +304,7 @@ async function renderVillageAtlas(center,features){
  setTimeout(()=>{const node=document.querySelector("#atlas-diagnostic");if(node&&node.textContent==="ATLAS CHECK: Vector neighborhood visible")node.hidden=true},2200);
 }
 
-function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community · Vector detail © <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
+function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
 async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);renderVillageAtlas(current.point,points).catch(error=>{showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true)})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
 function updateNearby(){const wasVisited=completed.includes(selected.id);document.querySelector("#nearby-context").textContent=wasVisited?"REAL STREETS · VISITED CHAPTER":"REAL STREETS · CURRENT CHAPTER";document.querySelector("#nearby-place").textContent=selected.title;document.querySelector("#nearby-address").textContent=selected.address;if(document.querySelector("#nearby-view").hidden)return;renderStreetMap().catch(error=>{setStreetStatus(`${error.message}. Use the chapter’s directions below.`)})}
 function renderProgress(){currentIndex=Math.min(completed.length,chapters.length-1);if(!completed.includes(selected.id)&&chapters.indexOf(selected)>currentIndex)selected=chapters[currentIndex];const count=completed.length;document.querySelector("#progress-count").textContent=`${count} of ${chapters.length} places visited`;document.querySelector(".progress-track").setAttribute("aria-valuenow",String(count));document.querySelector("#progress-fill").style.width=`${count/chapters.length*100}%`;document.querySelector("#progress-message").textContent=count===chapters.length?"Adventure complete. Jess has explored the whole map. Roll credits; cue kisses.":count===0?"The opening place is revealed. Explore it to discover the path ahead.":`${count} place${count===1?"":"s"} explored. A new destination has appeared on your map.`;renderList();renderMap();renderDetail();updateNearby()}
@@ -366,12 +355,12 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
 })();
 
 
-/* Geographically grounded overworld: real satellite imagery, never invented street placement. */
+/* Geographically grounded overworld: real street placement with a car-free map fallback. */
 let worldMap=null,worldPins=null,worldRequest=0;
 function initWorldMap(L){
  if(worldMap)return;
  worldMap=L.map("world-map",{center:helenCenter,zoom:15,minZoom:12,maxZoom:19,zoomControl:false,scrollWheelZoom:false,preferCanvas:true});
- L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community",crossOrigin:true}).addTo(worldMap);
+ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",crossOrigin:true}).addTo(worldMap);
  worldPins=L.layerGroup().addTo(worldMap);
  L.control.zoom({position:"topright"}).addTo(worldMap);
  worldMap.whenReady(()=>document.querySelector(".map-canvas").classList.add("world-ready"));

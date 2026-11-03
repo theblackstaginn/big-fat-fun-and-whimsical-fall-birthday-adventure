@@ -6,10 +6,27 @@
  "use strict";
  const WORLD=40075016.68557849, TAU=Math.PI*2;
  const PALETTE=[
-  [0.57,.39,.18],[.67,.37,.17],[.72,.47,.20],
-  [.47,.47,.24],[.39,.44,.24],[.57,.25,.17],
-  [.37,.46,.31],[.30,.40,.32]
+  [.67,.37,.17],[.76,.49,.20],[.77,.60,.29],[.59,.39,.20],
+  [.48,.48,.25],[.55,.28,.18],[.36,.46,.31],[.29,.40,.33]
  ];
+ const EXTENT={west:-83.739,south:34.691,east:-83.709,north:34.713};
+ let vegetationMask=null;
+ function loadVegetationMask(){
+  return new Promise(resolve=>{
+   const image=new Image();
+   image.onload=()=>{
+    try{
+     const canvas=document.createElement("canvas");canvas.width=image.naturalWidth;canvas.height=image.naturalHeight;
+     const ctx=canvas.getContext("2d",{willReadFrequently:true});
+     if(!ctx)throw new Error("Canvas unavailable");
+     ctx.drawImage(image,0,0);vegetationMask={width:canvas.width,height:canvas.height,data:ctx.getImageData(0,0,canvas.width,canvas.height).data};
+    }catch{vegetationMask=null}
+    resolve(vegetationMask);
+   };
+   image.onerror=()=>resolve(null);
+   image.src=new URL("assets/helen-vegetation-data.png",document.baseURI).href;
+  });
+ }
  function hash(a,b,salt=0){
   let n=(Math.imul(a,374761393)+Math.imul(b,668265263)+Math.imul(salt,1442695041))|0;
   n=Math.imul(n^(n>>>13),1274126177);
@@ -111,44 +128,82 @@
   const buildings=[];
   for(const feature of features.building.slice(0,300))
    for(const poly of polygons(feature))buildings.push(poly);
+  const hardscape=[],hardscapeClasses=new Set(["parking","retail","commercial","industrial","construction","garages"]);
+  for(const feature of features.landuse.slice(0,180)){
+   const cls=String(feature.properties?.class||"").toLowerCase();
+   if(hardscapeClasses.has(cls))for(const poly of polygons(feature))hardscape.push(poly);
+  }
   const waters=[];
   for(const feature of features.water.slice(0,100))
    for(const poly of polygons(feature))waters.push(poly);
   const roads=lineSegments(features.transportation,view);
   const trees=[],occupied=new Set();
   let attempts=0;
-  /* Fixed world-grid sampling keeps tree placements stable while panning. */
-  for(const {kind,rings} of green){
-   if(trees.length>=110||attempts>=8500)break;
-   const outer=rings[0],xs=outer.map(p=>p[0]),ys=outer.map(p=>p[1]);
-   const step=kind==="wood"?14:kind==="park"?18:21;
-   const keep=kind==="wood"?.78:kind==="park"?.42:.23;
-   const minX=Math.max(view.minX,Math.min(...xs)),maxX=Math.min(view.maxX,Math.max(...xs));
-   const minY=Math.max(view.minY,Math.min(...ys)),maxY=Math.min(view.maxY,Math.max(...ys));
-   for(let gy=Math.floor(minY/step);gy<=Math.floor(maxY/step)&&trees.length<110&&attempts<8500;gy++){
-    for(let gx=Math.floor(minX/step);gx<=Math.floor(maxX/step)&&trees.length<110&&attempts<8500;gx++){
+  function addTree(px,py,kind,gx,gy){
+   if(trees.length>=220||px<view.minX||px>view.maxX||py<view.minY||py>view.maxY)return;
+   const key=Math.round(px/5)+":"+Math.round(py/5);
+   if(occupied.has(key))return;
+   if(waters.some(poly=>shapeContains([px,py],poly)||shapeEdgeDistance([px,py],poly)<5.5))return;
+   if(buildings.some(poly=>shapeContains([px,py],poly)||shapeEdgeDistance([px,py],poly)<6.5))return;
+   if(hardscape.some(poly=>shapeContains([px,py],poly)||shapeEdgeDistance([px,py],poly)<4.5))return;
+   if(roads.some(seg=>distSegment([px,py],seg.a,seg.b)<seg.width))return;
+   if(trees.some(t=>Math.hypot(t.x-px,t.y-py)<8.8))return;
+   const [lon,lat]=fromMercator(px,py);
+   if(!view.bounds.contains([lon,lat]))return;
+   occupied.add(key);
+   const variant=hash(gx,gy,113),size=.78+.48*hash(gx,gy,171);
+   trees.push({x:px,y:py,variant:variant<.20?"pine":variant<.34?"shrub":"deciduous",
+    size,color:PALETTE[Math.floor(hash(gx,gy,203)*PALETTE.length)]});
+  }
+  if(vegetationMask){
+   const b=view.bounds,w=vegetationMask.width,h=vegetationMask.height,d=vegetationMask.data;
+   const x0=Math.max(0,Math.floor((b.getWest()-EXTENT.west)/(EXTENT.east-EXTENT.west)*w));
+   const x1=Math.min(w-1,Math.ceil((b.getEast()-EXTENT.west)/(EXTENT.east-EXTENT.west)*w));
+   const y0=Math.max(0,Math.floor((EXTENT.north-b.getNorth())/(EXTENT.north-EXTENT.south)*h));
+   const y1=Math.min(h-1,Math.ceil((EXTENT.north-b.getSouth())/(EXTENT.north-EXTENT.south)*h));
+   const candidates=[],sampleStep=6;
+   for(let gy=Math.floor(y0/sampleStep);gy<=Math.floor(y1/sampleStep)&&attempts<12000;gy++){
+    for(let gx=Math.floor(x0/sampleStep);gx<=Math.floor(x1/sampleStep)&&attempts<12000;gx++){
      attempts++;
-     if(hash(gx,gy,31)>keep)continue;
-     const px=(gx+.16+.68*hash(gx,gy,67))*step;
-     const py=(gy+.16+.68*hash(gx,gy,91))*step;
-     const p=[px,py],key=Math.round(px/5)+":"+Math.round(py/5);
-     if(occupied.has(key)||px<view.minX||px>view.maxX||py<view.minY||py>view.maxY)continue;
-     if(!shapeContains(p,rings)||shapeEdgeDistance(p,rings)<(kind==="grass"?3:2.3))continue;
-     if(waters.some(poly=>shapeContains(p,poly)||shapeEdgeDistance(p,poly)<2.8))continue;
-     if(buildings.some(poly=>shapeContains(p,poly)||shapeEdgeDistance(p,poly)<4.5))continue;
-     if(roads.some(seg=>distSegment(p,seg.a,seg.b)<seg.width))continue;
-     if(trees.some(t=>Math.hypot(t.x-px,t.y-py)<8))continue;
-     const [lon,lat]=fromMercator(px,py);
-     if(!view.bounds.contains([lon,lat]))continue;
-     occupied.add(key);
-     const variant=hash(gx,gy,113),size=.76+.51*hash(gx,gy,171);
-     trees.push({x:px,y:py,variant:variant<.22?"pine":variant<.37?"shrub":"deciduous",
-      size,color:PALETTE[Math.floor(hash(gx,gy,203)*PALETTE.length)]});
+     const ix=Math.min(w-1,gx*sampleStep+Math.floor(hash(gx,gy,267)*sampleStep));
+     const iy=Math.min(h-1,gy*sampleStep+Math.floor(hash(gx,gy,311)*sampleStep));
+     if(d[(iy*w+ix)*4]!==205)continue;
+     const lon=EXTENT.west+(ix+.5)/w*(EXTENT.east-EXTENT.west);
+     const lat=EXTENT.north-(iy+.5)/h*(EXTENT.north-EXTENT.south);
+     const [mx,my]=mercator([lon,lat]);
+     candidates.push({x:mx,y:my,gx,gy,rank:hash(gx,gy,419)});
+    }
+   }
+   candidates.sort((a,b)=>a.rank-b.rank);
+   for(const candidate of candidates){
+    if(trees.length>=220)break;
+    if(candidate.rank>.82)continue;
+    addTree(candidate.x,candidate.y,"wood",candidate.gx,candidate.gy);
+   }
+  }else{
+   /* If NAIP is unavailable, use mapped woodland, parks, and grass as the safe fallback. */
+   for(const {kind,rings} of green){
+    if(trees.length>=220||attempts>=8500)break;
+    const outer=rings[0],xs=outer.map(p=>p[0]),ys=outer.map(p=>p[1]);
+    const step=kind==="wood"?14:kind==="park"?18:21;
+    const keep=kind==="wood"?.78:kind==="park"?.42:.23;
+    const minX=Math.max(view.minX,Math.min(...xs)),maxX=Math.min(view.maxX,Math.max(...xs));
+    const minY=Math.max(view.minY,Math.min(...ys)),maxY=Math.min(view.maxY,Math.max(...ys));
+    for(let gy=Math.floor(minY/step);gy<=Math.floor(maxY/step)&&trees.length<220&&attempts<8500;gy++){
+     for(let gx=Math.floor(minX/step);gx<=Math.floor(maxX/step)&&trees.length<220&&attempts<8500;gx++){
+      attempts++;
+      if(hash(gx,gy,31)>keep)continue;
+      const px=(gx+.16+.68*hash(gx,gy,67))*step;
+      const py=(gy+.16+.68*hash(gx,gy,91))*step,p=[px,py];
+      if(px<view.minX||px>view.maxX||py<view.minY||py>view.maxY||!shapeContains(p,rings))continue;
+      if(shapeEdgeDistance(p,rings)<(kind==="grass"?3:2.3))continue;
+      addTree(px,py,kind,gx,gy);
+     }
     }
    }
   }
   return {trees,features:{greens:green.length,buildingMasks:buildings.length,
-    waterMasks:waters.length,roadSegments:roads.length},attempts};
+    hardscapeMasks:hardscape.length,waterMasks:waters.length,roadSegments:roads.length},attempts};
  }
  function tri(out,a,b,c,col,shade=1){
   for(const p of [a,b,c]){
@@ -242,7 +297,7 @@
     this.uMatrix=gl.getUniformLocation(program,"u_matrix");
     this.count=0;this.lastKey=null;
     this.refresh=()=>{
-     if(map.getZoom()<15.3){this.count=0;this.lastKey=null;return}
+     if(map.getZoom()<14.8){this.count=0;this.lastKey=null;return}
      const center=map.getCenter();
      const key=[center.lng.toFixed(5),center.lat.toFixed(5),map.getZoom().toFixed(2)].join("|");
      const found=collectTrees(map,vectorSource),trees=found.trees;
@@ -265,6 +320,7 @@
     };
     map.on("idle",this.refresh);map.on("moveend",this.refresh);
     this.refresh();
+    loadVegetationMask().then(mask=>{if(mask){this.lastKey=null;this.refresh()}});
    },
    render(gl,args){
     if(!this.count||!this.origin)return;
