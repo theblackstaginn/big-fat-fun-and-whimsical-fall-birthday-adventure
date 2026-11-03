@@ -67,18 +67,22 @@ function showAtlasDiagnostic(message,failed=false){
  status.hidden=false;
 }
 function loadNeighborhoodLibrary(){
+ if(window.maplibregl&&typeof window.maplibregl.Map==="function")return Promise.resolve(window.maplibregl);
  if(neighborhoodLibrary)return neighborhoodLibrary;
  if(!document.querySelector("#maplibre-css")){
   const link=document.createElement("link");link.rel="stylesheet";link.id="maplibre-css";
-  link.href="https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.css";document.head.append(link);
+  link.href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css";document.head.append(link);
  }
- // MapLibre GL JS v6 is ESM-only. The old dist/maplibre-gl.js UMD file does not exist.
- neighborhoodLibrary=import("https://unpkg.com/maplibre-gl@6.16.0/dist/maplibre-gl.mjs")
-  .then(library=>{
-   if(typeof library.Map!=="function"||typeof library.Marker!=="function")throw new Error("MapLibre module exports unavailable");
-   return library;
-  })
-  .catch(error=>{neighborhoodLibrary=null;throw error});
+ // Pin v5.24.0 while diagnosing a real-iOS crash in the v6 neighborhood renderer.
+ // The existing Leaflet satellite map remains the safe fallback.
+ neighborhoodLibrary=new Promise((resolve,reject)=>{
+  const script=document.createElement("script");
+  script.src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js";
+  script.onload=()=>window.maplibregl&&typeof window.maplibregl.Map==="function"
+   ?resolve(window.maplibregl):reject(new Error("Compatible atlas library did not initialize"));
+  script.onerror=()=>reject(new Error("Compatible atlas library could not load"));
+  document.head.append(script);
+ }).catch(error=>{neighborhoodLibrary=null;throw error});
  return neighborhoodLibrary;
 }
 function styleVillageAtlas(map){
