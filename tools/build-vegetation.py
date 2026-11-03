@@ -204,22 +204,29 @@ def run():
     chigh = cred.filter(ImageFilter.MaxFilter(5)).load()
     clow = cred.filter(ImageFilter.MinFilter(5)).load()
     core_mask = Image.new("L", core.size, 0)
-    cm = core_mask.load()
+    canopy_mask = Image.new("L", core.size, 0)
+    cm, wm = core_mask.load(), canopy_mask.load()
     downtown_pixels = 0
     for y in range(core_height):
         for x in range(core_width):
             n, r, g = cn[x, y], cr[x, y], cg[x, y]
             ndvi = (n - r) / max(1, n + r)
+            contrast = chigh[x, y] - clow[x, y]
             # NIR response plus a visible green advantage separates lawns from
             # asphalt, pale roofs, and parking surfaces in the dense street grid.
             if n > 28 and ndvi > .055 and g >= r + 3:
                 cm[x, y] = 255
                 downtown_pixels += 1
+                if ndvi > .32 and contrast > 22:
+                    wm[x, y] = 255
     # Close tiny spectral gaps inside lawns, then feather only the ground edges.
     # The 7 px closing is roughly a 7 m detail at this crop scale; roads and
     # parking aisles remain open, while grass no longer breaks into tree-like dots.
     core_mask = core_mask.filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))
     core_mask = core_mask.filter(ImageFilter.GaussianBlur(1.5))
+    # Woodland is a regional texture class, not a pixel-by-pixel tree scatter.
+    canopy_mask = canopy_mask.filter(ImageFilter.MedianFilter(7))
+    canopy_mask = canopy_mask.filter(ImageFilter.GaussianBlur(2.8))
     rng = random.Random(48117)
     coarse = Image.new("L", (core_width // 24, core_height // 24))
     coarse.putdata([128 + rng.randint(-18, 18)
@@ -227,7 +234,7 @@ def run():
     texture = coarse.resize(core.size, Image.Resampling.BICUBIC).filter(
         ImageFilter.GaussianBlur(6)
     )
-    tex, mpx = texture.load(), core_mask.load()
+    tex, mpx, canopy_px = texture.load(), core_mask.load(), canopy_mask.load()
     core_ground = Image.new("RGBA", core.size, (0, 0, 0, 0))
     cgpx = core_ground.load()
     meadow_pixels = canopy_pixels = 0
@@ -236,22 +243,16 @@ def run():
             coverage = mpx[x, y]
             if coverage < 12:
                 continue
-            n, r = cn[x, y], cr[x, y]
-            ndvi = (n - r) / max(1, n + r)
-            contrast = chigh[x, y] - clow[x, y]
-            # Smooth, healthy vegetation reads as lawn/meadow. Reserve the dark
-            # woodland palette for high-NDVI patches with strong crown texture.
-            woody = ndvi > .32 and contrast > 16
-            if woody:
-                base = (48, 73, 43)
-                canopy_pixels += 1
-            else:
-                # Sage and golden green, deliberately distinct from the tree crowns.
-                base = (145, 171, 94)
-                meadow_pixels += 1
-            # Broad, soft tonal shifts give lawns a painted ground texture instead
-            # of one speckled canopy-like fill.
-            noise = round((tex[x, y] - 128) * .85)
+            # Blend broad class patches so canopy stays woodland-colored while
+            # smooth green areas become continuous meadow instead of tree speckles.
+            canopy = canopy_px[x, y] / 255
+            grass_rgb, wood_rgb = (145, 171, 94), (48, 73, 43)
+            base = tuple(round(grass_rgb[i] * (1 - canopy) + wood_rgb[i] * canopy)
+                         for i in range(3))
+            canopy_pixels += round(canopy)
+            meadow_pixels += 1 - round(canopy)
+            # Broad, soft tonal shifts give lawns a painted ground texture.
+            noise = round((tex[x, y] - 128) * .62)
             cgpx[x, y] = (max(0, min(255, base[0] + noise)),
                           max(0, min(255, base[1] + noise // 2)),
                           max(0, min(255, base[2] + noise // 3)),
