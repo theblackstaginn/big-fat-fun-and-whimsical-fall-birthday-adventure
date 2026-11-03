@@ -67,6 +67,7 @@ def run():
     nir, red, green = im.split()
     nirpx = nir.load()
     redpx = red.load()
+    greenpx = green.load()
     # Small-window contrast separates textured tree crowns from smooth lawns.
     high = red.filter(ImageFilter.MaxFilter(5)).load()
     low = red.filter(ImageFilter.MinFilter(5)).load()
