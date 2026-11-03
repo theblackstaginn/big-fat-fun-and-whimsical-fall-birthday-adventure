@@ -105,7 +105,7 @@ function installSyntheticHelenGround(map,layers){
  const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
  try{
   if(map.getLayer(layerId))return true;
-  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground9",document.baseURI).href;
+  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground10",document.baseURI).href;
   if(!map.getSource(sourceId))map.addSource(sourceId,{
    type:"image",url,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
@@ -166,7 +166,7 @@ function styleVillageAtlas(map){
    const source=layer["source-layer"],filter=JSON.stringify(layer.filter||[]);
    const mappedPark=source==="park";
    const mappedGrass=source==="landcover"&&filter.includes('"grass"');
-   const mappedGarden=source==="landuse"&&/(park|garden|village_green|grass|meadow|orchard)/.test(filter);
+   const mappedGarden=source==="landuse"&&/(park|garden|village_green|grass|meadow|orchard|pitch)/.test(filter);
    if(mappedPark||mappedGrass||mappedGarden){
     map.setPaintProperty(layer.id,"fill-pattern","birthday-autumn-meadow");
     map.setPaintProperty(layer.id,"fill-opacity",.78);
@@ -189,7 +189,7 @@ function styleVillageAtlas(map){
     }else if(source==="landuse"){
      map.setPaintProperty(layer.id,"fill-color",["match",["get","class"],
       "park","#909f72","residential","#d6c8a7","forest","#6b7855",
-      "cemetery","#a29a78","pitch","#b9ae85","#b4ad8f"]);
+      "cemetery","#a29a78","pitch","#91a76b","#b4ad8f"]);
      if(!layer.paint?.["fill-pattern"]){
       const softLanduses=["park","garden","village_green","orchard","forest","grass","meadow","cemetery","residential"];
       map.setPaintProperty(layer.id,"fill-opacity",paintedGround?["case",["in",["get","class"],["literal",softLanduses]],.42,1]:.75);
