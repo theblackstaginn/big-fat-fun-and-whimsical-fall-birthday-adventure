@@ -103,23 +103,31 @@ function makeAutumnCanopyTile(){
  * OSM roads, buildings, and water are drawn above this transparent image. */
 function installSyntheticHelenGround(map,layers){
  const layerId="birthday-painted-ground",sourceId="birthday-painted-ground-source";
+ const coreLayerId="birthday-painted-ground-downtown",coreSourceId="birthday-painted-ground-downtown-source";
+ const clearFeatureLayer=layers.find(layer=>["transportation","building"].includes(layer["source-layer"])||layer.type==="symbol")?.id;
  try{
-  if(map.getLayer(layerId))return true;
-  const url=new URL("assets/helen-painted-ground.png?v=20261103-ground10",document.baseURI).href;
   if(!map.getSource(sourceId))map.addSource(sourceId,{
-   type:"image",url,
+   type:"image",url:new URL("assets/helen-painted-ground.png?v=20261103-ground11",document.baseURI).href,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],
    attribution:"Synthetic vegetation derived from 2023 USDA NAIP aerial imagery"
   });
-  /* The NAIP overlay is transparent outside classified vegetation.
-   * Place it above base map fills, while labels remain crisp above it. Roads and
-   * buildings are preserved by the transparent mask and by the OSM outlines. */
-  const clearFeatureLayer=layers.find(layer=>["transportation","building"].includes(layer["source-layer"])||layer.type==="symbol")?.id;
-  map.addLayer({id:layerId,type:"raster",source:sourceId,minzoom:12,
+  if(!map.getLayer(layerId))map.addLayer({id:layerId,type:"raster",source:sourceId,minzoom:12,
    paint:{"raster-opacity":1,"raster-fade-duration":250}},clearFeatureLayer);
+  /* Higher-resolution NAIP classification preserves small lawns and planting
+   * beds throughout the playable downtown while streets, roofs, and parking
+   * remain clear above the transparent synthetic ground texture. */
+  if(!map.getSource(coreSourceId))map.addSource(coreSourceId,{
+   type:"image",url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground11",document.baseURI).href,
+   coordinates:[[-83.7255,34.7015],[-83.7185,34.7015],[-83.7185,34.6955],[-83.7255,34.6955]],
+   attribution:"Synthetic downtown ground derived from 2023 USDA NAIP aerial imagery"
+  });
+  if(!map.getLayer(coreLayerId))map.addLayer({id:coreLayerId,type:"raster",source:coreSourceId,minzoom:14,
+   paint:{"raster-opacity":1,"raster-fade-duration":180}},clearFeatureLayer);
   return true;
  }catch{
-  try{if(map.getLayer(layerId))map.removeLayer(layerId)}catch{}
+  for(const id of [coreLayerId,layerId]){
+   try{if(map.getLayer(id))map.removeLayer(id)}catch{}
+  }
   return false;
  }
 }

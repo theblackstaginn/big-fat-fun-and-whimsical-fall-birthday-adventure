@@ -25,12 +25,13 @@ SOURCES = (
 )
 
 
-def fetch_false_color():
+def fetch_false_color(west=WEST, south=SOUTH, east=EAST, north=NORTH,
+                      width=WIDTH, height=HEIGHT):
     """Ask ArcGIS to export bands NIR, RED, GREEN as the RGB channels."""
     params = urllib.parse.urlencode({
-        "bbox": f"{WEST},{SOUTH},{EAST},{NORTH}",
+        "bbox": f"{west},{south},{east},{north}",
         "bboxSR": "4326", "imageSR": "4326",
-        "size": f"{WIDTH},{HEIGHT}",
+        "size": f"{width},{height}",
         "format": "png32",
         "pixelType": "U8",
         "bandIds": "3,0,1",
@@ -51,8 +52,8 @@ def fetch_false_color():
                 if not raw.startswith(b"\x89PNG"):
                     raise RuntimeError(f"Not PNG: {raw[:180]!r}")
             im = Image.open(io.BytesIO(raw)).convert("RGB")
-            if im.size != (WIDTH, HEIGHT):
-                raise RuntimeError(f"Unexpected imagery size {im.size}")
+            if im.size != (width, height):
+                raise RuntimeError(f"Unexpected imagery size {im.size}; expected {(width, height)}")
             print(f"NAIP source: {endpoint}; {len(raw)} source bytes")
             return im
         except Exception as e:
@@ -191,6 +192,60 @@ def run():
     for name in (ground_path, mask_path):
         print(f"  {name}: {os.path.getsize(name)} bytes")
     print("NAIP extent:", WEST, SOUTH, EAST, NORTH)
+    # A second, finer synthetic ground layer covers the whole playable downtown.
+    # The broad map is ~2.5 m/pixel, too coarse for narrow hotel lawns and planted
+    # strips. This 0.5 m/pixel NAIP crop preserves those small greens without
+    # publishing photographic imagery.
+    core_west, core_south, core_east, core_north = -83.7255, 34.6955, -83.7185, 34.7015
+    core_width = core_height = 1536
+    core = fetch_false_color(core_west, core_south, core_east, core_north,
+                             core_width, core_height)
+    cnir, cred, cgreen = core.split()
+    cn, cr, cg = cnir.load(), cred.load(), cgreen.load()
+    chigh = cred.filter(ImageFilter.MaxFilter(5)).load()
+    clow = cred.filter(ImageFilter.MinFilter(5)).load()
+    core_mask = Image.new("L", core.size, 0)
+    cm = core_mask.load()
+    downtown_pixels = 0
+    for y in range(core_height):
+        for x in range(core_width):
+            n, r, g = cn[x, y], cr[x, y], cg[x, y]
+            ndvi = (n - r) / max(1, n + r)
+            # NIR response plus a visible green advantage separates lawns from
+            # asphalt, pale roofs, and parking surfaces in the dense street grid.
+            if n > 28 and ndvi > .055 and g >= r + 3:
+                cm[x, y] = 255
+                downtown_pixels += 1
+    core_mask = core_mask.filter(ImageFilter.MedianFilter(3))
+    rng = random.Random(48117)
+    coarse = Image.new("L", (core_width // 24, core_height // 24))
+    coarse.putdata([128 + rng.randint(-18, 18)
+                    for _ in range(coarse.width * coarse.height)])
+    texture = coarse.resize(core.size, Image.Resampling.BICUBIC).filter(
+        ImageFilter.GaussianBlur(6)
+    )
+    tex, mpx = texture.load(), core_mask.load()
+    core_ground = Image.new("RGBA", core.size, (0, 0, 0, 0))
+    cgpx = core_ground.load()
+    for y in range(core_height):
+        for x in range(core_width):
+            if mpx[x, y] < 128:
+                continue
+            n, r = cn[x, y], cr[x, y]
+            ndvi = (n - r) / max(1, n + r)
+            contrast = chigh[x, y] - clow[x, y]
+            woody = ndvi > .32 and (contrast > 18 or n < 102)
+            base = (65, 92, 58) if woody else (106, 139, 76)
+            noise = round((tex[x, y] - 128) * .55)
+            cgpx[x, y] = (max(0, min(255, base[0] + noise)),
+                          max(0, min(255, base[1] + noise // 2)),
+                          max(0, min(255, base[2] + noise // 3)), 224)
+    core_ground.putalpha(core_ground.getchannel("A").filter(ImageFilter.GaussianBlur(.85)))
+    core_path = os.path.join(OUTPUT, "helen-painted-ground-downtown.png")
+    core_ground.save(core_path, optimize=True)
+    print(f"High-resolution downtown ground: {downtown_pixels} candidate pixels; "
+          f"{os.path.getsize(core_path)} bytes; extent "
+          f"{core_west},{core_south},{core_east},{core_north}")
 
 
 if __name__ == "__main__":
