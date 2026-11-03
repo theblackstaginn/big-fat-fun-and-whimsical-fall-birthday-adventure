@@ -82,6 +82,67 @@ function renderClevelandHomeSceneLeaflet(L){
  });
  buildings.addTo(streetTerrain);trees.addTo(streetTerrain);
 }
+function homePixelToLngLat(pixel){
+ const [lat,lng]=homePixelToLatLng(pixel);return [lng,lat];
+}
+function homeSceneFeatureCollection(){
+ const features=[];
+ for(const building of CLEVELAND_HOME_SCENE.buildings){
+  const ring=building.pixels.map(homePixelToLngLat);ring.push(ring[0]);
+  features.push({type:"Feature",properties:{kind:"building",roof:building.roof,height:building.height},geometry:{type:"Polygon",coordinates:[ring]}});
+ }
+ const treeVariants=["maple-rust","maple-amber","oak-moss","pine-green","maple-gold"];
+ CLEVELAND_HOME_SCENE.trees.forEach((pixel,index)=>{
+  const variation=(index*7+Math.floor(pixel[0]/100))%treeVariants.length;
+  features.push({type:"Feature",properties:{kind:"tree",sprite:treeVariants[variation],scale:.78+(index%4)*.1},geometry:{type:"Point",coordinates:homePixelToLngLat(pixel)}});
+ });
+ return {type:"FeatureCollection",features};
+}
+function makeHomeTreeSprite(color,kind){
+ const canvas=document.createElement("canvas");canvas.width=52;canvas.height=64;
+ const ctx=canvas.getContext("2d");if(!ctx)return null;
+ ctx.fillStyle="rgba(40,34,26,.25)";ctx.beginPath();ctx.ellipse(26,57,14,4,0,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle="#62472e";ctx.fillRect(23,43,6,12);
+ if(kind==="pine"){
+  ctx.fillStyle=color;
+  [[26,5,13],[26,17,19],[26,31,24]].forEach(([x,y,w])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y+26);ctx.lineTo(x-w,y+26);ctx.closePath();ctx.fill()});
+  ctx.fillStyle="rgba(255,231,180,.18)";
+  [[26,5,13],[26,17,19],[26,31,24]].forEach(([x,y,w])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-w*.3,y+20);ctx.lineTo(x-w*.68,y+23);ctx.closePath();ctx.fill()});
+ }else{
+  ctx.fillStyle=color;
+  [[17,21,12],[31,16,13],[23,31,15],[37,31,10],[12,35,10],[28,42,13]].forEach(([x,y,r])=>{ctx.beginPath();ctx.moveTo(x-r,y+2);ctx.lineTo(x-r*.7,y-r*.48);ctx.lineTo(x-r*.1,y-r);ctx.lineTo(x+r*.65,y-r*.62);ctx.lineTo(x+r,y+3);ctx.lineTo(x+r*.4,y+r*.58);ctx.lineTo(x-r*.65,y+r*.55);ctx.closePath();ctx.fill()});
+  ctx.fillStyle="rgba(255,230,174,.18)";
+  [[17,21,12],[31,16,13],[23,31,15],[37,31,10],[12,35,10],[28,42,13]].forEach(([x,y,r])=>{ctx.beginPath();ctx.moveTo(x-r,y+2);ctx.lineTo(x-r*.7,y-r*.48);ctx.lineTo(x-r*.1,y-r);ctx.lineTo(x-r*.15,y+1);ctx.closePath();ctx.fill()});
+ }
+ return ctx.getImageData(0,0,canvas.width,canvas.height);
+}
+function installClevelandHomeMapLibreScene(map,vegetationBefore,symbolBefore){
+ if(!map||map.getSource("birthday-cleveland-home-scene"))return;
+ const data=homeSceneFeatureCollection();
+ for(const [name,color,kind] of [
+  ["maple-rust","#a64f32","deciduous"],["maple-amber","#c17b31","deciduous"],
+  ["oak-moss","#778047","deciduous"],["pine-green","#405d50","pine"],["maple-gold","#c6a044","deciduous"]
+ ]){
+  if(map.hasImage(name))continue;
+  const image=makeHomeTreeSprite(color,kind);if(image)map.addImage(name,image,{pixelRatio:2});
+ }
+ map.addSource("birthday-cleveland-home-scene",{type:"geojson",data});
+ const firstSurface=vegetationBefore||symbolBefore;
+ try{
+  map.addLayer({
+   id:"birthday-cleveland-home-trees",type:"symbol",source:"birthday-cleveland-home-scene",minzoom:15,
+   filter:["==",["get","kind"],"tree"],
+   layout:{"icon-image":["get","sprite"],"icon-size":["get","scale"],"icon-anchor":"bottom","icon-allow-overlap":true,"icon-ignore-placement":true,"symbol-z-order":"source"}
+  },firstSurface);
+ }catch{/* The home tree sprites are decorative; keep the street map available. */}
+ try{
+  map.addLayer({
+   id:"birthday-cleveland-home-buildings",type:"fill-extrusion",source:"birthday-cleveland-home-scene",minzoom:15,
+   filter:["==",["get","kind"],"building"],
+   paint:{"fill-extrusion-color":["get","roof"],"fill-extrusion-height":["get","height"],"fill-extrusion-base":0,"fill-extrusion-opacity":1,"fill-extrusion-vertical-gradient":true}
+  },symbolBefore);
+ }catch{/* The home roofs are decorative; keep the street map available. */}
+}
 function homeIconSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2M5.7 9.1V20h12.6V9.1M9.5 20v-6.2h5V20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
 function returnIconSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 3.5 10.5 9 16M4 10.5h9a7 7 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2)"/></svg>'}
 function playerMarkerSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" fill="currentColor"/><path d="M5.2 21v-2.1a6.8 6.8 0 0 1 13.6 0V21z" fill="currentColor"/></svg>'}
@@ -314,6 +375,8 @@ function styleVillageAtlas(map){
   * geometry then draws over any imperfect NAIP edge or canopy classification. */
  const surfaceLayers=new Set(["water","waterway","transportation","building"]);
  const vegetationBefore=layers.find(layer=>surfaceLayers.has(layer["source-layer"]))?.id||symbolBefore;
+  /* Map the home test parcel into the vector renderer too; this is the active iPhone path. */
+  try{installClevelandHomeMapLibreScene(map,vegetationBefore,symbolBefore)}catch{/* Keep map navigation available if decoration fails. */}
  /* Pattern only true OSM woodland polygons: it never paints trees onto streets. */
  try{
   const woods=makeAutumnCanopyTile();
