@@ -38,9 +38,9 @@ const homeTestLocation={lat:34.564025725501,lng:-83.673061413538,address:"774 Wi
 const CLEVELAND_HOME_SCENE={
  extent:{west:-83.6735,south:34.5636,east:-83.6726,north:34.5645},
  buildings:[
-  {height:7.4,pixels:[[514,98],[682,111],[710,246],[553,283],[520,225]],roof:"#8d4935"},
-  {height:4.8,pixels:[[443,330],[593,338],[612,385],[456,398]],roof:"#744537"},
-  {height:3.8,pixels:[[516,408],[637,414],[664,455],[524,460]],roof:"#98604a"}
+  {height:7.4,pixels:[[520,118],[680,114],[696,238],[547,254]],roof:"#8d4935"},
+  {height:4.8,pixels:[[446,329],[596,339],[607,388],[456,379]],roof:"#744537"},
+  {height:3.8,pixels:[[516,409],[644,413],[658,456],[524,452]],roof:"#98604a"}
  ],
  trees:[
   [286,85],[370,55],[765,55],[842,105],[192,300],[226,376],[205,456],[267,526],
@@ -135,6 +135,13 @@ function installClevelandHomeMapLibreScene(map,vegetationBefore,symbolBefore){
    layout:{"icon-image":["get","sprite"],"icon-size":["get","scale"],"icon-anchor":"bottom","icon-allow-overlap":true,"icon-ignore-placement":true,"symbol-z-order":"source"}
   },firstSurface);
  }catch{/* The home tree sprites are decorative; keep the street map available. */}
+ try{
+  map.addLayer({
+   id:"birthday-cleveland-home-roof-footprints",type:"fill",source:"birthday-cleveland-home-scene",minzoom:15,
+   filter:["==",["get","kind"],"building"],
+   paint:{"fill-color":["get","roof"],"fill-outline-color":"#583729","fill-opacity":1}
+  },symbolBefore);
+ }catch{/* Keep the road map available if an optional roof fill is unsupported. */}
  try{
   map.addLayer({
    id:"birthday-cleveland-home-buildings",type:"fill-extrusion",source:"birthday-cleveland-home-scene",minzoom:15,
