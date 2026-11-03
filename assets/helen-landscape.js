@@ -389,14 +389,6 @@
      gl.disableVertexAttribArray(this.groundPosition);gl.disableVertexAttribArray(this.groundUv);
      gl.bindBuffer(gl.ARRAY_BUFFER,null);gl.bindTexture(gl.TEXTURE_2D,null);
     }
-    if(this.count){
-     gl.useProgram(this.program);gl.uniformMatrix4fv(this.uMatrix,false,matrix);
-     gl.bindBuffer(gl.ARRAY_BUFFER,this.buffer);
-     gl.enableVertexAttribArray(this.aPosition);gl.enableVertexAttribArray(this.aColor);
-     gl.vertexAttribPointer(this.aPosition,3,gl.FLOAT,false,24,0);gl.vertexAttribPointer(this.aColor,3,gl.FLOAT,false,24,12);
-     gl.drawArrays(gl.TRIANGLES,0,this.count);
-     gl.disableVertexAttribArray(this.aPosition);gl.disableVertexAttribArray(this.aColor);gl.bindBuffer(gl.ARRAY_BUFFER,null);
-    }
     gl.blendEquationSeparate(blendEqRgb,blendEqAlpha);gl.blendFuncSeparate(blendSrcRgb,blendDstRgb,blendSrcAlpha,blendDstAlpha);
     gl.activeTexture(activeTexture);
     if(!blend)gl.disable(gl.BLEND);
@@ -411,7 +403,41 @@
     this.map=null;
    }
   };
+  map.__birthdayLandscapingRenderer=layer;
   map.addLayer(layer,before);
  }
+ function installHelenTreeOverlay(map,before){
+  const source=map?.__birthdayLandscapingRenderer;
+  if(!source||map.getLayer("birthday-tree-canopies"))return;
+  map.addLayer({
+   id:"birthday-tree-canopies",type:"custom",renderingMode:"3d",
+   render(gl,args){
+    const projection=args?.defaultProjectionData?.mainMatrix;
+    if(!projection||!source.origin||!source.count)return;
+    const s=source.scale,o=source.origin;
+    const model=[s,0,0,0,0,s,0,0,0,0,s,0,o.x,o.y,0,1];
+    const matrix=multiply(projection,model);
+    const depthTest=gl.isEnabled(gl.DEPTH_TEST),blend=gl.isEnabled(gl.BLEND);
+    const depthMask=gl.getParameter(gl.DEPTH_WRITEMASK);
+    const srcRgb=gl.getParameter(gl.BLEND_SRC_RGB),dstRgb=gl.getParameter(gl.BLEND_DST_RGB);
+    const srcAlpha=gl.getParameter(gl.BLEND_SRC_ALPHA),dstAlpha=gl.getParameter(gl.BLEND_DST_ALPHA);
+    const eqRgb=gl.getParameter(gl.BLEND_EQUATION_RGB),eqAlpha=gl.getParameter(gl.BLEND_EQUATION_ALPHA);
+    if(depthTest)gl.disable(gl.DEPTH_TEST);
+    gl.depthMask(false);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+    gl.useProgram(source.program);gl.uniformMatrix4fv(source.uMatrix,false,matrix);
+    gl.bindBuffer(gl.ARRAY_BUFFER,source.buffer);
+    gl.enableVertexAttribArray(source.aPosition);gl.enableVertexAttribArray(source.aColor);
+    gl.vertexAttribPointer(source.aPosition,3,gl.FLOAT,false,24,0);
+    gl.vertexAttribPointer(source.aColor,3,gl.FLOAT,false,24,12);
+    gl.drawArrays(gl.TRIANGLES,0,source.count);
+    gl.disableVertexAttribArray(source.aPosition);gl.disableVertexAttribArray(source.aColor);
+    gl.bindBuffer(gl.ARRAY_BUFFER,null);
+    gl.blendEquationSeparate(eqRgb,eqAlpha);gl.blendFuncSeparate(srcRgb,dstRgb,srcAlpha,dstAlpha);
+    if(!blend)gl.disable(gl.BLEND);
+    gl.depthMask(depthMask);if(depthTest)gl.enable(gl.DEPTH_TEST);
+   }
+  },before);
+ }
  window.installHelenLandscaping=installHelenLandscaping;
+ window.installHelenTreeOverlay=installHelenTreeOverlay;
 })();

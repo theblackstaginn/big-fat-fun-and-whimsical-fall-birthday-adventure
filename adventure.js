@@ -279,7 +279,7 @@ function styleVillageAtlas(map){
   /* Draw mapped parking below the NAIP renderer. Its alpha mask supplies only
    * classified vegetation; tree placement separately excludes parking polygons.
    * Real transport, water, paths, and buildings remain above both layers. */
-  const parkingBefore=map.getLayer("birthday-landscaping")?"birthday-landscaping":(layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore);
+  const parkingBefore=layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore;
   try{
    if(!map.getLayer("birthday-parking-clear"))map.addLayer({
     id:"birthday-parking-clear",type:"fill",source:vectorSource,"source-layer":"landuse",minzoom:12,
@@ -287,6 +287,10 @@ function styleVillageAtlas(map){
     paint:{"fill-color":"#f5efe3","fill-outline-color":"#d6c6a4","fill-opacity":1}
    },parkingBefore);
   }catch{/* Keep source parking clear if the provider omits this optional layer. */}
+  if(typeof window.installHelenTreeOverlay==="function"){
+   const treeBefore=layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore;
+   try{window.installHelenTreeOverlay(map,treeBefore)}catch{/* Trees are decorative; retain map navigation. */}
+  }
   /* Overlay real sloping roof geometry only when the lightweight renderer is available.
    * If unsupported or unavailable, MapLibre's native buildings remain in place. */
   if(typeof window.installAlpineRoofLayer==="function"){
