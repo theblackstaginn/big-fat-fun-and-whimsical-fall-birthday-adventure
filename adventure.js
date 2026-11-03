@@ -207,6 +207,12 @@ function styleVillageAtlas(map){
     "fill-extrusion-vertical-gradient":true
    }
   },symbolBefore);
+  /* Autumn trees appear only in mapped vegetation areas, away from streets.
+   * Keep the renderer completely optional for older iOS browsers. */
+  if(typeof window.installHelenLandscaping==="function"){
+   try{window.installHelenLandscaping(map,vectorSource,symbolBefore)}
+   catch{/* The core street map and existing roofs stay usable. */}
+  }
   /* Overlay real sloping roof geometry only when the lightweight renderer is available.
    * If unsupported or unavailable, MapLibre's native buildings remain in place. */
   if(typeof window.installAlpineRoofLayer==="function"){
