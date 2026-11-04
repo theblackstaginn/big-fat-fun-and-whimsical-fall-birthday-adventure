@@ -348,7 +348,10 @@ function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(leafletPr
  * Coordinate is published for another business at that same street address:
  * https://maps.roadtrippers.com/us/helen-ga/food-drink/campfire-helen
  * Keep the full Ruby Mae’s address in the quest journal for exact directions. */
-const questAnchors=Object.freeze({ruby:[34.700059,-83.721920],park:[34.70286,-83.73157]});
+/* River stop is at the Main Street (GA 17/75) crossing, near the north-side
+ * pedestrian bridge. Coordinate from USGS monitoring site 02330450; the
+ * map pin is not a surveyed point on the exact sidewalk or bridge rail. */
+const questAnchors=Object.freeze({ruby:[34.700059,-83.721920],river:[34.700972,-83.729250],park:[34.70286,-83.73157]});
 /* ZuZu's Petals is a separate visual pin at White Horse Square, 8660 N Main
  * St #9, beside Windmill Dutch Imports. No extra chapter or GPS requirement. */
 const zuzuWhiteHorseSquare=Object.freeze([34.701681,-83.731017]);
