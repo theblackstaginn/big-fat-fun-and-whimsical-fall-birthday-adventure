@@ -222,12 +222,111 @@
   overlay.setAttribute("role","dialog");
   overlay.setAttribute("aria-modal","true");
   overlay.setAttribute("aria-label","Birthday quest achievement");
-  overlay.innerHTML='<div class="quest-achievement-inner"><span class="achievement-sigil" aria-hidden="true">✦</span><p class="achievement-kicker">ACHIEVEMENT UNLOCKED</p><h2>Treasure Secured!</h2><p id="achievement-place"></p><img id="achievement-photo" alt="Today’s treasure" hidden><p>One memory preserved. The road has one more secret to reveal.</p><button type="button" id="achievement-reveal">Reveal Next Destination ✧</button></div>';
+  overlay.innerHTML='<div class="quest-achievement-inner"><span class="achievement-sigil" aria-hidden="true">✦</span><p class="achievement-kicker">NEW ACHIEVEMENT · SYSTEM BROADCAST</p><h2 id="achievement-title">Loot Acquired!</h2><p id="achievement-place"></p><img id="achievement-photo" alt="Today’s treasure" hidden><p id="achievement-copy"></p><p id="achievement-reward"></p><p id="achievement-epilogue" hidden></p><button type="button" id="achievement-reveal">Reveal Next Destination ✧</button></div>';
   document.body.append(overlay);
+
+  /* Original, theatrically unqualified dungeon announcer. Shares the same
+   * scenes with real progression and isolated Satchel Preview. */
+  const achievementScripts=Object.freeze({
+  "ruby": {
+    "kind": "quest",
+    "sigil": "⚔",
+    "kicker": "SYSTEM NOTICE · SOCIAL LOOT",
+    "title": "PARTY ACQUIRED. ALARMING.",
+    "copy": "You entered a mystical shop and voluntarily interacted with other humans. The Overseer had allotted six minutes for awkward silence. You have ruined its calculations.",
+    "reward": "REWARD: +1 adventuring party. +8 friendship. Algorithmic dignity: unrecoverable."
+  },
+  "wonderland": {
+    "kind": "quest",
+    "sigil": "🗝",
+    "kicker": "INVENTORY MANAGEMENT INCIDENT",
+    "title": "JUST LOOKING. SURE.",
+    "copy": "Congratulations! You wandered into a building where every object insists it is an ancient artifact. Your wallet has requested legal counsel. The System has denied the request.",
+    "reward": "REWARD: +3 curiosity. Available bag space: emotionally compromised."
+  },
+  "candle": {
+    "kind": "quest",
+    "sigil": "🕯",
+    "kicker": "FLAME MANAGEMENT PROTOCOL",
+    "title": "FIRE HAZARD: ADORABLE.",
+    "copy": "You purchased fragrant fire inside a jar. Humans apparently consider this a normal hobby. The safety department has been instructed to stop asking questions.",
+    "reward": "REWARD: Cozy aura +15. Accidental summoning risk: probably fine."
+  },
+  "glass": {
+    "kind": "quest",
+    "sigil": "✧",
+    "kicker": "DEXTERITY SAVE PENDING",
+    "title": "FRAGILE LOOT DETECTED!",
+    "copy": "A room full of beautiful glass. Two hands. Absolutely no protective armor. Incredible. The Overseer is already composing the incident report.",
+    "reward": "REWARD: +2 sparkle. +10 PLEASE DON'T DROP THAT."
+  },
+  "zuzu": {
+    "kind": "quest",
+    "sigil": "💎",
+    "kicker": "GEOLOGICAL COMPANION UNLOCKED",
+    "title": "THE ROCK HAS CHOSEN YOU.",
+    "copy": "You have befriended a shiny mineral. It has no pulse, offers excellent emotional support, and frankly possesses better boundaries than most adults. The System is jealous.",
+    "reward": "REWARD: +1 loyal pebble. Rock charisma: legendary."
+  },
+  "river": {
+    "kind": "quest",
+    "sigil": "≈",
+    "kicker": "UNAUTHORIZED PEACEFUL MOMENT",
+    "title": "SCENERY HAS WON.",
+    "copy": "The party halted to stare at moving water. The Overseer expected danger, screaming, or at least some paperwork. Instead you have discovered a suspiciously effective calming spell.",
+    "reward": "REWARD: Serenity +20. Boss music temporarily disabled."
+  },
+  "dinner": {
+    "kind": "feast",
+    "sigil": "🍜",
+    "kicker": "SPECIAL ENCOUNTER · DINNER BOSS",
+    "title": "THE HUNGER BEAST HAS FALLEN.",
+    "copy": "The Rogue Witch faced an entire menu at Bangkok Haus and emerged victorious. The System prepared a survival tutorial. You ordered dinner instead. Show-offs.",
+    "reward": "BOSS DROP: +20 satisfied hearts. Optional nap debuff unlocked.",
+    "button": "Proceed to Dessert, You Glorious Menaces ✧"
+  },
+  "sweet": {
+    "kind": "sweet",
+    "sigil": "🍬",
+    "kicker": "SPECIAL ENCOUNTER · SUGAR EVENT",
+    "title": "SUGAR CONTAINMENT FAILURE!",
+    "copy": "You breached a candy kitchen. Nobody read the warnings. The System is detecting dangerously elevated joy and a 100% probability of sticky fingers. Excellent work, you tiny disasters.",
+    "reward": "REWARD: +40 grin damage. FINAL DESTINATION UNLOCKED.",
+    "button": "Reveal the Moonlit Secret ☾"
+  },
+  "park": {
+    "kind": "finale",
+    "sigil": "☾",
+    "kicker": "FINAL TRANSMISSION · THE SYSTEM IS NOT CRYING",
+    "title": "ERROR 999: TOO MUCH JOY.",
+    "copy": "Nine stops. One Rogue Witch. An utterly unreasonable quantity of laughter, wonder, and loot. The System tried to calculate the value of this day. Its processors melted. Its insurance has declined coverage.",
+    "reward": "ULTIMATE REWARD: Every moment you kept, every story you made, and one enchanted village beneath the moon.",
+    "epilogue": "Happy birthday, Jess. The clouds have parted. The adventure is yours, and this magic is real in all the ways that count. ♡",
+    "button": "Claim Your Moonlit Ending ✦"
+  }
+});
+  function decorateBirthdayAchievement(chapter,preview=false){
+   const script=achievementScripts[chapter?.id]||achievementScripts.ruby;
+   overlay.classList.remove("is-feast","is-sweet","is-finale");
+   if(script.kind!=="quest")overlay.classList.add("is-"+script.kind);
+   overlay.setAttribute("aria-label",script.kind==="finale"?"Moonlit birthday finale":"Quest achievement for "+chapter.title);
+   overlay.querySelector(".achievement-sigil").textContent=script.sigil;
+   overlay.querySelector(".achievement-kicker").textContent=(preview?"✧ TEST BROADCAST · ":"")+script.kicker;
+   overlay.querySelector("#achievement-title").textContent=script.title;
+   overlay.querySelector("#achievement-place").textContent=chapter.title;
+   overlay.querySelector("#achievement-copy").textContent=script.copy;
+   overlay.querySelector("#achievement-reward").textContent=script.reward;
+   const epilogue=overlay.querySelector("#achievement-epilogue");
+   epilogue.hidden=!script.epilogue;
+   epilogue.textContent=script.epilogue||"";
+   overlay.querySelector("#achievement-reveal").textContent=script.button||"Reveal Next Destination ✧";
+   return script;
+  }
+  window.renderBirthdayAchievement=decorateBirthdayAchievement;
   let acceptingUnlock=false,bypass=false;
   function showAchievement(id,record){
     if(!overlay.hidden||completed.includes(id)||selected.id!==id)return;
-    overlay.querySelector("#achievement-place").textContent=selected.title;
+    decorateBirthdayAchievement(selected,false);
     const img=overlay.querySelector("#achievement-photo");
     if(achievementPhotoUrl){URL.revokeObjectURL(achievementPhotoUrl);achievementPhotoUrl=""}
     img.hidden=!(record.photo instanceof Blob);
@@ -235,7 +334,6 @@
       achievementPhotoUrl=URL.createObjectURL(record.photo);
       img.src=achievementPhotoUrl;
     }
-    overlay.querySelector("#achievement-reveal").textContent=completed.length===chapters.length-1?"Complete the Adventure ✦":"Reveal Next Destination ✧";
     overlay.hidden=false;
     overlay.querySelector("#achievement-reveal").focus();
   }
