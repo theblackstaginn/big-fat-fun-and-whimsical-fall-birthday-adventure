@@ -242,6 +242,13 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .rpg-fullscreen .street-map-frame .rpg-neighborhood-pin.is-explored{
  background:linear-gradient(145deg,#728966,#354f3e);animation:none;
 }
+.rpg-fullscreen .street-map-frame .rpg-neighborhood-pin.is-current{
+ border-color:#fff3bd;color:#fff9df;
+ background:radial-gradient(circle at 45% 25%,#deb66f,#9b6b35 62%,#63432b 100%);
+ font-weight:900;
+ filter:drop-shadow(0 0 7px #ffe1a5a1) drop-shadow(0 3px 6px #24160c9c);
+}
+
 .rpg-fullscreen .street-map-frame .rpg-neighborhood-pin.is-zuzu{
  border-color:#f4caeb;color:#fff7ff;
  background:linear-gradient(145deg,#906b94,#493352);
