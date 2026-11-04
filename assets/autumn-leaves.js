@@ -56,17 +56,30 @@
   layer.setAttribute("aria-hidden","true");
   for(let i=0;i<count;i++){
    const track=document.createElement("span");
-   const east=i%2===0;
-   const duration=surface==="world"?12+rand()*14:10+rand()*12;
+   /* Mostly falling leaves, with smaller crosswind gusts sweeping in from either side. */
+   const roll=rand();
+   const route=roll<.60?"fall":roll<.80?"east":"west";
+   const startX=route==="east"?-12:route==="west"?112:-5+rand()*110;
+   const startY=route==="fall"?-12:-8+rand()*76;
+   const endX=route==="east"?120+rand()*24:route==="west"?-(120+rand()*24):(rand()-.5)*105;
+   const endY=route==="fall"?120+rand()*26:40+rand()*58;
+   const gust=route==="fall"?24:19;
+   const duration=surface==="world"?11+rand()*16:10+rand()*14;
    const size=surface==="world"?10+rand()*13:12+rand()*17;
-   track.className="rpg-autumn-leaf-track "+(east?"rpg-autumn-east":"rpg-autumn-west");
-   track.style.setProperty("--leaf-y",(6+rand()*86).toFixed(1)+"%");
+   track.className="rpg-autumn-leaf-track";
+   track.style.setProperty("--leaf-x",startX.toFixed(1)+"%");
+   track.style.setProperty("--leaf-y",startY.toFixed(1)+"%");
    track.style.setProperty("--leaf-duration",duration.toFixed(2)+"s");
    track.style.setProperty("--leaf-delay",(-rand()*duration).toFixed(2)+"s");
    track.style.setProperty("--leaf-size",size.toFixed(1)+"px");
-   track.style.setProperty("--leaf-opacity",(.50+rand()*.32).toFixed(2));
-   track.style.setProperty("--leaf-fall",(-11+rand()*38).toFixed(1)+"px");
-   track.style.setProperty("--leaf-turn",(2.7+rand()*3.3).toFixed(2)+"s");
+   track.style.setProperty("--leaf-opacity",(.88+rand()*.12).toFixed(2));
+   track.style.setProperty("--leaf-turn",(2.3+rand()*3.8).toFixed(2)+"s");
+   for(const [point,part] of [[1,.23],[2,.49],[3,.75],[4,1]]){
+    const crosswind=point===4?0:(rand()-.5)*gust*2;
+    const flutter=point===4?0:(rand()-.5)*6;
+    track.style.setProperty("--leaf-x"+point,(endX*part+crosswind).toFixed(1)+"%");
+    track.style.setProperty("--leaf-y"+point,(endY*part+flutter).toFixed(1)+"dvh");
+   }
    track.append(leaf(surface,i));
    layer.append(track);
   }
@@ -84,36 +97,23 @@
  user-select:none;-webkit-user-select:none;contain:paint;
 }
 .rpg-autumn-leaf-track{
- position:absolute;top:var(--leaf-y);width:calc(100% + 128px);
- height:0;opacity:var(--leaf-opacity);will-change:transform;
- animation-duration:var(--leaf-duration);
- animation-delay:var(--leaf-delay);
- animation-timing-function:linear;
- animation-iteration-count:infinite;
+ position:absolute;left:var(--leaf-x);top:var(--leaf-y);
+ width:100%;height:0;opacity:var(--leaf-opacity);will-change:transform;
+ animation:rpg-autumn-windfall var(--leaf-duration) linear var(--leaf-delay) infinite;
 }
-.rpg-autumn-east{left:-64px;animation-name:rpg-autumn-cross-east}
-.rpg-autumn-west{right:-64px;animation-name:rpg-autumn-cross-west}
 .rpg-autumn-leaf-track svg{
- position:absolute;top:0;width:var(--leaf-size);height:var(--leaf-size);
+ position:absolute;left:0;top:0;width:var(--leaf-size);height:var(--leaf-size);
  overflow:visible;filter:drop-shadow(0 1px 2px rgba(67,35,23,.28));
  transform-origin:50% 42%;
  animation:rpg-autumn-tumble var(--leaf-turn) ease-in-out infinite alternate;
 }
-.rpg-autumn-east svg{left:0}
-.rpg-autumn-west svg{right:0;animation-direction:alternate-reverse}
-@keyframes rpg-autumn-cross-east{
- 0%{transform:translate3d(0,-8px,0)}
- 24%{transform:translate3d(24%,9px,0)}
- 51%{transform:translate3d(51%,-13px,0)}
- 77%{transform:translate3d(77%,12px,0)}
- 100%{transform:translate3d(100%,var(--leaf-fall),0)}
-}
-@keyframes rpg-autumn-cross-west{
- 0%{transform:translate3d(0,11px,0)}
- 23%{transform:translate3d(-23%,-10px,0)}
- 49%{transform:translate3d(-49%,12px,0)}
- 75%{transform:translate3d(-75%,-12px,0)}
- 100%{transform:translate3d(-100%,var(--leaf-fall),0)}
+.rpg-autumn-leaf-track:nth-child(3n) svg{animation-direction:alternate-reverse}
+@keyframes rpg-autumn-windfall{
+ 0%{transform:translate3d(0,0,0)}
+ 23%{transform:translate3d(var(--leaf-x1),var(--leaf-y1),0)}
+ 49%{transform:translate3d(var(--leaf-x2),var(--leaf-y2),0)}
+ 75%{transform:translate3d(var(--leaf-x3),var(--leaf-y3),0)}
+ 100%{transform:translate3d(var(--leaf-x4),var(--leaf-y4),0)}
 }
 @keyframes rpg-autumn-tumble{
  0%{transform:rotate(-34deg) rotateY(-25deg) scale(.87)}
