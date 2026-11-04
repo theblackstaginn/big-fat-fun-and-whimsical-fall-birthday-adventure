@@ -98,12 +98,17 @@
  function celebration(){
   if(!preview||completed.length===chapters.length)return;
   const stop=chapters[completed.length];
-  achievement.querySelector("#achievement-place").textContent=stop.title;
+  /* Preview renders the SAME quirky system broadcast as the real unlock,
+   * without inventing a fake saved photo or changing actual quest data. */
+  if(typeof window.renderBirthdayAchievement==="function"){
+   window.renderBirthdayAchievement(stop,true);
+  }else{
+   achievement.querySelector("#achievement-place").textContent=stop.title;
+   const header=achievement.querySelector(".achievement-kicker");
+   if(header)header.textContent="✧ PREVIEW ACHIEVEMENT";
+  }
   const photo=achievement.querySelector("#achievement-photo");
   if(photo){photo.hidden=true;photo.removeAttribute("src")}
-  const header=achievement.querySelector(".achievement-kicker");
-  if(header)header.textContent="✦ PREVIEW ACHIEVEMENT";
-  reveal.textContent=completed.length===chapters.length-1?"Reveal the Finale ✦":"Reveal Next Destination ✧";
   achievement.hidden=false;
   reveal.focus();
  }
