@@ -223,7 +223,8 @@
   // Dinner remains a side trip, not a fictional on-map storefront or beacon.
   detour.style.display=count>=chapters.findIndex(ch=>ch.id==="dinner")&&!parkUnlocked?"":"none";
   if(parkUnlocked){previousCount=count;return}
-  const lockedIds=new Set(chapters.slice(count).map(ch=>ch.id));
+  // The current destination is already revealed; only FUTURE stops stay hidden.
+  const lockedIds=new Set(chapters.slice(count+1).map(ch=>ch.id));
   for(const site of lockedLandmarks){
    if(lockedIds.has(site.id))ensureBank(site);
   }
