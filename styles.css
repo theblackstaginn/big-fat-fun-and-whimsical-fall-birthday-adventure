@@ -400,3 +400,8 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 @media(max-width:365px){.rpg-fullscreen .rpg-title{font-size:.87rem}.rpg-fullscreen .map-mode-switch{width:min(80vw,282px)}.rpg-fullscreen .map-mode-button{font-size:.66rem}.rpg-fullscreen .rpg-topbar{padding-left:7px;padding-right:7px;}.rpg-brand{gap:5px;}.rpg-fullscreen .rpg-top-actions button{width:32px;min-width:32px;height:32px;min-height:32px;}}
 @media(prefers-reduced-motion:reduce){.rpg-fullscreen .rpg-toolbar button{transition:none!important;}}
 @media print{.rpg-fullscreen .rpg-toolbar,.rpg-fullscreen .rpg-topbar,.rpg-fullscreen .rpg-progress{display:none!important;}}
+
+/* The atlas discovery fog is a separate visual overlay, never an edit of the image. */
+.rpg-fullscreen .map-canvas .overworld-fog{position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(180deg,rgba(16,24,37,.93),rgba(31,28,45,.84));mask-image:linear-gradient(to bottom,#000 0%,#000 calc(var(--fog-front,76%) - 8%),transparent calc(var(--fog-front,76%) + 6%));-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 calc(var(--fog-front,76%) - 8%),transparent calc(var(--fog-front,76%) + 6%))}
+.rpg-fullscreen .map-canvas .overworld-fog[hidden]{display:none!important}
+@media print{.rpg-fullscreen .map-canvas .overworld-fog{display:none!important}}
