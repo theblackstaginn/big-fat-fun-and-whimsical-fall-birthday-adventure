@@ -399,6 +399,7 @@
     overlay.classList.add("is-revealing");
     if(!document.querySelector(".rpg-sheet")?.hidden)document.querySelector("#rpg-close")?.click();
     setMapMode("overview");
+    const finalGift=selected.id==="park"&&completed.length===chapters.length-1;
     const before=completed.length;
     bypass=true;
     try{completeButton.click()}finally{bypass=false}
@@ -409,7 +410,13 @@
     }
     syncSelection();
     renderAlbum().catch(()=>{});
-    setTimeout(()=>{hideAchievement();acceptingUnlock=false},1050);
+    setTimeout(()=>{
+      hideAchievement();
+      acceptingUnlock=false;
+      /* Only the final park achievement opens the private letter.
+       * The actual save/progress and all other achievements are unchanged. */
+      if(finalGift)window.openMoonlitLetter?.();
+    },1050);
   });
   const previousRender=renderProgress;
   renderProgress=function(){
