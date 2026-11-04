@@ -349,6 +349,19 @@ function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(leafletPr
  * https://maps.roadtrippers.com/us/helen-ga/food-drink/campfire-helen
  * Keep the full Ruby Mae’s address in the quest journal for exact directions. */
 const questAnchors=Object.freeze({ruby:[34.700059,-83.721920],park:[34.70286,-83.73157]});
+/* ZuZu's Petals is a separate visual pin at White Horse Square, 8660 N Main
+ * St #9, beside Windmill Dutch Imports. No extra chapter or GPS requirement. */
+const zuzuWhiteHorseSquare=Object.freeze([34.701681,-83.731017]);
+function withZuZuNearbyMarker(features){
+ const chapterIndex=chapters.findIndex(chapter=>chapter.id==="town");
+ if(chapterIndex<0||completed.length<chapterIndex)return features;
+ return [...features,{
+  chapter:chapters[chapterIndex],
+  point:zuzuWhiteHorseSquare,
+  name:"ZuZu’s Petals · White Horse Square",
+  sideStop:true
+ }];
+}
 function coordinatesFor(chapter){const known=questAnchors[chapter.id];if(known)return Promise.resolve([...known]);const query=chapter.streetQuery||chapter.address;let cache={};try{cache=JSON.parse(localStorage.getItem(geocodeKey)||"{}")}catch{}if(cache[query])return Promise.resolve(cache[query]);if(geocodePending.has(query))return geocodePending.get(query);const task=geocodeChain.then(async()=>{const wait=Math.max(0,1150-(Date.now()-lastGeocodeAt));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));lastGeocodeAt=Date.now();const url=`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=us&q=${encodeURIComponent(query)}`;const response=await fetch(url,{headers:{Accept:"application/json"}});if(!response.ok)throw new Error("Address lookup unavailable");const matches=await response.json();if(!matches.length)throw new Error("This address was not found on the street map");const point=[Number(matches[0].lat),Number(matches[0].lon)];cache[query]=point;try{localStorage.setItem(geocodeKey,JSON.stringify(cache))}catch{}return point});geocodeChain=task.catch(()=>{});geocodePending.set(query,task);task.then(()=>geocodePending.delete(query),()=>geocodePending.delete(query));return task}
 function createMapGrid(L){const Grid=L.GridLayer.extend({createTile(){const tile=document.createElement("canvas"),size=this.getTileSize();tile.width=size.x;tile.height=size.y;const ctx=tile.getContext("2d");ctx.strokeStyle="rgba(102,69,39,.16)";ctx.lineWidth=1;ctx.setLineDash([3,5]);for(let p=0;p<=size.x;p+=48){ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,size.y);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(size.x,p);ctx.stroke()}return tile}});return new Grid({tileSize:256,interactive:false,opacity:.72})}
 
@@ -633,15 +646,22 @@ async function renderVillageAtlas(center,features){
  neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42});
  for(const marker of neighborhoodPins)marker.remove();
  neighborhoodPins=[];
- for(const {chapter,point} of features){
+ for(const {chapter,point,name,sideStop} of withZuZuNearbyMarker(features)){
   const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id);
   const node=document.createElement("button");node.type="button";
-  node.className="rpg-neighborhood-pin"+(visited?" is-explored":"");
-  node.textContent=visited?"✓":String(index+1);
-  node.setAttribute("aria-label",chapter.title+(visited?" explored":" current quest"));
-  node.title=chapter.title;
+  node.className="rpg-neighborhood-pin"+(sideStop?" is-zuzu":"")+(visited?" is-explored":"");
+  node.textContent=sideStop?"Z":visited?"✓":String(index+1);
+  node.setAttribute("aria-label",sideStop?"ZuZu’s Petals in White Horse Square":chapter.title+(visited?" explored":" current quest"));
+  node.title=name||chapter.title;
   node.addEventListener("click",event=>{
-   event.stopPropagation();selected=chapter;renderProgress();
+   event.stopPropagation();
+   if(sideStop){
+    new ml.Popup({offset:24}).setLngLat([point[1],point[0]])
+     .setText("ZuZu’s Petals Rock Shop · White Horse Square, beside Windmill Dutch Imports")
+     .addTo(neighborhoodMap);
+    return;
+   }
+   selected=chapter;renderProgress();
    document.querySelector('[data-panel="quest"]')?.click();
   });
   neighborhoodPins.push(new ml.Marker({element:node,anchor:"bottom"}).setLngLat([point[1],point[0]]).addTo(neighborhoodMap));
@@ -656,7 +676,7 @@ async function renderVillageAtlas(center,features){
 }
 
 function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("dragstart",onPlayerMapDragged);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
-async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();liveStreetMarker=null;renderClevelandHomeSceneLeaflet(L);points.forEach(({chapter,point})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${visited?" visited":" current"}">${visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:chapter.title,keyboard:true}).bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);addLeafletHomePlayerMarkers(L,streetMap,streetPins);syncLivePlayerMarkers();ensureLeafletHomeControl(L,streetMap,current?.point||helenCenter);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);if(playerFollow&&livePlayerPoint)centerOnLivePlayer();renderVillageAtlas(current.point,points).catch(error=>{showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true)})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
+async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();liveStreetMarker=null;renderClevelandHomeSceneLeaflet(L);withZuZuNearbyMarker(points).forEach(({chapter,point,name,sideStop})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${sideStop?" is-zuzu":visited?" visited":" current"}">${sideStop?"Z":visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:name||chapter.title,keyboard:true}).bindPopup(sideStop?"<strong>ZuZu’s Petals</strong><br>White Horse Square · beside Windmill Dutch Imports":`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);addLeafletHomePlayerMarkers(L,streetMap,streetPins);syncLivePlayerMarkers();ensureLeafletHomeControl(L,streetMap,current?.point||helenCenter);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);if(playerFollow&&livePlayerPoint)centerOnLivePlayer();renderVillageAtlas(current.point,points).catch(error=>{showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true)})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
 function updateNearby(){const wasVisited=completed.includes(selected.id);document.querySelector("#nearby-context").textContent=wasVisited?"REAL STREETS · VISITED CHAPTER":"REAL STREETS · CURRENT CHAPTER";document.querySelector("#nearby-place").textContent=selected.title;document.querySelector("#nearby-address").textContent=selected.address;if(document.querySelector("#nearby-view").hidden)return;renderStreetMap().catch(error=>{setStreetStatus(`${error.message}. Use the chapter’s directions below.`)})}
 function renderProgress(){currentIndex=Math.min(completed.length,chapters.length-1);if(!completed.includes(selected.id)&&chapters.indexOf(selected)>currentIndex)selected=chapters[currentIndex];updateSceneArtwork();const count=completed.length;document.querySelector("#progress-count").textContent=`${count} of ${chapters.length} places visited`;document.querySelector(".progress-track").setAttribute("aria-valuenow",String(count));document.querySelector("#progress-fill").style.width=`${count/chapters.length*100}%`;document.querySelector("#progress-message").textContent=count===chapters.length?"Adventure complete. Jess has explored the whole map. Roll credits; cue kisses.":count===0?"The opening place is revealed. Explore it to discover the path ahead.":`${count} place${count===1?"":"s"} explored. A new destination has appeared on your map.`;renderList();renderMap();renderDetail();updateNearby()}
 function setMapMode(mode){const nearby=mode==="nearby";document.querySelector("#overview-view").hidden=nearby;document.querySelector("#nearby-view").hidden=!nearby;document.querySelector("#overview-view").classList.toggle("is-active",!nearby);document.querySelector("#nearby-view").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").classList.toggle("is-active",!nearby);document.querySelector("#mode-nearby").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").setAttribute("aria-pressed",String(!nearby));document.querySelector("#mode-nearby").setAttribute("aria-pressed",String(nearby));if(nearby){updateNearby();setTimeout(()=>streetMap&&streetMap.invalidateSize(),80)}}
