@@ -43,6 +43,19 @@
  gradient("linearGradient","quest-cloud-sky",[
   ["0%","#c6d6e0"],["50%","#c2d3dd"],["100%","#d9e3ea"]
  ],{x1:"0",y1:"0",x2:"0",y2:"1"});
+ /* Round cloud-front lobes, tapering edge mist, and fine drifting veils. */
+ gradient("radialGradient","quest-edge-mask-puff",[
+  ["0%","#ffffff","1"],["52%","#ffffff","1"],
+  ["77%","#ffffff",".83"],["100%","#ffffff","0"]
+ ]);
+ gradient("radialGradient","quest-edge-cloudlight",[
+  ["0%","#ffffff",".98"],["43%","#fcfeff",".80"],
+  ["73%","#e8f4fc",".36"],["100%","#d3e6f3","0"]
+ ]);
+ gradient("radialGradient","quest-edge-wisp",[
+  ["0%","#fffefa",".76"],["40%","#ffffff",".43"],
+  ["78%","#eef8ff",".12"],["100%","#eef8ff","0"]
+ ]);
  const mask=node("mask",{
   id:"quest-unique-landmark-mask",x:0,y:0,width:1024,height:1536,
   maskUnits:"userSpaceOnUse",maskContentUnits:"userSpaceOnUse",style:"mask-type:luminance"
@@ -162,14 +175,94 @@
  mist.append(svg);
 
 
- /* Fixed chapter discovery shapes retain their smooth continuous feather.
-  * No detached cutouts, scallops, or perforations along the boundary.
-  * The two cloud textures drift independently INSIDE the fixed mask. */
- const painted=new Map();
+ /* Keep the continuous original discovery areas. The outer lip of fog
+  * now forms small overlapping, round cloud heads. All lobes connect to
+  * the main fog, so no disconnected holes / Swiss-cheese perforations.
+  * Their color and wisps are animated independently of quest progress. */
+ const painted=new Map(),frontierCache=new Map();
  let previousCount=-1;
  const parkIndex=chapters.findIndex(chapter=>chapter.id==="park");
  if(parkIndex!==8)throw Error("Unexpected chapter order for landmark cloud reveal");
  const featherSteps=[[45,.10],[26,.19],[12,.28]];
+ function frontierPath(region){
+  let d=region.d;
+  if(region.id==="wonderland"){
+   return d.replace("M 0 1536 L 0 1171","M 0 1171").replace(/\sZ$/,"");
+  }
+  const limits={
+   ruby:" L 1024 1536",candle:" L 1024 1536",
+   glass:" L 1024 1230",zuzu:" L 1024 751",
+   river:" L 0 1455",dinner:" L 0 1304",
+   sweet:" L 1024 1536"
+  };
+  const end=d.indexOf(limits[region.id]);
+  return end>=0?d.slice(0,end):d.replace(/\sZ$/,"");
+ }
+ function edgeSamples(region){
+  if(frontierCache.has(region.id))return frontierCache.get(region.id);
+  const tracer=node("path",{d:frontierPath(region)});
+  defs.append(tracer);
+  const length=tracer.getTotalLength();
+  const count=Math.max(5,Math.ceil(length/47));
+  let rng=21871+region.id.length*137;
+  const next=()=>{rng=(Math.imul(rng,1664525)+1013904223)>>>0;return rng/4294967296};
+  const points=[];
+  for(let i=0;i<count;i++){
+   const distance=(i+.5)*length/count;
+   const p=tracer.getPointAtLength(distance);
+   const a=tracer.getPointAtLength(Math.max(0,distance-7));
+   const b=tracer.getPointAtLength(Math.min(length,distance+7));
+   const dx=b.x-a.x,dy=b.y-a.y,len=Math.hypot(dx,dy)||1;
+   // Clockwise territory outlines: right-hand normal points into the fog.
+   const nx=dy/len,ny=-dx/len;
+   if(p.x<13||p.x>1011||p.y<16||p.y>1520)continue;
+   const radius=27+next()*20;
+   const offset=11+next()*9;
+   const x=p.x+nx*offset+(next()-.5)*10;
+   const y=p.y+ny*offset+(next()-.5)*10;
+   const rx=radius*(.83+next()*.36);
+   const ry=radius*(.66+next()*.30);
+   points.push({x,y,nx,ny,rx,ry,phase:next()});
+  }
+  tracer.remove();
+  frontierCache.set(region.id,points);
+  return points;
+ }
+ function edgeClouds(region,opacity,points){
+  const front=node("g",{opacity,"data-cloud-front":region.id});
+  const body=node("g",{class:"quest-frontier-billow"});
+  const wisps=node("g",{class:"quest-frontier-wisps"});
+  for(const [i,p] of points.entries()){
+   body.append(node("ellipse",{
+    cx:p.x+p.nx*6,cy:p.y+p.ny*6,
+    rx:p.rx*1.65,ry:p.ry*1.55,
+    fill:"url(#quest-edge-cloudlight)",
+    opacity:(.68+p.phase*.25).toFixed(2)
+   }));
+   if(i%2===0){
+    wisps.append(node("ellipse",{
+     cx:p.x+p.nx*(42+p.phase*27),
+     cy:p.y+p.ny*(42+p.phase*27),
+     rx:p.rx*(1.85+p.phase),ry:p.ry*(.88+p.phase*.4),
+     fill:"url(#quest-edge-wisp)",
+     opacity:(.42+p.phase*.27).toFixed(2)
+    }));
+   }
+  }
+  front.append(body,wisps);
+  return front;
+ }
+ const edgeStyle=document.createElement("style");
+ edgeStyle.textContent=[
+  ".landmark-clouds .quest-frontier-billow{animation:quest-frontier-billow 23s ease-in-out infinite alternate}",
+  ".landmark-clouds .quest-frontier-wisps{animation:quest-frontier-wisps 32s ease-in-out infinite alternate}",
+  ".landmark-clouds .quest-frontier-mask-lobes{animation:quest-frontier-lobes 29s ease-in-out infinite alternate}",
+  "@keyframes quest-frontier-billow{from{transform:translate(-4px,2px)}to{transform:translate(6px,-4px)}}",
+  "@keyframes quest-frontier-wisps{from{transform:translate(8px,-5px);opacity:.65}to{transform:translate(-10px,7px);opacity:1}}",
+  "@keyframes quest-frontier-lobes{from{transform:translate(0,0)}to{transform:translate(2px,-3px)}}",
+  "@media(prefers-reduced-motion:reduce){.landmark-clouds .quest-frontier-billow,.landmark-clouds .quest-frontier-wisps,.landmark-clouds .quest-frontier-mask-lobes{animation:none!important}}"
+ ].join("\n");
+ document.head.append(edgeStyle);
  function addTerritory(region,animated){
   const opacity=animated?0:1;
   const clearingGroup=node("g",{opacity,"data-discovered":region.id});
@@ -181,14 +274,30 @@
    }));
   }
   clearingGroup.append(node("path",{d:region.d,fill:"#000000"}));
+  const points=edgeSamples(region);
+  const lobes=node("g",{class:"quest-frontier-mask-lobes"});
+  for(const p of points){
+   // White lobes protrude from the fog INTO the revealed territory.
+   // They are attached to the full white fog field, never floating holes.
+   lobes.append(node("ellipse",{
+    cx:p.x,cy:p.y,rx:p.rx,ry:p.ry,
+    fill:"url(#quest-edge-mask-puff)"
+   }));
+  }
+  clearingGroup.append(lobes);
   mask.append(clearingGroup);
-  painted.set(region.id,{clearingGroup});
+
+  const cloudFront=edgeClouds(region,opacity,points);
+  cloudGroup.append(cloudFront);
+  painted.set(region.id,{clearingGroup,cloudFront});
   if(!animated||!window.requestAnimationFrame)return;
   const started=performance.now();
   const frame=now=>{
    if(!clearingGroup.isConnected)return;
    const t=Math.min(1,Math.max(0,(now-started)/1200));
-   clearingGroup.setAttribute("opacity",String(1-Math.pow(1-t,3)));
+   const alpha=String(1-Math.pow(1-t,3));
+   clearingGroup.setAttribute("opacity",alpha);
+   cloudFront.setAttribute("opacity",alpha);
    if(t<1)requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
@@ -208,6 +317,7 @@
   for(const [id,entry] of painted){
    if(!ids.has(id)){
     entry.clearingGroup.remove();
+    entry.cloudFront.remove();
     painted.delete(id);
    }
   }
