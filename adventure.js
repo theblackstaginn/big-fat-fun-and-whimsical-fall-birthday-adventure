@@ -71,7 +71,7 @@ function renderMap(){
 }
 function renderList(){list.replaceChildren();const unlockedThrough=Math.min(completed.length,chapters.length-1);chapters.slice(0,unlockedThrough+1).forEach((chapter,index)=>{const button=document.createElement("button");button.type="button";button.className="chapter-button"+(completed.includes(chapter.id)?" is-complete":"");button.setAttribute("aria-current",chapter.id===selected.id?"true":"false");button.innerHTML=`<span class="chapter-number">${completed.includes(chapter.id)?"✓":String(index+1).padStart(2,"0")}</span><span><span class="chapter-name">${chapter.title}</span><span class="chapter-subtitle">${chapter.subtitle}</span></span><span class="chapter-state" aria-hidden="true">${chapter.id===selected.id?"✦":"›"}</span>`;button.addEventListener("click",()=>{selected=chapter;renderProgress()});list.append(button)});for(let i=unlockedThrough+1;i<chapters.length;i++){const locked=document.createElement("div");locked.className="fog-slot";locked.setAttribute("aria-label","Unrevealed location; complete the current chapter to reveal it");locked.innerHTML='<span class="fog-lock" aria-hidden="true">⌑</span><span class="fog-copy">Uncharted trail<span class="fog-caption">Complete the revealed chapter to discover this place</span></span><span aria-hidden="true">· · ·</span>';list.append(locked)}}
 function renderDetail(){const i=chapters.indexOf(selected),isDone=completed.includes(selected.id);document.querySelector("#detail-kicker").textContent=isDone?`CHAPTER ${String(i+1).padStart(2,"0")} · EXPLORED`:`CHAPTER ${String(i+1).padStart(2,"0")} · CURRENT CHAPTER`;document.querySelector("#detail-title").textContent=selected.title;document.querySelector("#detail-description").textContent=selected.description;document.querySelector("#detail-clue").textContent=selected.clue;document.querySelector("#detail-meta").innerHTML=`<span><strong>Where:</strong> ${selected.address}</span><span><strong>When:</strong> ${selected.hours}</span><span><strong>Pace:</strong> ${selected.duration}</span>`;document.querySelector("#detail-directions").innerHTML=`<a href="${selected.google}" target="_blank" rel="noopener">Open Google Maps ↗</a><a href="${selected.apple}" target="_blank" rel="noopener">Open Apple Maps ↗</a>`;const button=document.querySelector("#complete-button");button.disabled=isDone;button.textContent=isDone?(completed.length===chapters.length?"Adventure complete":"Place explored ✓"):"Mark this place visited · reveal next";button.setAttribute("aria-pressed",String(isDone))}
-let streetMap=null,streetPins=null,leafletPromise=null,geocodeChain=Promise.resolve(),lastGeocodeAt=0,mapRenderId=0;const geocodePending=new Map(),geocodeKey="jess-birthday-map-coordinates-v1",helenCenter=[34.7012,-83.7246];
+let streetMap=null,streetPins=null,leafletPromise=null,geocodeChain=Promise.resolve(),lastGeocodeAt=0,mapRenderId=0,lastNearbyFocusId=null;const geocodePending=new Map(),geocodeKey="jess-birthday-map-coordinates-v1",helenCenter=[34.7012,-83.7246];
 const homeTestLocation={lat:34.564025725501,lng:-83.673061413538,address:"774 Will Hambrick Rd, Cleveland, GA 30528"};
 const CLEVELAND_HOME_SCENE={
  extent:{west:-83.6735,south:34.5636,east:-83.6726,north:34.5645},
@@ -248,6 +248,13 @@ function centerOnLivePlayer(){
   }else if(streetMap)streetMap.setView(livePlayerPoint,Math.max(streetMap.getZoom(),17),{animate:true});
  }else if(worldMap)worldMap.setView(livePlayerPoint,Math.max(worldMap.getZoom(),16),{animate:true});
 }
+/* Explicit player focus: reuse the live GPS marker without changing quest progress. */
+function focusPlayerMarker(){
+ if(!livePlayerPoint){startLivePlayerTracking();return;}
+ playerFollow=true;
+ centerOnLivePlayer();
+ setGpsControls("Following your position");
+}
 function stopLivePlayerTracking(){
  gpsSession++;
  if(playerWatchId!==null&&navigator.geolocation)navigator.geolocation.clearWatch(playerWatchId);
@@ -309,10 +316,11 @@ function ensureLeafletHomeControl(L,map,questPoint){
  control.questPoint=questPoint;
  control.onAdd=function(){
   const wrap=L.DomUtil.create("div","leaflet-bar rpg-location-controls");
-  wrap.innerHTML='<button type="button" aria-label="Show home location" title="Show home location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
+  wrap.innerHTML='<button type="button" aria-label="Show home location" title="Show home location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button><button type="button" aria-label="Center map on your player marker" title="Center on player marker"><span aria-hidden="true">'+playerMarkerSvg()+'</span></button>';
   L.DomEvent.disableClickPropagation(wrap);
   L.DomEvent.on(wrap.children[0],"click",event=>{L.DomEvent.preventDefault(event);onPlayerMapDragged();map.setView([homeTestLocation.lat,homeTestLocation.lng],18.5,{animate:true})});
   L.DomEvent.on(wrap.children[1],"click",event=>{L.DomEvent.preventDefault(event);onPlayerMapDragged();map.setView(control.questPoint||helenCenter,17,{animate:true})});
+   L.DomEvent.on(wrap.children[2],"click",event=>{L.DomEvent.preventDefault(event);focusPlayerMarker()});
   return wrap;
  };
  control.addTo(map);streetHomeControl=control;
@@ -332,9 +340,10 @@ function ensureMapLibreHomeControl(ml,map,questCenter){
   onAdd(mapInstance){
    this.map=mapInstance;
    this.container=document.createElement("div");this.container.className="maplibregl-ctrl maplibregl-ctrl-group rpg-location-controls";
-   this.container.innerHTML='<button type="button" aria-label="Show home location" title="Show home location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button>';
+   this.container.innerHTML='<button type="button" aria-label="Show home location" title="Show home location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button><button type="button" aria-label="Center map on your player marker" title="Center on player marker"><span aria-hidden="true">'+playerMarkerSvg()+'</span></button>';
    this.container.children[0].addEventListener("click",()=>{onPlayerMapDragged();mapInstance.flyTo({center:[homeTestLocation.lng,homeTestLocation.lat],zoom:18.5,pitch:42})});
    this.container.children[1].addEventListener("click",()=>{onPlayerMapDragged();mapInstance.flyTo({center:this.questCenter,zoom:17,pitch:42})});
+    this.container.children[2].addEventListener("click",focusPlayerMarker);
    return this.container;
   },
   onRemove(){this.container?.remove();this.map=null}
@@ -764,6 +773,13 @@ function updateNearby(){
  document.querySelector("#nearby-address").textContent=selected.address;
  const nearby=document.querySelector("#nearby-view");
  if(nearby.hidden)return;
+ /* A newly revealed or selected quest takes priority over GPS auto-follow.
+  * The player button can restore GPS following at any time. */
+ if(lastNearbyFocusId!==null&&lastNearbyFocusId!==selected.id&&playerFollow){
+  playerFollow=false;
+  setGpsControls("GPS active · viewing quest");
+ }
+ lastNearbyFocusId=selected.id;
  /* Invalidate any old vector request immediately, before geocoding starts. */
  ++neighborhoodRequest;
  nearby.classList.remove("vector-ready");
