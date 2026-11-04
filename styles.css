@@ -441,3 +441,8 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .quest-achievement.is-revealing .quest-achievement-inner{animation:treasure-bloom .95s ease-out both}
 @keyframes treasure-bloom{0%{transform:scale(1);opacity:1}45%{transform:scale(1.03);opacity:.95}100%{transform:scale(1.04);opacity:0}}
 @media(prefers-reduced-motion:reduce){.quest-achievement.is-revealing .quest-achievement-inner{animation:none}}
+
+/* Smooth, non-destructive northward reveal of the painted overworld on iPhone Safari. */
+@property --fog-front{syntax:"<percentage>";inherits:false;initial-value:77%}
+.rpg-fullscreen .map-canvas .overworld-fog{transition:--fog-front 1.35s cubic-bezier(.22,.7,.24,1)}
+@media(prefers-reduced-motion:reduce){.rpg-fullscreen .map-canvas .overworld-fog{transition:none}}
