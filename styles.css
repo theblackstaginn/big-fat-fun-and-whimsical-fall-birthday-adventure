@@ -405,3 +405,39 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .rpg-fullscreen .map-canvas .overworld-fog{position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(180deg,rgba(16,24,37,.93),rgba(31,28,45,.84));mask-image:linear-gradient(to bottom,#000 0%,#000 calc(var(--fog-front,76%) - 8%),transparent calc(var(--fog-front,76%) + 6%));-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 calc(var(--fog-front,76%) - 8%),transparent calc(var(--fog-front,76%) + 6%))}
 .rpg-fullscreen .map-canvas .overworld-fog[hidden]{display:none!important}
 @media print{.rpg-fullscreen .map-canvas .overworld-fog{display:none!important}}
+
+/* Quest keepsakes: mobile Journal, Curios, and a full-screen achievement reveal. */
+.rpg-sheet-body .field-notes > div:not(.quest-memory-card),.rpg-sheet-body .field-notes .notes-grid{display:none!important}
+.rpg-sheet-body .field-notes{min-height:0;padding:0;margin:0}
+.quest-memory-card{display:flex;flex-direction:column;gap:10px;margin:18px 0 16px;padding:16px;border:1px solid #b88364;border-radius:13px;background:linear-gradient(145deg,#4b3040,#2b222f);box-shadow:inset 0 0 0 1px #e4b48522;color:#f9e6d2}
+.quest-memory-card>label:first-child,.quest-memory-card>strong:first-child{font:700 1.1rem/1.25 Georgia,serif;color:#ffe0bb}
+.quest-memory-card p{margin:0;color:#e3cdb7;font:.83rem/1.5 system-ui,sans-serif}
+.quest-memory-card textarea{display:block;box-sizing:border-box;width:100%;min-height:94px;resize:vertical;padding:12px;border:1px solid #bc8e74;border-radius:9px;background:#1e1926;color:#fff2df;font:1rem/1.45 system-ui,sans-serif}
+.quest-memory-card textarea:focus-visible,.quest-memory-card input:focus-visible,.quest-memory-card button:focus-visible,.quest-achievement button:focus-visible{outline:2px solid #ffe0b6;outline-offset:3px}
+.quest-memory-card button,.quest-memory-card label[for=curios-photo-input]{display:block;align-self:stretch;padding:12px 14px;border:1px solid #efc49a;border-radius:9px;background:linear-gradient(140deg,#b87963,#7a4856);color:#fff6e6;font:700 .85rem Georgia,serif;text-align:center;cursor:pointer}
+.quest-memory-card button:disabled{opacity:.65;cursor:wait}
+.quest-memory-card .memory-feedback{min-height:1.25rem;color:#f4cb99;font:.76rem/1.5 system-ui,sans-serif}
+.curios-memory-card input[type=file]{width:100%;box-sizing:border-box;max-width:100%;padding:10px;border:1px dashed #d4a485;border-radius:10px;background:#2a2130;color:#f2dbc3;font:.8rem system-ui,sans-serif}
+.curios-memory-card>img{display:block;width:100%;max-height:42dvh;object-fit:contain;border:1px solid #b88970;border-radius:10px;background:#1d1821}
+.curios-memory-card>img[hidden]{display:none}
+.curios-collection{display:grid;gap:10px;margin-top:14px;padding-top:16px;border-top:1px solid #ad7b6d}
+.curios-collection h3{margin:0;color:#ffe0bb;font:700 1.07rem Georgia,serif}
+#curios-album{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,185px),1fr));gap:12px}
+.curios-album-entry{display:grid;align-content:start;gap:8px;padding:12px;border:1px solid #895c59;border-radius:9px;background:#2a1d2c;color:#f9ead8}
+.curios-album-entry strong{font:700 .86rem Georgia,serif}
+.curios-album-entry p{font:.8rem/1.42 system-ui,sans-serif;white-space:pre-wrap;overflow-wrap:anywhere}
+.curios-album-entry img{width:100%;max-height:260px;object-fit:contain;border-radius:7px}
+.quest-achievement{position:fixed;inset:0;z-index:140;display:grid;place-items:center;overflow-y:auto;padding:max(16px,env(safe-area-inset-top,0px)) 16px max(18px,env(safe-area-inset-bottom,0px));box-sizing:border-box;background:radial-gradient(ellipse at 50% 40%,#644152bc,#130d18ee 68%);color:#fff0d9}
+.quest-achievement[hidden]{display:none!important}
+.quest-achievement-inner{width:min(100%,430px);max-height:min(88dvh,820px);overflow:auto;box-sizing:border-box;padding:26px 23px;text-align:center;border:1px solid #d7a277;border-radius:21px;background:radial-gradient(ellipse at top,#80504b69,transparent 52%),linear-gradient(165deg,#4e3041,#241b2b);box-shadow:inset 0 0 0 3px #f3c18b25,0 18px 52px #05040ace}
+.achievement-sigil{display:block;color:#f8d2a4;font:48px Georgia,serif;line-height:1;filter:drop-shadow(0 0 16px #e4ac83a1)}
+.achievement-kicker{margin:14px 0 8px;color:#eab98e;font:700 .7rem/1.3 system-ui,sans-serif;letter-spacing:.22em}
+.quest-achievement h2{margin:0;color:#ffedce;font:700 clamp(1.8rem,7vw,2.65rem)/1.12 Georgia,serif}
+.quest-achievement p{color:#ead3bc;font:.9rem/1.48 system-ui,sans-serif}
+#achievement-place{color:#f8c89c;font:italic 1.18rem/1.3 Georgia,serif}
+#achievement-photo{width:auto;max-width:100%;height:auto;max-height:28dvh;object-fit:contain;border-radius:10px;border:1px solid #c7977b;margin:10px auto}
+#achievement-photo[hidden]{display:none}
+.quest-achievement button{display:block;width:100%;margin-top:18px;padding:15px 12px;border:1px solid #ffe0b0;border-radius:11px;background:linear-gradient(135deg,#e9bf91,#b77764);color:#352334;font:700 1rem/1.3 Georgia,serif;cursor:pointer}
+.quest-achievement.is-revealing .quest-achievement-inner{animation:treasure-bloom .95s ease-out both}
+@keyframes treasure-bloom{0%{transform:scale(1);opacity:1}45%{transform:scale(1.03);opacity:.95}100%{transform:scale(1.04);opacity:0}}
+@media(prefers-reduced-motion:reduce){.quest-achievement.is-revealing .quest-achievement-inner{animation:none}}
