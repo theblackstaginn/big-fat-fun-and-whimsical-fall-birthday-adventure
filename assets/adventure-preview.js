@@ -34,7 +34,7 @@
  '.preview-buttons{display:flex;gap:7px;margin-top:4px}',
  '.preview-buttons button{flex:1;min-height:40px;padding:8px;border:1px solid #deb18a;border-radius:9px;background:#a16765;color:#fff4de;font:700 .75rem/1.25 Georgia,serif}',
  '.preview-buttons #preview-exit{background:#322636;color:#f4d5b6}',
- '.quest-preview-active #rpg-reset{display:none!important}',
+ '.quest-preview-active #rpg-reset,.quest-preview-active #reset-progress,.quest-preview-active .quest-arrival-card{display:none!important}',
  '.quest-preview-active .quest-memory-card #witch-memory-save,.quest-preview-active .quest-memory-card #curios-photo-input{opacity:.45;pointer-events:none}'
  ].join("\n");
  document.head.append(style);
