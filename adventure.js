@@ -81,9 +81,20 @@ const CLEVELAND_HOME_SCENE={
   {height:3.8,pixels:[[516,409],[644,413],[658,456],[524,452]],roof:"#98604a"}
  ],
  trees:[
+  /* Retain the existing tree placements; these are illustrative parcel-local
+   * pixels, not GPS-surveyed individual trunks. */
   [286,85],[370,55],[765,55],[842,105],[192,300],[226,376],[205,456],[267,526],
   [362,593],[408,662],[754,293],[844,351],[919,465],[821,562],[775,635],[916,681],
-  [471,758],[535,864],[408,920],[120,842],[48,652],[96,512],[278,172],[915,235]
+  [471,758],[535,864],[408,920],[120,842],[48,652],[96,512],[278,172],[915,235],
+  /* Fill woodland edges while keeping the mapped roofs and open yard clear. */
+  [112,70],[194,104],[465,57],[952,86],[714,145],[962,175],
+  [56,215],[115,280],[64,377],[146,557],[82,735],
+  [957,315],[955,540],[887,603],[955,761],
+  [178,930],[294,960],[605,924],[684,859],[746,953],
+  [328,328],[357,435],[385,532],[691,534],[682,625],[596,718],[317,737],[714,344],
+  /* Seven mature trees: size multiplier used in both map renderers. */
+  [132,195,2.25],[402,223,2.15],[826,221,2.3],[896,410,2.1],
+  [303,650,2.4],[707,772,2.3],[867,854,2.2]
  ]
 };
 let streetHomeControl=null,neighborhoodHomeControl=null;
@@ -118,7 +129,7 @@ function renderClevelandHomeSceneLeaflet(L){
  const palette=["#9b4f31","#b56b2e","#6c7642","#4d6855","#8b6b36"];
  CLEVELAND_HOME_SCENE.trees.forEach((pixel,index)=>{
   const point=homePixelToLatLng(pixel),color=palette[(index*7+Math.floor(pixel[0]/100))%palette.length];
-  const size=20+(index%4)*2;
+  const size=Math.round((20+(index%4)*2)*(pixel[2]||1));
   const html='<span class="rpg-home-tree" style="--tree-color:'+color+';--tree-size:'+size+'px"><i></i><b></b></span>';
   const icon=L.divIcon({className:"rpg-home-tree-shell",html,iconSize:[size+14,size+15],iconAnchor:[(size+14)/2,size+11]});
   L.marker(point,{pane:"markerPane",icon,keyboard:false,interactive:false,zIndexOffset:120}).addTo(trees);
@@ -137,7 +148,7 @@ function homeSceneFeatureCollection(){
  const treeVariants=["maple-rust","maple-amber","oak-moss","pine-green","maple-gold"];
  CLEVELAND_HOME_SCENE.trees.forEach((pixel,index)=>{
   const variation=(index*7+Math.floor(pixel[0]/100))%treeVariants.length;
-  features.push({type:"Feature",properties:{kind:"tree",sprite:treeVariants[variation],scale:.78+(index%4)*.1},geometry:{type:"Point",coordinates:homePixelToLngLat(pixel)}});
+  features.push({type:"Feature",properties:{kind:"tree",sprite:treeVariants[variation],scale:(.78+(index%4)*.1)*(pixel[2]||1)},geometry:{type:"Point",coordinates:homePixelToLngLat(pixel)}});
  });
  return {type:"FeatureCollection",features};
 }
