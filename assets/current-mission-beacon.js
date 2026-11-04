@@ -17,7 +17,7 @@
   candle:[652,1013],
   glass:[729,465],
   zuzu:[650,321],
-  river:[145,570],
+  river:[355,786],
   sweet:[335,317],
   park:[890,160]
  });
@@ -113,9 +113,16 @@
   beacon.setAttribute("transform","translate("+point[0]+" "+point[1]+")");
   beacon.setAttribute("data-chapter",chapter.id);
  }
+ /* Never retain the previous chapter's marker. A dinner detour has no anchor. */
+ window.syncCurrentMissionBeacon=syncBeacon;
  const previousSceneUpdate=updateSceneArtwork;
  updateSceneArtwork=function(){
   previousSceneUpdate();
+  syncBeacon();
+ };
+ const previousRenderProgress=renderProgress;
+ renderProgress=function(){
+  previousRenderProgress();
   syncBeacon();
  };
  syncBeacon();
