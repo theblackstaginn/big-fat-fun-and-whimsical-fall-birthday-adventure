@@ -102,6 +102,11 @@ function renderClevelandHomeSceneLeaflet(L){
  streetTerrain.__homeSceneAdded=true;
  const pane=streetMap.getPane("village-geometry");
  const buildings=L.layerGroup(),trees=L.layerGroup();
+ /* Paint autumn grass before drawing Home's existing buildings and trees. */
+ const e=CLEVELAND_HOME_SCENE.extent;
+ L.imageOverlay(new URL("assets/cleveland-painted-ground.webp?v=20261104-home-grass1",document.baseURI).href,
+  [[e.south,e.west],[e.north,e.east]],
+  {pane:"village-geometry",interactive:false,opacity:1}).addTo(streetTerrain);
  for(const building of CLEVELAND_HOME_SCENE.buildings){
   const roof=building.pixels.map(homePixelToLatLng);
   const wall=roof.map(([lat,lng])=>[lat-0.000018,lng+0.000012]);
@@ -454,7 +459,13 @@ function installSyntheticHelenGround(map){
   {url:new URL("assets/helen-painted-ground.png?v=20261103-ground21",document.baseURI).href,
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],minzoom:12},
   {url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground21",document.baseURI).href,
-   coordinates:[[-83.732,34.708],[-83.717,34.708],[-83.717,34.694],[-83.732,34.694]],minzoom:14}
+   coordinates:[[-83.732,34.708],[-83.717,34.708],[-83.717,34.694],[-83.732,34.694]],minzoom:14},
+  /* Cleveland Home uses the Helen renderer with its own geographic bounds. */
+  {url:new URL("assets/cleveland-painted-ground.webp?v=20261104-home-grass1",document.baseURI).href,
+   coordinates:[[CLEVELAND_HOME_SCENE.extent.west,CLEVELAND_HOME_SCENE.extent.north],
+    [CLEVELAND_HOME_SCENE.extent.east,CLEVELAND_HOME_SCENE.extent.north],
+    [CLEVELAND_HOME_SCENE.extent.east,CLEVELAND_HOME_SCENE.extent.south],
+    [CLEVELAND_HOME_SCENE.extent.west,CLEVELAND_HOME_SCENE.extent.south]],minzoom:15}
  ];
  return true;
 }
@@ -558,8 +569,6 @@ function styleVillageAtlas(map){
   * geometry then draws over any imperfect NAIP edge or canopy classification. */
  const surfaceLayers=new Set(["water","waterway","transportation","building"]);
  const vegetationBefore=layers.find(layer=>surfaceLayers.has(layer["source-layer"]))?.id||symbolBefore;
-  /* Map the home test parcel into the vector renderer too; this is the active iPhone path. */
-  try{installClevelandHomeMapLibreScene(map,vegetationBefore,symbolBefore)}catch{/* Keep map navigation available if decoration fails. */}
  /* Pattern only true OSM woodland polygons: it never paints trees onto streets. */
  try{
   const woods=makeAutumnCanopyTile();
@@ -629,6 +638,10 @@ function styleVillageAtlas(map){
    const treeBefore=layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore;
    try{window.installHelenTreeOverlay(map,treeBefore)}catch{/* Trees are decorative; retain map navigation. */}
   }
+  /* Install the home scene ABOVE its painted grass, preserving existing trees
+   * and all three previously mapped home structures. */
+  try{installClevelandHomeMapLibreScene(map,vegetationBefore,symbolBefore)}
+  catch{/* The homestead art is optional; street navigation must still work. */}
   /* Overlay real sloping roof geometry only when the lightweight renderer is available.
    * If unsupported or unavailable, MapLibre's native buildings remain in place. */
   if(typeof window.installAlpineRoofLayer==="function"){
