@@ -1,6 +1,7 @@
-/* Landmark clearings for the approved 1024x1536 Helen overworld.
- * No pixels in the original artwork are changed. Each newly unlocked stop
- * opens its own cloud pocket; park completion clears the entire sky. */
+/* Progressive storybook cloudscape over the original 1024x1536 painting.
+ * All reveals form ONE growing explored landscape, not detached circular holes.
+ * Each locked shop stays hidden until its chapter unlocks.
+ * When Hansel & Gretel is completed, the park opens and all clouds part. */
 (()=>{
  "use strict";
  const mist=document.querySelector("#overworld-fog");
@@ -13,18 +14,15 @@
   for(const [key,val] of Object.entries(attrs))el.setAttribute(key,String(val));
   return el;
  }
- const stops=[
-  {id:"ruby",x:685,y:1336,rx:246,ry:193},
-  {id:"wonderland",x:217,y:1084,rx:226,ry:177},
-  {id:"candle",x:649,y:1096,rx:210,ry:162},
-  {id:"glass",x:738,y:522,rx:212,ry:151},
-  {id:"zuzu",x:662,y:368,rx:214,ry:161},
-  {id:"river",x:429,y:801,rx:281,ry:226},
-  /* Bangkok Haus is not painted onto Main Street. Its reveal is a
-     clearly marked detour on Edelweiss Strasse, not a fabricated shop. */
-  {id:"dinner",detour:true},
-  {id:"sweet",x:266,y:365,rx:225,ry:179},
-  {id:"park",x:865,y:159,rx:192,ry:156}
+ const territories=[
+  {id:"ruby",d:"M 315 1536 C 326 1490 389 1440 455 1398 C 463 1347 480 1263 537 1232 C 597 1190 654 1178 729 1193 C 797 1217 856 1225 913 1203 C 969 1185 1002 1177 1024 1159 L 1024 1536 Z"},
+  {id:"wonderland",d:"M 0 1536 L 0 1171 C 55 1155 77 1108 103 1075 C 143 1029 197 1004 252 1018 C 320 1017 342 1054 363 1090 C 381 1125 391 1170 430 1212 C 460 1242 464 1320 509 1371 C 455 1421 420 1462 397 1536 Z"},
+  {id:"candle",d:"M 351 1536 C 369 1486 400 1406 474 1346 C 492 1291 501 1224 529 1150 C 551 1091 579 1024 648 998 C 721 987 786 1009 841 994 C 916 970 976 967 1024 969 L 1024 1536 Z"},
+  {id:"glass",d:"M 580 1169 C 609 1085 653 1027 713 950 C 733 886 745 830 743 765 C 715 703 694 664 674 597 C 663 554 681 513 730 486 C 782 453 831 457 876 471 C 931 497 973 515 1024 481 L 1024 1230 C 910 1252 773 1206 580 1169 Z"},
+  {id:"zuzu",d:"M 606 618 C 594 574 574 502 568 446 C 556 385 564 319 624 281 C 698 247 765 279 825 281 C 905 287 967 300 1024 279 L 1024 751 C 953 730 886 663 815 626 C 754 600 678 604 606 618 Z"},
+  {id:"river",d:"M 0 1189 C 37 1136 104 1060 159 987 C 187 923 223 854 241 782 C 260 724 311 694 358 701 C 398 719 442 743 488 721 C 526 709 550 717 572 753 C 605 808 594 874 556 926 C 505 993 483 1099 465 1210 L 0 1455 Z"},
+  {id:"dinner",d:"M 0 1059 C 43 989 92 899 142 814 C 168 739 181 667 207 615 C 249 566 287 574 340 603 C 375 642 451 659 512 628 C 583 606 655 633 703 688 C 723 766 687 828 607 879 C 550 950 506 1033 459 1117 L 0 1304 Z"},
+  {id:"sweet",d:"M 0 0 L 504 0 C 533 80 572 140 604 193 C 646 222 697 227 730 254 C 768 277 791 323 779 382 C 785 435 846 495 913 521 C 975 561 996 586 1024 628 L 1024 1536 L 0 1536 Z"}
  ];
  const svg=node("svg",{viewBox:"0 0 1024 1536",preserveAspectRatio:"xMidYMid slice","aria-hidden":"true"});
  const defs=node("defs");
@@ -40,7 +38,6 @@
  gradient("linearGradient","quest-cloud-sky",[["0%","#f7fcff"],["44%","#e2f1fc"],["78%","#eaf7ff"],["100%","#daeefc"]],{x1:"0",y1:"0",x2:"0",y2:"1"});
  gradient("radialGradient","quest-cloud-top",[["0%","#ffffff",".98"],["55%","#ffffff",".96"],["80%","#f9fdff",".65"],["100%","#ecf7ff","0"]]);
  gradient("radialGradient","quest-cloud-bottom",[["0%","#9bc4e5",".48"],["57%","#b8d9f0",".28"],["100%","#e9f6ff","0"]]);
- gradient("radialGradient","quest-cloud-hole",[["0%","#000000"],["65%","#000000"],["86%","#b4b4b4"],["100%","#ffffff"]]);
  const mask=node("mask",{id:"quest-unique-landmark-mask",x:0,y:0,width:1024,height:1536,maskUnits:"userSpaceOnUse",maskContentUnits:"userSpaceOnUse",style:"mask-type:luminance"});
  mask.append(node("rect",{x:0,y:0,width:1024,height:1536,fill:"#ffffff"}));
  defs.append(mask);
@@ -71,39 +68,53 @@
  mist.classList.add("landmark-clouds");
  mist.append(svg);
 
- const opened=new Map();
- let previous=-1;
- function openHole(stop,animate){
-  const hole=node("ellipse",{cx:stop.x,cy:stop.y,rx:animate?1:stop.rx,ry:animate?1:stop.ry,fill:"url(#quest-cloud-hole)"});
-  mask.append(hole);
-  opened.set(stop.id,hole);
-  if(!animate)return;
+ /* Masks grow as broad, connected terrain swaths.
+  * Three translucent outlines soften the irregular cloudfront like a watercolor,
+  * without a giant blur filter that can slow down Safari. */
+ const painted=new Map();
+ let previousCount=-1;
+ const parkIndex=chapters.findIndex(chapter=>chapter.id==="park");
+ if(parkIndex!==8)throw Error("Unexpected chapter order for landmark cloud reveal");
+ function addTerritory(region,animated){
+  const group=node("g",{opacity:animated?0:1,"data-discovered":region.id});
+  const soft=node("path",{d:region.d,fill:"none",stroke:"#000000","stroke-opacity":".18","stroke-width":74,"stroke-linecap":"round","stroke-linejoin":"round"});
+  const inner=node("path",{d:region.d,fill:"none",stroke:"#000000","stroke-opacity":".43","stroke-width":30,"stroke-linecap":"round","stroke-linejoin":"round"});
+  const clearing=node("path",{d:region.d,fill:"#000000"});
+  group.append(soft,inner,clearing);
+  mask.append(group);
+  painted.set(region.id,group);
+  if(!animated||!window.requestAnimationFrame)return;
   const started=performance.now();
-  function frame(time){
-   if(!hole.isConnected)return;
-   const t=Math.min(1,Math.max(0,(time-started)/1100));
-   const ease=1-Math.pow(1-t,3);
-   hole.setAttribute("rx",String(Math.max(1,ease*stop.rx)));
-   hole.setAttribute("ry",String(Math.max(1,ease*stop.ry)));
+  const frame=now=>{
+   if(!group.isConnected)return;
+   const t=Math.min(1,Math.max(0,(now-started)/1200));
+   group.setAttribute("opacity",String(1-Math.pow(1-t,3)));
    if(t<1)requestAnimationFrame(frame);
-  }
+  };
   requestAnimationFrame(frame);
  }
  function refresh(){
   const count=Math.min(completed.length,chapters.length);
-  const finished=count>=chapters.length;
-  mist.hidden=!portraitReady||finished;
-  detour.style.display=count>=6&&!finished?"":"none";
-  if(finished){previous=count;return}
-  /* Visited + currently unlocked chapters stay open; future chapters remain
-     hidden, regardless of which previously visited chapter is selected. */
-  const visible=stops.slice(0,count+1).filter(s=>!s.detour);
-  const wanted=new Set(visible.map(s=>s.id));
-  for(const [id,shape] of opened)if(!wanted.has(id)){shape.remove();opened.delete(id)}
-  const animate=previous>=0&&count===previous+1&&!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
-  for(const stop of visible)if(!opened.has(stop.id))openHole(stop,animate&&stop.id===visible[visible.length-1].id);
-  previous=count;
+  /* The park unlocks after chapter 8 (Hansel & Gretel).
+   * It does NOT require park completion to lift the final clouds. */
+  const parkUnlocked=count>=parkIndex;
+  mist.hidden=!portraitReady||parkUnlocked;
+  detour.style.display=count>=6&&!parkUnlocked?"":"none";
+  if(parkUnlocked){previousCount=count;return}
+  const wanted=territories.slice(0,count+1);
+  const ids=new Set(wanted.map(region=>region.id));
+  /* Preview exit/reset restores the earlier cloud coverage exactly. */
+  for(const [id,group] of painted){
+   if(!ids.has(id)){group.remove();painted.delete(id)}
+  }
+  const freshStep=previousCount>=0&&count===previousCount+1;
+  const reduceMotion=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  for(const region of wanted){
+   if(!painted.has(region.id))addTerritory(region,freshStep&&!reduceMotion&&region.id===wanted[wanted.length-1].id);
+  }
+  previousCount=count;
  }
+
  const original=updateSceneArtwork;
  updateSceneArtwork=function(){original();refresh()};
  refresh();
