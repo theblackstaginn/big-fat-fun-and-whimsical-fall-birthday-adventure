@@ -645,16 +645,18 @@ async function renderVillageAtlas(center,features){
   });
  }
  await neighborhoodLoad;
- if(request!==neighborhoodRequest||!neighborhoodMap)return;
+ if(request!==neighborhoodRequest||!neighborhoodMap||nearby.hidden)return;
  neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42});
  for(const marker of neighborhoodPins)marker.remove();
  neighborhoodPins=[];
  for(const {chapter,point,name,sideStop} of withZuZuNearbyMarker(features)){
   const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id);
+  const isCurrent=!sideStop&&!visited&&chapter.id===chapters[completed.length]?.id;
   const node=document.createElement("button");node.type="button";
-  node.className="rpg-neighborhood-pin"+(sideStop?" is-zuzu":"")+(visited?" is-explored":"");
+  node.className="rpg-neighborhood-pin"+(sideStop?" is-zuzu":"")+(visited?" is-explored":"")+(isCurrent?" is-current":"");
   node.textContent=sideStop?"Z":visited?"✓":String(index+1);
-  node.setAttribute("aria-label",sideStop?"ZuZu’s Petals in White Horse Square":chapter.title+(visited?" explored":" current quest"));
+  if(isCurrent)node.setAttribute("aria-current","location");
+  node.setAttribute("aria-label",sideStop?"ZuZu’s Petals in White Horse Square":chapter.title+(isCurrent?" current quest":visited?" explored":" revealed"));
   node.title=name||chapter.title;
   node.addEventListener("click",event=>{
    event.stopPropagation();
@@ -670,7 +672,8 @@ async function renderVillageAtlas(center,features){
   neighborhoodPins.push(new ml.Marker({element:node,anchor:"bottom"}).setLngLat([point[1],point[0]]).addTo(neighborhoodMap));
  }
  addMapLibreHomePlayerMarkers(ml,neighborhoodMap);
- ensureMapLibreHomeControl(ml,neighborhoodMap,center);
+ const activePoint=features.find(item=>item.chapter.id===chapters[completed.length]?.id)?.point;
+ ensureMapLibreHomeControl(ml,neighborhoodMap,activePoint||center);
  nearby.classList.add("vector-ready");
  syncLivePlayerMarkers();
  if(playerFollow)centerOnLivePlayer();
@@ -679,10 +682,98 @@ async function renderVillageAtlas(center,features){
 }
 
 function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("dragstart",onPlayerMapDragged);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
-async function renderStreetMap(){const requestId=++mapRenderId,L=await loadLeaflet();initStreetMap(L);setStreetStatus("Finding this chapter on the real street map…");const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];for(const chapter of visible){try{points.push({chapter,point:await coordinatesFor(chapter)})}catch(error){if(chapter.id===selected.id)throw error}}if(!streetMap||requestId!==mapRenderId)return;streetPins.clearLayers();liveStreetMarker=null;renderClevelandHomeSceneLeaflet(L);withZuZuNearbyMarker(points).forEach(({chapter,point,name,sideStop})=>{const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id),icon=L.divIcon({className:"quest-pin-icon",html:`<span class="street-quest-pin${sideStop?" is-zuzu":visited?" visited":" current"}">${sideStop?"Z":visited?"✓":index+1}</span>`,iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]});L.marker(point,{icon,title:name||chapter.title,keyboard:true}).bindPopup(sideStop?"<strong>ZuZu’s Petals</strong><br>White Horse Square · beside Windmill Dutch Imports":`<strong>${chapter.title}</strong><br>${chapter.subtitle}`).addTo(streetPins)});const current=points.find(item=>item.chapter.id===selected.id);addLeafletHomePlayerMarkers(L,streetMap,streetPins);syncLivePlayerMarkers();ensureLeafletHomeControl(L,streetMap,current?.point||helenCenter);if(current){streetMap.setView(current.point,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});setStreetStatus("",false);if(playerFollow&&livePlayerPoint)centerOnLivePlayer();renderVillageAtlas(current.point,points).catch(error=>{showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true)})}else{streetMap.setView(helenCenter,15);setStreetStatus("This address could not be placed. Use the chapter’s directions below.")}}
-function updateNearby(){const wasVisited=completed.includes(selected.id);document.querySelector("#nearby-context").textContent=wasVisited?"REAL STREETS · VISITED CHAPTER":"REAL STREETS · CURRENT CHAPTER";document.querySelector("#nearby-place").textContent=selected.title;document.querySelector("#nearby-address").textContent=selected.address;if(document.querySelector("#nearby-view").hidden)return;renderStreetMap().catch(error=>{setStreetStatus(`${error.message}. Use the chapter’s directions below.`)})}
+async function renderStreetMap(){
+ const requestId=++mapRenderId,L=await loadLeaflet();
+ if(requestId!==mapRenderId)return;
+ initStreetMap(L);
+ setStreetStatus("Finding this chapter on the real street map…");
+ const visible=chapters.slice(0,Math.min(completed.length,chapters.length-1)+1),points=[];
+ for(const chapter of visible){
+  try{
+   const point=await coordinatesFor(chapter);
+   /* Never display an unrelated geocoder result as a Helen quest marker. */
+   if(Array.isArray(point)&&point.length===2&&point.every(Number.isFinite)
+    &&Math.abs(point[0]-helenCenter[0])<.08&&Math.abs(point[1]-helenCenter[1])<.08){
+    points.push({chapter,point});
+   }
+  }catch{/* Keep other unlocked stops usable when one lookup fails. */}
+ }
+ if(!streetMap||requestId!==mapRenderId)return;
+ streetPins.clearLayers();
+ liveStreetMarker=null;
+ renderClevelandHomeSceneLeaflet(L);
+ const activeId=chapters[completed.length]?.id;
+ withZuZuNearbyMarker(points).forEach(({chapter,point,name,sideStop})=>{
+  const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id);
+  const isCurrent=!sideStop&&chapter.id===activeId;
+  const pinType=sideStop?" is-zuzu":visited?" visited":isCurrent?" current":"";
+  const icon=L.divIcon({
+   className:"quest-pin-icon",
+   html:`<span class="street-quest-pin${pinType}">${sideStop?"Z":visited?"✓":index+1}</span>`,
+   iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]
+  });
+  L.marker(point,{icon,title:name||chapter.title,keyboard:true})
+   .bindPopup(sideStop?"<strong>ZuZu’s Petals</strong><br>White Horse Square · beside Windmill Dutch Imports":`<strong>${chapter.title}</strong><br>${chapter.subtitle}`)
+   .addTo(streetPins);
+ });
+ const focused=points.find(item=>item.chapter.id===selected.id);
+ const active=points.find(item=>item.chapter.id===activeId);
+ const center=focused?.point||active?.point;
+ addLeafletHomePlayerMarkers(L,streetMap,streetPins);
+ syncLivePlayerMarkers();
+ ensureLeafletHomeControl(L,streetMap,active?.point||center||helenCenter);
+ if(center){
+  streetMap.setView(center,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});
+  setStreetStatus(focused?"":"Selected location could not be placed; showing the current quest.",!focused);
+  if(playerFollow&&livePlayerPoint)centerOnLivePlayer();
+  renderVillageAtlas(center,points).catch(error=>{
+   if(requestId===mapRenderId)showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true);
+  });
+ }else{
+  streetMap.setView(helenCenter,15);
+  setStreetStatus("This location could not be placed. Use the chapter’s directions in the Journal.");
+ }
+}
+function updateNearby(){
+ const wasVisited=completed.includes(selected.id);
+ document.querySelector("#nearby-context").textContent=wasVisited?"REAL STREETS · VISITED CHAPTER":"REAL STREETS · CURRENT CHAPTER";
+ document.querySelector("#nearby-place").textContent=selected.title;
+ document.querySelector("#nearby-address").textContent=selected.address;
+ const nearby=document.querySelector("#nearby-view");
+ if(nearby.hidden)return;
+ /* Invalidate any old vector request immediately, before geocoding starts. */
+ ++neighborhoodRequest;
+ nearby.classList.remove("vector-ready");
+ if(streetPins){
+  streetPins.clearLayers();
+  liveStreetMarker=null;
+  syncLivePlayerMarkers();
+ }
+ renderStreetMap().catch(error=>setStreetStatus((error?.message||"Map unavailable")+". Use the chapter’s directions in the Journal."));
+}
 function renderProgress(){currentIndex=Math.min(completed.length,chapters.length-1);if(!completed.includes(selected.id)&&chapters.indexOf(selected)>currentIndex)selected=chapters[currentIndex];updateSceneArtwork();const count=completed.length;document.querySelector("#progress-count").textContent=`${count} of ${chapters.length} places visited`;document.querySelector(".progress-track").setAttribute("aria-valuenow",String(count));document.querySelector("#progress-fill").style.width=`${count/chapters.length*100}%`;document.querySelector("#progress-message").textContent=count===chapters.length?"Adventure complete. Jess has explored the whole map. Roll credits; cue kisses.":count===0?"The opening place is revealed. Explore it to discover the path ahead.":`${count} place${count===1?"":"s"} explored. A new destination has appeared on your map.`;renderList();renderMap();renderDetail();updateNearby()}
-function setMapMode(mode){const nearby=mode==="nearby";document.querySelector("#overview-view").hidden=nearby;document.querySelector("#nearby-view").hidden=!nearby;document.querySelector("#overview-view").classList.toggle("is-active",!nearby);document.querySelector("#nearby-view").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").classList.toggle("is-active",!nearby);document.querySelector("#mode-nearby").classList.toggle("is-active",nearby);document.querySelector("#mode-overview").setAttribute("aria-pressed",String(!nearby));document.querySelector("#mode-nearby").setAttribute("aria-pressed",String(nearby));if(nearby){updateNearby();setTimeout(()=>streetMap&&streetMap.invalidateSize(),80)}}
+function setMapMode(mode){
+ const nearby=mode==="nearby",view=document.querySelector("#nearby-view");
+ /* Enter Nearby Streets at the active, next unfinished quest, not a prior Journal selection. */
+ if(nearby&&view.hidden&&completed.length<chapters.length&&selected.id!==chapters[completed.length].id){
+  selected=chapters[completed.length];
+  renderProgress();
+ }
+ document.querySelector("#overview-view").hidden=nearby;
+ view.hidden=!nearby;
+ document.querySelector("#overview-view").classList.toggle("is-active",!nearby);
+ view.classList.toggle("is-active",nearby);
+ document.querySelector("#mode-overview").classList.toggle("is-active",!nearby);
+ document.querySelector("#mode-nearby").classList.toggle("is-active",nearby);
+ document.querySelector("#mode-overview").setAttribute("aria-pressed",String(!nearby));
+ document.querySelector("#mode-nearby").setAttribute("aria-pressed",String(nearby));
+ if(nearby){
+  updateNearby();
+  setTimeout(()=>streetMap&&streetMap.invalidateSize(),80);
+ }else{
+  ++mapRenderId;++neighborhoodRequest;
+ }
+}
 document.querySelector("#mode-overview").addEventListener("click",()=>setMapMode("overview"));document.querySelector("#mode-nearby").addEventListener("click",()=>setMapMode("nearby"));
 document.querySelector("#complete-button").addEventListener("click",()=>{if(completed.includes(selected.id)||chapters.indexOf(selected)!==completed.length)return;completed.push(selected.id);saveProgress();selected=chapters[Math.min(completed.length,chapters.length-1)];renderProgress()});document.querySelector("#reset-progress").addEventListener("click",()=>{completed=[];selected=chapters[0];try{localStorage.removeItem(storeKey)}catch{}renderProgress()});renderProgress();
 
