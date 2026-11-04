@@ -658,7 +658,7 @@ async function renderVillageAtlas(center,features){
    center:[center[1],center[0]],zoom:17,minZoom:14,maxZoom:19,pitch:42,maxPitch:55,
    bearing:0,dragRotate:false,pitchWithRotate:false,renderWorldCopies:false
   });
-  neighborhoodMap.addControl(new ml.NavigationControl({showCompass:false}),"top-left");
+  /* Zoom and navigation live in the shared upper-left rail. */
   showAtlasDiagnostic("Loading vector style and tiles");
   neighborhoodMap.on("error",event=>showAtlasDiagnostic("Map event: "+(event?.error?.message||"unknown"),true));neighborhoodMap.on("dragstart",onPlayerMapDragged);
   neighborhoodLoad=new Promise((resolve,reject)=>{
@@ -703,8 +703,6 @@ async function renderVillageAtlas(center,features){
   neighborhoodPins.push(new ml.Marker({element:node,anchor:"bottom"}).setLngLat([point[1],point[0]]).addTo(neighborhoodMap));
  }
  addMapLibreHomePlayerMarkers(ml,neighborhoodMap);
- const activePoint=features.find(item=>item.chapter.id===chapters[completed.length]?.id)?.point;
- ensureMapLibreHomeControl(ml,neighborhoodMap,activePoint||center);
  nearby.classList.add("vector-ready");
  syncLivePlayerMarkers();
  if(playerFollow)centerOnLivePlayer();
@@ -712,7 +710,7 @@ async function renderVillageAtlas(center,features){
  showAtlasDiagnostic("Vector neighborhood visible");
 }
 
-function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:true,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("dragstart",onPlayerMapDragged);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
+function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:false,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("dragstart",onPlayerMapDragged);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
 async function renderStreetMap(){
  const requestId=++mapRenderId,L=await loadLeaflet();
  if(requestId!==mapRenderId)return;
@@ -753,7 +751,6 @@ async function renderStreetMap(){
  const center=focused?.point||active?.point||previous?.point;
  addLeafletHomePlayerMarkers(L,streetMap,streetPins);
  syncLivePlayerMarkers();
- ensureLeafletHomeControl(L,streetMap,active?.point||center||helenCenter);
  if(center){
   streetMap.setView(center,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});
   setStreetStatus(focused?"":active?"Selected location could not be placed; showing the current quest.":"Current location could not be placed; showing the last explored stop.",!focused);
@@ -811,6 +808,7 @@ function setMapMode(mode){
   setTimeout(()=>streetMap&&streetMap.invalidateSize(),80);
  }else{
   ++mapRenderId;++neighborhoodRequest;
+  setTimeout(()=>worldMap&&worldMap.invalidateSize(),80);
  }
 }
 document.querySelector("#mode-overview").addEventListener("click",()=>setMapMode("overview"));document.querySelector("#mode-nearby").addEventListener("click",()=>setMapMode("nearby"));
@@ -843,7 +841,54 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   };
   const closePanel=()=>{sheet.classList.remove("is-open");sheet.hidden=true;shade.hidden=true;};
   hud.querySelectorAll("[data-panel]").forEach(button=>button.addEventListener("click",()=>openPanel(button.dataset.panel)));
-  hud.querySelector("#rpg-locate").addEventListener("click",startLivePlayerTracking);
+  const locateButton=hud.querySelector("#rpg-locate");
+  locateButton.addEventListener("click",startLivePlayerTracking);
+  /* A single accessible map rail serves overworld, MapLibre and Leaflet.
+   * Existing map buttons are reused; this does not affect adventure progress. */
+  const mapRail=document.querySelector(".map-mode-switch");
+  if(mapRail){
+   mapRail.setAttribute("aria-label","Map controls");
+   const atlasButton=mapRail.querySelector("#mode-overview");
+   const streetsButton=mapRail.querySelector("#mode-nearby");
+   atlasButton.setAttribute("aria-label","Show enchanted overworld");
+   atlasButton.title="Enchanted Atlas";
+   atlasButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6 9 3l6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+   streetsButton.setAttribute("aria-label","Show nearby village streets");
+   streetsButton.title="Village Streets";
+   streetsButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3.8" fill="currentColor"/></svg>';
+   const addButton=(id,label,icon)=>{
+    const button=document.createElement("button");
+    button.type="button";button.id=id;button.className="map-rail-button";
+    button.setAttribute("aria-label",label);button.title=label;button.innerHTML=icon;
+    mapRail.append(button);return button;
+   };
+   const activeMap=()=>{
+    const nearby=document.querySelector("#nearby-view");
+    if(nearby&&!nearby.hidden){
+     if(neighborhoodMap&&nearby.classList.contains("vector-ready"))return neighborhoodMap;
+     return streetMap;
+    }
+    return worldMap;
+   };
+   const flyToPoint=(point,zoom)=>{
+    const map=activeMap();
+    if(!map||!point)return;
+    onPlayerMapDragged();
+    if(map===neighborhoodMap)map.flyTo({center:[point[1],point[0]],zoom,pitch:42,essential:true});
+    else map.setView(point,zoom,{animate:!window.matchMedia("(prefers-reduced-motion: reduce)").matches});
+   };
+   addButton("map-zoom-in","Zoom in",'<span aria-hidden="true">+</span>').addEventListener("click",()=>activeMap()?.zoomIn());
+   addButton("map-zoom-out","Zoom out",'<span aria-hidden="true">−</span>').addEventListener("click",()=>activeMap()?.zoomOut());
+   addButton("map-home","Show home test location",homeIconSvg()).addEventListener("click",()=>flyToPoint([homeTestLocation.lat,homeTestLocation.lng],18.5));
+   addButton("map-quest","Return to current quest",returnIconSvg()).addEventListener("click",()=>{
+    const active=chapters[Math.min(completed.length,chapters.length-1)];
+    flyToPoint(questAnchors[active?.id],17);
+   });
+   addButton("map-player","Center on player marker",playerMarkerSvg()).addEventListener("click",focusPlayerMarker);
+   locateButton.title="Start or follow GPS";
+   locateButton.setAttribute("aria-label","Start or follow GPS");
+   mapRail.append(locateButton);
+  }
   settings.querySelector("#rpg-stop-location").addEventListener("click",()=>{stopLivePlayerTracking();closePanel()});
   window.addEventListener("pagehide",stopLivePlayerTracking);
   shade.addEventListener("click",closePanel);sheet.querySelector("#rpg-close").addEventListener("click",closePanel);
@@ -869,7 +914,7 @@ function initWorldMap(L){
  worldMap=L.map("world-map",{center:helenCenter,zoom:15,minZoom:12,maxZoom:19,zoomControl:false,scrollWheelZoom:false,preferCanvas:true});
  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",crossOrigin:true}).addTo(worldMap);
  worldPins=L.layerGroup().addTo(worldMap);worldMap.on("dragstart",onPlayerMapDragged);
- L.control.zoom({position:"topright"}).addTo(worldMap);
+ /* Zoom now uses the shared left-side map rail. */
  worldMap.whenReady(()=>document.querySelector(".map-canvas").classList.add("world-ready"));
  worldMap.on("tileerror",()=>document.querySelector(".map-canvas").classList.remove("world-ready"));
  setTimeout(()=>worldMap&&worldMap.invalidateSize(),100);
