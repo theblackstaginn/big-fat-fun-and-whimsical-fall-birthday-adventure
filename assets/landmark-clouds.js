@@ -38,6 +38,9 @@
  gradient("linearGradient","quest-cloud-sky",[["0%","#f7fcff"],["44%","#e2f1fc"],["78%","#eaf7ff"],["100%","#daeefc"]],{x1:"0",y1:"0",x2:"0",y2:"1"});
  gradient("radialGradient","quest-cloud-top",[["0%","#ffffff",".96"],["38%","#ffffff",".89"],["64%","#f9fdff",".66"],["84%","#f3faff",".28"],["100%","#ecf7ff","0"]]);
  gradient("radialGradient","quest-cloud-bottom",[["0%","#9bc4e5",".39"],["50%","#b8d9f0",".24"],["78%","#e0f2ff",".09"],["100%","#e9f6ff","0"]]);
+ /* Color lives in individual drifting cloud forms, never in contour strokes. */
+ gradient("radialGradient","quest-bank-light",[["0%","#ffffff",".97"],["52%","#ffffff",".78"],["78%","#f7fcff",".25"],["100%","#f7fcff","0"]]);
+ gradient("radialGradient","quest-bank-shade",[["0%","#9dc3df",".34"],["55%","#bfdcee",".18"],["100%","#e6f5ff","0"]]);
  const mask=node("mask",{id:"quest-unique-landmark-mask",x:0,y:0,width:1024,height:1536,maskUnits:"userSpaceOnUse",maskContentUnits:"userSpaceOnUse",style:"mask-type:luminance"});
  mask.append(node("rect",{x:0,y:0,width:1024,height:1536,fill:"#ffffff"}));
  defs.append(mask);
@@ -68,23 +71,74 @@
  mist.classList.add("landmark-clouds");
  mist.append(svg);
 
- /* Each discovery leaves a soft, layered bank of cloud rather than a
-  * crisp cut-out. Concentric translucent strokes feather the luminance mask
-  * over about 85 painting pixels, without a large SVG blur on iPhone Safari.
-  * The colored front remains INSIDE the same cloud mask, so overlapping
-  * discoveries never leave seams across previously explored terrain. */
+ /* Only the reveal MASK has a soft grayscale feather. Its strokes do
+  * not draw colored rings on the painting. Light, low-contrast steps are
+  * deliberately used rather than a heavy iPhone Safari SVG blur. */
  const painted=new Map();
  let previousCount=-1;
  const parkIndex=chapters.findIndex(chapter=>chapter.id==="park");
  if(parkIndex!==8)throw Error("Unexpected chapter order for landmark cloud reveal");
  const featherSteps=[
-  [176,.04],[150,.06],[126,.09],[104,.12],[82,.16],
-  [64,.21],[46,.27],[30,.35],[16,.60]
+  [142,.045],[108,.07],[79,.11],[52,.17],[28,.27]
  ];
- const cloudBanks=[
-  [168,"#f7fcff",.09],[116,"#a7cbe2",.12],
-  [88,"#ffffff",.15],[53,"#d1e8f7",.16],[26,"#ffffff",.22]
- ];
+
+ /* Hand-placed frontier guides follow the EXISTING reveal territories;
+  * their varied spacing breaks the old repeating concentric-wave pattern.
+  * These decorate the fog only; they never change its discovery geometry. */
+ const cloudAnchors={
+  ruby:[[344,1474],[419,1418],[480,1348],[520,1243],[600,1198],[691,1194],[786,1217],[865,1214],[953,1190]],
+  wonderland:[[68,1136],[122,1066],[185,1022],[264,1022],[331,1070],[387,1165],[435,1262],[471,1360],[420,1457]],
+  candle:[[386,1459],[436,1380],[489,1302],[526,1194],[573,1086],[654,1006],[752,996],[861,983],[960,967]],
+  glass:[[610,1114],[665,1021],[716,935],[743,835],[727,735],[689,637],[689,529],[760,475],[856,473],[960,498]],
+  zuzu:[[585,553],[568,461],[582,359],[650,278],[740,270],[825,281],[916,297],[986,283]],
+  river:[[57,1115],[139,1001],[206,898],[244,783],[294,702],[380,714],[477,722],[560,766],[571,857],[505,990]],
+  dinner:[[54,962],[122,829],[171,715],[220,600],[301,578],[387,646],[483,651],[580,614],[675,671],[704,773],[621,873],[536,984]],
+  sweet:[[523,57],[569,150],[652,226],[744,271],[782,364],[826,453],[918,528],[991,594]]
+ };
+ function randomFor(id){
+  let seed=2166136261;
+  for(const char of id)seed=Math.imul(seed^char.charCodeAt(0),16777619)>>>0;
+  return ()=>{
+   seed=(Math.imul(seed,1664525)+1013904223)>>>0;
+   return seed/4294967296;
+  };
+ }
+ function makeCloudBank(region,opacity){
+  const front=node("g",{opacity,"data-cloud-front":region.id});
+  const anchors=cloudAnchors[region.id]||[];
+  const random=randomFor(region.id);
+  anchors.forEach(([x,y],i)=>{
+   if(random()<.14)return; // natural breaks, not an unbroken white outline
+   const prior=anchors[Math.max(0,i-1)],next=anchors[Math.min(anchors.length-1,i+1)];
+   const dx=next[0]-prior[0],dy=next[1]-prior[1],length=Math.hypot(dx,dy)||1;
+   const tx=dx/length,ty=dy/length;
+   const ox=ty,oy=-tx; // fog-facing side of these clockwise territories
+   const along=(random()-.5)*40,outward=9+random()*38;
+   const cx=x+tx*along+ox*outward,cy=y+ty*along+oy*outward;
+   const rx=44+random()*51,ry=22+random()*27;
+   const twist=(random()-.5)*38;
+   const angle="rotate("+twist.toFixed(1)+" "+cx.toFixed(1)+" "+cy.toFixed(1)+")";
+   front.append(node("ellipse",{
+    cx:cx-3,cy:cy+ry*.38,rx:rx*1.25,ry:ry*1.23,
+    fill:"url(#quest-bank-shade)",
+    opacity:(.50+random()*.22).toFixed(2),transform:angle
+   }));
+   front.append(node("ellipse",{
+    cx,cy:cy-ry*.15,rx,ry,fill:"url(#quest-bank-light)",
+    opacity:(.54+random()*.30).toFixed(2),transform:angle
+   }));
+   /* A few separated wisps remove the solid scalloped-border look. */
+   if(random()<.38){
+    const wx=cx+ox*(40+random()*50)+tx*(random()-.5)*42;
+    const wy=cy+oy*(40+random()*50)+ty*(random()-.5)*42;
+    front.append(node("ellipse",{
+     cx:wx,cy:wy,rx:20+random()*38,ry:12+random()*22,
+     fill:"url(#quest-bank-light)",opacity:(.21+random()*.23).toFixed(2)
+    }));
+   }
+  });
+  return front;
+ }
  function addTerritory(region,animated){
   const opacity=animated?0:1;
   const clearingGroup=node("g",{opacity,"data-discovered":region.id});
@@ -98,14 +152,7 @@
   clearingGroup.append(node("path",{d:region.d,fill:"#000000"}));
   mask.append(clearingGroup);
 
-  const cloudFront=node("g",{opacity,"data-cloud-front":region.id});
-  for(const [width,color,alpha] of cloudBanks){
-   cloudFront.append(node("path",{
-    d:region.d,fill:"none",stroke:color,
-    "stroke-opacity":alpha,"stroke-width":width,
-    "stroke-linecap":"round","stroke-linejoin":"round"
-   }));
-  }
+  const cloudFront=makeCloudBank(region,opacity);
   cloudGroup.append(cloudFront);
   painted.set(region.id,{clearingGroup,cloudFront});
 
