@@ -481,3 +481,25 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 @property --fog-front{syntax:"<percentage>";inherits:true;initial-value:77%}
 .rpg-fullscreen .map-canvas .overworld-fog{transition:--fog-front 1.35s cubic-bezier(.22,.7,.24,1)}
 @media(prefers-reduced-motion:reduce){.rpg-fullscreen .map-canvas .overworld-fog{transition:none}}
+
+/* Landmark-by-landmark storybook reveal; disable the previous horizontal sweep. */
+.rpg-fullscreen .map-canvas .overworld-fog.landmark-clouds{
+ -webkit-mask-image:none!important;
+ mask-image:none!important;
+ background:none!important;
+ transition:none!important;
+ overflow:hidden;
+ isolation:isolate;
+}
+.rpg-fullscreen .map-canvas .overworld-fog.landmark-clouds::before,
+.rpg-fullscreen .map-canvas .overworld-fog.landmark-clouds::after{
+ content:none!important;
+ display:none!important;
+}
+.rpg-fullscreen .map-canvas .overworld-fog.landmark-clouds>svg{
+ display:block;width:100%;height:100%;
+ overflow:hidden;
+}
+.rpg-fullscreen .map-canvas .overworld-fog.landmark-clouds[hidden]{
+ display:none!important;
+}
