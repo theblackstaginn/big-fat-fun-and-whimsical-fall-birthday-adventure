@@ -344,17 +344,26 @@ function ensureMapLibreHomeControl(ml,map,questCenter){
 
 function setStreetStatus(message,show=true){const status=document.querySelector("#street-map-status");status.textContent=message;status.hidden=!show}
 function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(leafletPromise)return leafletPromise;leafletPromise=new Promise((resolve,reject)=>{if(!document.querySelector("#leaflet-style")){const css=document.createElement("link");css.id="leaflet-style";css.rel="stylesheet";css.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";document.head.append(css)}const script=document.createElement("script");script.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";script.onload=()=>window.L?resolve(window.L):reject(new Error("Map library did not load"));script.onerror=()=>reject(new Error("Map library could not load"));document.head.append(script)}).catch(error=>{leafletPromise=null;throw error});return leafletPromise}
-/* Approximate shopping-center anchor for Ruby Mae’s at 8160 S Main St.
- * Coordinate is published for another business at that same street address:
- * https://maps.roadtrippers.com/us/helen-ga/food-drink/campfire-helen
- * Keep the full Ruby Mae’s address in the quest journal for exact directions. */
-/* River stop is at the Main Street (GA 17/75) crossing, near the north-side
- * pedestrian bridge. Coordinate from USGS monitoring site 02330450; the
- * map pin is not a surveyed point on the exact sidewalk or bridge rail. */
-/* Candle shop is at 705 Brucken Strasse, Building 101. This is an approximate
- * plaza anchor (not a surveyed storefront doorway), sourced from the property
- * coordinates for 705 Brucken Strasse. Keep the exact address in directions. */
-const questAnchors=Object.freeze({ruby:[34.700059,-83.721920],candle:[34.6983,-83.7186],river:[34.700972,-83.729250],park:[34.70286,-83.73157]});
+/* Stable GPS/map anchors for all nine stops. Building-level approximations,
+ * not surveyed doorways; follow the Journal address for walking directions.
+ * Ruby and ZuZu existing published anchors; Wonderland public shop listing;
+ * Candle is in the 705 Brucken Strasse plaza next to Spice 55, position refined
+ * from the user's nearby-streets screenshot; Glass: 8600 N Main storefront row;
+ * River: GA 17/75 Chattahoochee crossing (HistoricBridges.org); Bangkok:
+ * official tourism listing Google Maps location; Hansel: 8651 N Main shop,
+ * not the second 8078 South Main factory; Park: OSM park feature. */
+const questAnchors=Object.freeze({
+ ruby:[34.700059,-83.721920],
+ wonderland:[34.699500,-83.724000],
+ candle:[34.698600,-83.718580],
+ town:[34.701430,-83.730150], /* pre-split Curiosity Walk fallback */
+ glass:[34.701430,-83.730150],
+ zuzu:[34.701681,-83.731017],
+ river:[34.700886,-83.729030],
+ dinner:[34.6999002,-83.7215628],
+ sweet:[34.7014839,-83.7315675],
+ park:[34.702860,-83.731570]
+});
 /* ZuZu's Petals is a separate visual pin at White Horse Square, 8660 N Main
  * St #9, beside Windmill Dutch Imports. No extra chapter or GPS requirement. */
 const zuzuWhiteHorseSquare=Object.freeze([34.701681,-83.731017]);
