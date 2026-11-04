@@ -140,6 +140,61 @@ def decorate_full_ground(image, seed):
     image.alpha_composite(details)
     return image
 
+def build_home_ground():
+    """Illustrate the Cleveland test homestead in Helen's autumn grass style.
+
+    This is a synthetic painted texture, not a satellite photo. Building and
+    tree geometry remain in the existing map renderers above this ground.
+    The compact image is georeferenced independently from Helen's NAIP bounds.
+    """
+    width = height = 768
+    rng = random.Random(41716)
+    coarse = Image.new("L", (width // 12, height // 12))
+    coarse.putdata([128 + rng.randint(-7, 7)
+                    for _ in range(coarse.width * coarse.height)])
+    texture = coarse.resize((width, height), Image.Resampling.BICUBIC)
+    texture = texture.filter(ImageFilter.GaussianBlur(0.65))
+    tex = texture.load()
+    ground = Image.new("RGBA", (width, height), (124, 146, 96, 255))
+    pixels = ground.load()
+    for y in range(height):
+        for x in range(width):
+            noise = round((tex[x, y] - 128) * 0.3)
+            grain = ((x * 37 + y * 91 + (x // 7) * 59) % 3) - 1
+            n = noise + grain
+            pixels[x, y] = (124 + n, 146 + n // 2, 96 + n // 3, 255)
+
+    # Keep the same fine tufts and clustered leaf treatment as downtown Helen.
+    decorate_full_ground(ground, seed=91731)
+
+    # At homestead scale, the existing 1-pixel dots shrink away on a phone.
+    # A few slightly broader flecks remain visible without becoming giant
+    # individual leaves, orange confetti or stringy grass at map zoom.
+    details = Image.new("RGBA", (width, height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(details, "RGBA")
+    colors = ((184, 94, 45, 166), (210, 145, 59, 156),
+              (151, 72, 45, 158), (194, 116, 57, 162),
+              (139, 132, 68, 142))
+    leaves = random.Random(17116)
+    for _ in range(65):
+        cx = leaves.uniform(0, width)
+        cy = leaves.uniform(0, height)
+        spread = leaves.uniform(10, 26)
+        for _ in range(leaves.randint(9, 19)):
+            x = cx + leaves.gauss(0, spread)
+            y = cy + leaves.gauss(0, spread * 0.8)
+            rx = leaves.uniform(1.2, 2.5)
+            ry = rx * leaves.uniform(0.7, 0.95)
+            draw.ellipse((x-rx, y-ry, x+rx, y+ry),
+                         fill=leaves.choice(colors))
+    ground.alpha_composite(details)
+    path = os.path.join(OUTPUT, "cleveland-painted-ground.webp")
+    os.makedirs(OUTPUT, exist_ok=True)
+    ground.convert("RGB").save(path, format="WEBP", quality=94, method=6)
+    print(f"Homestead autumn ground: {path}, {os.path.getsize(path)} bytes, "
+          f"painted {width}x{height} pixels; no aerial photo published")
+
+
 def run():
     im = fetch_false_color()
     # When bandIds=3,0,1, the pixel's R is NIR and G is red.
@@ -340,6 +395,7 @@ def run():
           f"woodland={canopy_pixels}, {downtown_pixels} candidate pixels; "
           f"{os.path.getsize(core_path)} bytes; extent "
           f"{core_west},{core_south},{core_east},{core_north}")
+    build_home_ground()
 
 
 if __name__ == "__main__":
