@@ -612,3 +612,51 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 @media(prefers-reduced-motion:reduce){
  .quest-achievement.is-finale .achievement-sigil{animation:none}
 }
+
+
+/* Shared cartographer's rail: one slim, thumb-friendly left column in both maps.
+   Native MapLibre/Leaflet controls are replaced in adventure.js. */
+.rpg-fullscreen .map-mode-switch{
+ position:absolute;z-index:75;
+ top:calc(env(safe-area-inset-top,0px) + 63px);
+ left:8px;right:auto;bottom:auto;transform:none;
+ display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+ gap:3px;width:50px;max-height:calc(100dvh - env(safe-area-inset-top,0px) - 145px);
+ margin:0;padding:4px;overflow-y:auto;overflow-x:hidden;
+ scrollbar-width:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+ border:1px solid #b87b5c;border-radius:13px;
+ background:linear-gradient(155deg,#4e3041f2,#291d2bed);
+ box-shadow:inset 0 0 0 1px #f4cba525,0 4px 13px #120a17a8;
+ filter:none;pointer-events:auto;
+}
+.rpg-fullscreen .map-mode-switch::-webkit-scrollbar{display:none}
+.rpg-fullscreen .map-mode-switch>button{
+ display:grid;place-items:center;box-sizing:border-box;flex:0 0 40px;
+ width:40px;min-width:40px;height:40px;min-height:40px;max-width:40px;
+ margin:0;padding:0;border:1px solid #ad735c99;border-radius:8px;
+ background:linear-gradient(150deg,#735064,#412b42);color:#f2d5b5;
+ box-shadow:inset 0 1px 0 #f6d9ae24;cursor:pointer;
+ font:700 22px/1 Georgia,serif;letter-spacing:0;
+ touch-action:manipulation;-webkit-tap-highlight-color:transparent;
+}
+.rpg-fullscreen .map-mode-switch>button svg{width:21px;height:21px;pointer-events:none}
+.rpg-fullscreen .map-mode-switch>button:hover{border-color:#f4cca3;background:#8f6474;color:#fff5dc}
+.rpg-fullscreen .map-mode-switch>button:focus-visible{outline:2px solid #fff1cb;outline-offset:1px}
+.rpg-fullscreen .map-mode-switch .map-mode-button.is-active,
+.rpg-fullscreen .map-mode-switch #rpg-locate[aria-pressed="true"]{
+ background:linear-gradient(145deg,#efcca4,#bc8466);color:#30202d;
+ border-color:#ffe2bc;box-shadow:inset 0 1px 0 #fff6d699;
+}
+.rpg-fullscreen .map-mode-switch #map-zoom-in,
+.rpg-fullscreen .map-mode-switch #map-home,
+.rpg-fullscreen .map-mode-switch #rpg-locate{margin-top:4px}
+.rpg-fullscreen .map-mode-switch #rpg-locate{
+ flex:0 0 40px;width:40px;height:40px;min-width:40px;min-height:40px;
+ border-radius:8px;font:700 23px/1 Georgia,serif;
+}
+.rpg-fullscreen .nearby-heading{
+ top:calc(env(safe-area-inset-top,0px) + 106px);
+ left:auto;right:9px;width:max-content;max-width:calc(100vw - 87px);
+}
+.rpg-fullscreen .map-compass{display:none}
+@media print{.rpg-fullscreen .map-mode-switch{display:none!important}}
