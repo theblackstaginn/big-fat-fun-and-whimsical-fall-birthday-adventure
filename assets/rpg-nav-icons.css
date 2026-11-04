@@ -58,3 +58,70 @@
 @media print{
   .rpg-fullscreen .rpg-toolbar button{background-image:none!important}
 }
+
+/* Second set of lightweight WebP medallions: same original bronze-and-leather art style.
+   Keep original HTML buttons and all click handlers; only paint their graphics. */
+.rpg-fullscreen .map-mode-switch > button:is(#mode-nearby,#map-zoom-in,#map-zoom-out,#map-home){
+  background-color:transparent!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:40px 40px!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  text-shadow:none!important;
+  filter:drop-shadow(0 2px 3px #160a12af);
+}
+.rpg-fullscreen .map-mode-switch > #mode-nearby{background-image:url("ui-icons/village-streets-star.webp")!important}
+.rpg-fullscreen .map-mode-switch > #map-zoom-in{background-image:url("ui-icons/zoom-in-bronze-plus.webp")!important}
+.rpg-fullscreen .map-mode-switch > #map-zoom-out{background-image:url("ui-icons/zoom-out-bronze-minus.webp")!important}
+.rpg-fullscreen .map-mode-switch > #map-home{background-image:url("ui-icons/home-cottage.webp")!important}
+.rpg-fullscreen .map-mode-switch > button:is(#mode-nearby,#map-zoom-in,#map-zoom-out,#map-home) > :is(svg,span){
+  visibility:hidden!important;
+}
+.rpg-fullscreen .map-mode-switch > #mode-nearby.is-active{
+  filter:drop-shadow(0 0 6px #f4c480) drop-shadow(0 2px 3px #160a12b0);
+}
+.rpg-fullscreen .map-mode-switch > button:is(#mode-nearby,#map-zoom-in,#map-zoom-out,#map-home):focus-visible{
+  outline:2px solid #ffe7ba;outline-offset:1px;border-radius:50%;
+}
+/* Curios and Letter now match the original Journal, Satchel and Settings tabs. */
+.rpg-fullscreen .rpg-toolbar button:is([data-panel="notes"],[data-panel="story"]) > span{
+  display:block;width:37px;height:37px;margin:auto;
+  background-repeat:no-repeat;background-position:center;background-size:contain;
+  font-size:0!important;line-height:0!important;color:transparent!important;
+  filter:drop-shadow(0 1px 2px #100a12b0);
+}
+.rpg-fullscreen .rpg-toolbar button[data-panel="notes"] > span{
+  background-image:url("ui-icons/curios-magic-potion.webp");
+}
+.rpg-fullscreen .rpg-toolbar button[data-panel="story"] > span{
+  background-image:url("ui-icons/letter-wax-seal.webp");
+}
+/* Decorative title moon and tappable top-right letter are matching bronze medallions. */
+.rpg-fullscreen .rpg-sigil{
+  background:url("ui-icons/header-moon.webp") center/contain no-repeat!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  transform:none!important;
+  filter:drop-shadow(0 2px 3px #160a12af);
+}
+.rpg-fullscreen .rpg-top-actions button.rpg-icon[data-panel="story"]{
+  background:url("ui-icons/header-heart.webp") center/contain no-repeat!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  filter:drop-shadow(0 2px 3px #160a12af);
+}
+.rpg-fullscreen .rpg-top-actions button.rpg-icon[data-panel="story"]:focus-visible{
+  outline:2px solid #ffe7ba;outline-offset:2px;border-radius:50%;
+}
+@media(max-width:365px){
+  .rpg-fullscreen .rpg-toolbar button:is([data-panel="notes"],[data-panel="story"]) > span{
+    width:34px;height:34px;
+  }
+}
