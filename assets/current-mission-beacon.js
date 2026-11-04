@@ -35,24 +35,29 @@
  const defs=make("defs");
  const glow=make("radialGradient",{id:"quest-active-mission-glow"});
  for(const [offset,color,opacity] of [
-  ["0%","#fff6c8","0.91"],
-  ["25%","#ffcf6e","0.67"],
-  ["54%","#f7ae51","0.31"],
-  ["78%","#e58b3b","0.08"],
+  ["0%","#fff9d7","1"],
+  ["20%","#ffe79e","0.98"],
+  ["42%","#ffcb67","0.76"],
+  ["66%","#f4a846","0.43"],
+  ["83%","#e58b3b","0.17"],
   ["100%","#e58b3b","0"]
  ])glow.append(make("stop",{offset,"stop-color":color,"stop-opacity":opacity}));
  defs.append(glow);
  layer.append(defs);
 
  const beacon=make("g",{"data-role":"current-mission"});
- const bloom=make("circle",{r:100,fill:"url(#quest-active-mission-glow)",class:"quest-beacon-bloom"});
- const inner=make("circle",{r:57,fill:"url(#quest-active-mission-glow)",class:"quest-beacon-inner"});
- const orbit=make("circle",{r:38,fill:"none",stroke:"#ffe2a0","stroke-width":2.5,"stroke-opacity":".86",class:"quest-beacon-orbit"});
- const jewel=make("circle",{r:27,fill:"#513123","fill-opacity":".83",stroke:"#fff1bf","stroke-width":3});
- const star=make("path",{d:"M 0 -24 L 6.5 -7 L 24 0 L 6.5 7 L 0 24 L -6.5 7 L -24 0 L -6.5 -7 Z",
-  fill:"#fff3be",stroke:"#f6c268","stroke-width":1.3,class:"quest-beacon-star"});
- const smallStar=make("circle",{cx:0,cy:0,r:4.5,fill:"#ffffff"});
- beacon.append(bloom,inner,orbit,jewel,star,smallStar);
+ const bloom=make("circle",{r:155,fill:"url(#quest-active-mission-glow)",class:"quest-beacon-bloom"});
+ const inner=make("circle",{r:82,fill:"url(#quest-active-mission-glow)",class:"quest-beacon-inner"});
+ const orbit=make("circle",{r:47,fill:"none",stroke:"#ffe29d","stroke-width":3.2,"stroke-opacity":".97",class:"quest-beacon-orbit"});
+ const jewel=make("circle",{r:34,fill:"#44241f","fill-opacity":".94",stroke:"#ffe8a8","stroke-width":3.4,class:"quest-beacon-jewel"});
+ // An upright pentacle: one continuous five-point star enclosed by its circle.
+ const pentacleCircle=make("circle",{r:28.5,fill:"none",stroke:"#ffe3a0","stroke-width":2.4,class:"quest-beacon-pentacle"});
+ const pentagram=make("path",{
+  d:"M 0 -24 L 14.11 19.42 L -22.83 -7.42 L 22.83 -7.42 L -14.11 19.42 Z",
+  fill:"none",stroke:"#fff6d1","stroke-width":3,"stroke-linecap":"round",
+  "stroke-linejoin":"round",class:"quest-beacon-pentacle"
+ });
+ beacon.append(bloom,inner,orbit,jewel,pentacleCircle,pentagram);
  layer.append(beacon);
  stage.append(layer);
 
@@ -73,15 +78,18 @@
  #quest-active-mission-beacon .quest-beacon-orbit{
   animation:quest-mission-ring 3.4s ease-in-out infinite;
  }
- #quest-active-mission-beacon .quest-beacon-star{
-  filter:drop-shadow(0 0 9px #ffd779);
+ #quest-active-mission-beacon .quest-beacon-pentacle{
+  filter:drop-shadow(0 0 4px #fff0ba) drop-shadow(0 0 9px #ffbf52);
+ }
+ #quest-active-mission-beacon .quest-beacon-jewel{
+  filter:drop-shadow(0 0 10px #ffc75d);
  }
  @keyframes quest-mission-aura{
-  0%,100%{opacity:.57}
+  0%,100%{opacity:.68}
   50%{opacity:1}
  }
  @keyframes quest-mission-ring{
-  0%,100%{stroke-opacity:.45}
+  0%,100%{stroke-opacity:.62}
   50%{stroke-opacity:1}
  }
  @media(prefers-reduced-motion:reduce){
