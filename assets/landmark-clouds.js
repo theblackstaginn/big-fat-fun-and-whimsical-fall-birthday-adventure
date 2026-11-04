@@ -17,13 +17,13 @@
  /* Each bank covers an unrevealed illustration landmark, not empty scenery.
   * Bangkok Haus is an off-map detour and needs no cloud footprint. */
  const lockedLandmarks=[
-  {id:"wonderland",cx:190,cy:1085,rx:300,ry:225},
-  {id:"candle",cx:665,cy:1075,rx:260,ry:205},
-  {id:"glass",cx:694,cy:520,rx:255,ry:202},
-  {id:"zuzu",cx:662,cy:358,rx:290,ry:226},
-  {id:"river",cx:356,cy:819,rx:354,ry:210},
-  {id:"sweet",cx:312,cy:372,rx:250,ry:244},
-  {id:"park",cx:848,cy:171,rx:260,ry:232}
+  {id:"wonderland",cx:185,cy:1076,rx:258,ry:183},
+  {id:"candle",cx:662,cy:1075,rx:225,ry:162},
+  {id:"glass",cx:709,cy:514,rx:214,ry:138},
+  {id:"zuzu",cx:668,cy:351,rx:225,ry:137},
+  {id:"river",cx:352,cy:791,rx:216,ry:132},
+  {id:"sweet",cx:319,cy:374,rx:242,ry:171},
+  {id:"park",cx:865,cy:169,rx:235,ry:159}
  ];
  const svg=node("svg",{viewBox:"0 0 1024 1536",preserveAspectRatio:"xMidYMid slice","aria-hidden":"true"});
  const defs=node("defs");
