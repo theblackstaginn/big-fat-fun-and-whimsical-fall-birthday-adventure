@@ -19,7 +19,7 @@
   zuzu:[650,321],
   river:[355,786],
   sweet:[335,317],
-  park:[890,160]
+  park:[790,190]
  });
  const NS="http://www.w3.org/2000/svg";
  const make=(tag,attrs={})=>{
