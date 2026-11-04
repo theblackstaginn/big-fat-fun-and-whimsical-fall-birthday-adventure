@@ -260,7 +260,7 @@ function centerOnLivePlayer(){
  const nearby=document.querySelector("#nearby-view");
  if(nearby&&!nearby.hidden){
   if(neighborhoodMap&&nearby.classList.contains("vector-ready")){
-   neighborhoodMap.easeTo({center:[livePlayerPoint[1],livePlayerPoint[0]],zoom:Math.max(neighborhoodMap.getZoom(),17.5),duration:450});
+   neighborhoodMap.easeTo({center:[livePlayerPoint[1],livePlayerPoint[0]],zoom:Math.max(neighborhoodMap.getZoom(),17.5),bearing:nearbyMainStreetBearing(livePlayerPoint),duration:450});
   }else if(streetMap)streetMap.setView(livePlayerPoint,Math.max(streetMap.getZoom(),17),{animate:true});
  }else if(worldMap)worldMap.setView(livePlayerPoint,Math.max(worldMap.getZoom(),16),{animate:true});
 }
@@ -390,6 +390,29 @@ const questAnchors=Object.freeze({
  sweet:[34.7011191,-83.7309174],
  park:[34.702860,-83.731570]
 });
+/* A portrait RPG camera follows Main Street's changing direction from
+ * South Main to Unicoi Hill. This rotates the VIEW only: coordinates,
+ * markers and walking directions remain unchanged. Keep Home north-up. */
+const mainStreetCameraSpine=Object.freeze([
+ questAnchors.ruby,questAnchors.river,questAnchors.glass,questAnchors.park
+]);
+function nearbyMainStreetBearing(point){
+ if(!Array.isArray(point)||point.length<2||
+  Math.abs(point[0]-helenCenter[0])>.03||Math.abs(point[1]-helenCenter[1])>.03)return 0;
+ const northMeters=111195,eastMeters=northMeters*Math.cos(point[0]*Math.PI/180);
+ let nearest=Infinity,bearing=0;
+ for(let i=0;i<mainStreetCameraSpine.length-1;i++){
+  const a=mainStreetCameraSpine[i],b=mainStreetCameraSpine[i+1];
+  const dx=(b[1]-a[1])*eastMeters,dy=(b[0]-a[0])*northMeters;
+  const px=(point[1]-a[1])*eastMeters,py=(point[0]-a[0])*northMeters;
+  const length2=dx*dx+dy*dy;
+  if(length2<=0)continue;
+  const t=Math.max(0,Math.min(1,(px*dx+py*dy)/length2));
+  const distance2=(px-dx*t)**2+(py-dy*t)**2;
+  if(distance2<nearest){nearest=distance2;bearing=(Math.atan2(dx,dy)*180/Math.PI+360)%360}
+ }
+ return bearing;
+}
 /* ZuZu's Petals is a separate visual pin at White Horse Square, 8660 N Main
  * St #9, beside Windmill Dutch Imports. No extra chapter or GPS requirement. */
 const zuzuWhiteHorseSquare=Object.freeze([34.701681,-83.731017]);
@@ -680,7 +703,7 @@ async function renderVillageAtlas(center,features){
   neighborhoodMap=new ml.Map({
    container,style:"https://tiles.openfreemap.org/styles/liberty",
    center:[center[1],center[0]],zoom:17,minZoom:14,maxZoom:19,pitch:42,maxPitch:55,
-   bearing:0,dragRotate:false,pitchWithRotate:false,renderWorldCopies:false
+   bearing:nearbyMainStreetBearing(center),dragRotate:false,pitchWithRotate:false,renderWorldCopies:false
   });
   /* Zoom and navigation live in the shared upper-left rail. */
   showAtlasDiagnostic("Loading vector style and tiles");
@@ -701,7 +724,7 @@ async function renderVillageAtlas(center,features){
  const safeTop=document.querySelector(".nearby-heading")?.getBoundingClientRect().bottom||mapBox.top+130;
  const safeTarget=previewBlocking?Math.max(safeTop+82,Math.min(previewTop-56,(safeTop+previewTop)/2)):mapBox.top+mapBox.height*.5;
  const cameraY=previewBlocking?Math.max(-mapBox.height*.27,Math.min(0,safeTarget-(mapBox.top+mapBox.height/2))):0;
- neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42,offset:[0,cameraY]});
+ neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42,bearing:nearbyMainStreetBearing(center),offset:[0,cameraY]});
  for(const marker of neighborhoodPins)marker.remove();
  neighborhoodPins=[];
  for(const {chapter,point,name,sideStop} of withZuZuNearbyMarker(features)){
@@ -898,7 +921,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
     const map=activeMap();
     if(!map||!point)return;
     onPlayerMapDragged();
-    if(map===neighborhoodMap)map.flyTo({center:[point[1],point[0]],zoom,pitch:42,essential:true});
+    if(map===neighborhoodMap)map.flyTo({center:[point[1],point[0]],zoom,pitch:42,bearing:nearbyMainStreetBearing(point),essential:true});
     else map.setView(point,zoom,{animate:!window.matchMedia("(prefers-reduced-motion: reduce)").matches});
    };
    addButton("map-zoom-in","Zoom in",'<span aria-hidden="true">+</span>').addEventListener("click",()=>activeMap()?.zoomIn());
