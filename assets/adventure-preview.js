@@ -27,7 +27,7 @@
  bar.id="adventure-preview-bar";
  bar.className="adventure-preview-bar";
  bar.hidden=true;
- bar.innerHTML='<span class="preview-kicker">✧ PREVIEW MODE</span><strong id="preview-quest-title"></strong><small id="preview-quest-count"></small><div class="preview-buttons"><button id="preview-achieve" type="button">Play Achievement</button><button id="preview-exit" type="button">Exit Preview</button></div>';
+ bar.innerHTML='<span class="preview-kicker">✧ PREVIEW MODE</span><strong id="preview-quest-title"></strong><small id="preview-quest-count"></small><div class="preview-buttons"><button id="preview-achieve" type="button">Play Achievement</button><button id="preview-exit" type="button">Exit Preview</button></div><button id="preview-final-letter" type="button">✧ Preview the Final Letter</button>';
  document.body.append(bar);
  const style=document.createElement("style");
  style.textContent=[
@@ -40,6 +40,7 @@
  '.preview-buttons{display:flex;gap:7px;margin-top:4px}',
  '.preview-buttons button{flex:1;min-height:40px;padding:8px;border:1px solid #deb18a;border-radius:9px;background:#a16765;color:#fff4de;font:700 .75rem/1.25 Georgia,serif}',
  '.preview-buttons #preview-exit{background:#322636;color:#f4d5b6}',
+  '#preview-final-letter{min-height:42px;width:100%;margin-top:5px;padding:9px;border:1px solid #e4bd95;border-radius:9px;background:linear-gradient(140deg,#795366,#52364e);color:#fff1da;font:700 .84rem/1.3 Georgia,serif}',
  '.quest-preview-active #rpg-reset,.quest-preview-active #reset-progress,.quest-preview-active .quest-arrival-card{display:none!important}',
  '.quest-preview-active .quest-memory-card #witch-memory-save,.quest-preview-active .quest-memory-card #curios-photo-input{opacity:.45;pointer-events:none}'
  ].join("\n");
@@ -126,7 +127,12 @@
   /* The isolated tour opens the same gift without altering real progress. */
   if(finalGift)window.openMoonlitLetter?.();
  },true);
- launch.addEventListener("click",begin);
+ /* Isolated artwork test: no chapter flags, saved memories or reveal state are changed. */
+  bar.querySelector("#preview-final-letter").addEventListener("click",()=>{
+   if(typeof window.openMoonlitLetter==="function")window.openMoonlitLetter();
+   else bar.querySelector("#preview-final-letter").textContent="Letter loader unavailable · refresh";
+  });
+  launch.addEventListener("click",begin);
  achieve.addEventListener("click",celebration);
  bar.querySelector("#preview-exit").addEventListener("click",finish);
  window.addEventListener("pagehide",()=>{if(preview)window.__birthdayPreview=false});
