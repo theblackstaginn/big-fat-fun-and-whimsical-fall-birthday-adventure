@@ -351,7 +351,10 @@ function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(leafletPr
 /* River stop is at the Main Street (GA 17/75) crossing, near the north-side
  * pedestrian bridge. Coordinate from USGS monitoring site 02330450; the
  * map pin is not a surveyed point on the exact sidewalk or bridge rail. */
-const questAnchors=Object.freeze({ruby:[34.700059,-83.721920],river:[34.700972,-83.729250],park:[34.70286,-83.73157]});
+/* Candle shop is at 705 Brucken Strasse, Building 101. This is an approximate
+ * plaza anchor (not a surveyed storefront doorway), sourced from the property
+ * coordinates for 705 Brucken Strasse. Keep the exact address in directions. */
+const questAnchors=Object.freeze({ruby:[34.700059,-83.721920],candle:[34.6983,-83.7186],river:[34.700972,-83.729250],park:[34.70286,-83.73157]});
 /* ZuZu's Petals is a separate visual pin at White Horse Square, 8660 N Main
  * St #9, beside Windmill Dutch Imports. No extra chapter or GPS requirement. */
 const zuzuWhiteHorseSquare=Object.freeze([34.701681,-83.731017]);
@@ -718,13 +721,14 @@ async function renderStreetMap(){
  });
  const focused=points.find(item=>item.chapter.id===selected.id);
  const active=points.find(item=>item.chapter.id===activeId);
- const center=focused?.point||active?.point;
+ const previous=points.filter(item=>completed.includes(item.chapter.id)).at(-1);
+ const center=focused?.point||active?.point||previous?.point;
  addLeafletHomePlayerMarkers(L,streetMap,streetPins);
  syncLivePlayerMarkers();
  ensureLeafletHomeControl(L,streetMap,active?.point||center||helenCenter);
  if(center){
   streetMap.setView(center,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});
-  setStreetStatus(focused?"":"Selected location could not be placed; showing the current quest.",!focused);
+  setStreetStatus(focused?"":active?"Selected location could not be placed; showing the current quest.":"Current location could not be placed; showing the last explored stop.",!focused);
   if(playerFollow&&livePlayerPoint)centerOnLivePlayer();
   renderVillageAtlas(center,points).catch(error=>{
    if(requestId===mapRenderId)showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true);
