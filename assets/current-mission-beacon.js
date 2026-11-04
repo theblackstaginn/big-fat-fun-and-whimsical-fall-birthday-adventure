@@ -7,17 +7,21 @@
  const stage=artwork?.closest(".map-canvas");
  if(!stage||!Array.isArray(chapters)||typeof updateSceneArtwork!=="function")return;
 
- // Match the 1024x1536 painting and cloud-mask coordinate system.
+ /* Venue anchors checked against the actual 1024 x 1536 illustrated
+  * painting, rather than guessed from chapter order or real-world geography.
+  * Position each glow on a recognizable storefront roof / landmark, without
+  * covering its sign. Bangkok Haus is OFF the painted street; its beacon
+  * belongs above the side-trip compass card, not on a false building. */
  const anchors=Object.freeze({
-  ruby:[625,1410],
-  wonderland:[315,1165],
-  candle:[725,1080],
-  glass:[810,805],
-  zuzu:[735,390],
-  river:[344,849],
-  dinner:[280,732],
-  sweet:[790,680],
-  park:[520,188]
+  ruby:[660,1220],
+  wonderland:[293,1046],
+  candle:[652,1013],
+  glass:[729,465],
+  zuzu:[650,321],
+  river:[145,570],
+  dinner:[862,819],
+  sweet:[335,317],
+  park:[890,160]
  });
  const NS="http://www.w3.org/2000/svg";
  const make=(tag,attrs={})=>{
