@@ -117,11 +117,14 @@
   event.preventDefault();
   event.stopImmediatePropagation();
   if(completed.length>=chapters.length){finish();return}
+  const finalGift=completed.length===chapters.length-1&&chapters[completed.length]?.id==="park";
   completed.push(chapters[completed.length].id);
   selected=chapters[Math.min(completed.length,chapters.length-1)];
   achievement.hidden=true;
   renderProgress();
   paint();
+  /* The isolated tour opens the same gift without altering real progress. */
+  if(finalGift)window.openMoonlitLetter?.();
  },true);
  launch.addEventListener("click",begin);
  achieve.addEventListener("click",celebration);
