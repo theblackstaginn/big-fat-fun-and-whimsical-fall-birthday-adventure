@@ -503,3 +503,98 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .rpg-fullscreen .map-canvas .overworld-fog.landmark-clouds[hidden]{
  display:none!important;
 }
+
+
+/* The System's absurd birthday achievement broadcast: feast, candy, moonlight. */
+.quest-achievement{isolation:isolate}
+.quest-achievement-inner{position:relative}
+.quest-achievement #achievement-copy{
+ max-width:38ch;
+ margin:13px auto;
+ color:#f5dfcb;
+ font:400 clamp(.88rem,3.65vw,1rem)/1.56 system-ui,sans-serif;
+ text-wrap:pretty;
+}
+.quest-achievement #achievement-reward{
+ max-width:39ch;
+ box-sizing:border-box;
+ margin:15px auto 10px;
+ padding:12px;
+ border:1px solid #d9ae7b91;
+ border-radius:10px;
+ background:#2617259c;
+ color:#ffe1a5;
+ font:700 clamp(.77rem,3.1vw,.89rem)/1.48 system-ui,sans-serif;
+ letter-spacing:.012em;
+}
+.quest-achievement .achievement-kicker{line-height:1.54}
+.quest-achievement .achievement-sigil{filter:drop-shadow(0 0 19px #f1b7787c)}
+.quest-achievement.is-feast{
+ background:
+  radial-gradient(circle at 50% 31%,#be844756,transparent 54%),
+  linear-gradient(145deg,#271721e8,#291c22f5);
+}
+.quest-achievement.is-feast .quest-achievement-inner{
+ border-color:#efbd7d;
+ background:
+  radial-gradient(ellipse at 70% 9%,#df995535,transparent 44%),
+  linear-gradient(160deg,#64404a,#32202d 73%);
+}
+.quest-achievement.is-feast .achievement-sigil{font-size:3.4rem}
+.quest-achievement.is-feast .achievement-kicker{color:#ffcd8e}
+.quest-achievement.is-feast #achievement-reward{background:#6b412a8a;color:#ffe6bb;border-color:#dfa969}
+.quest-achievement.is-sweet{
+ background:
+  radial-gradient(circle at 38% 20%,#ed9ca54e,transparent 56%),
+  linear-gradient(165deg,#382035ed,#301e36fa);
+}
+.quest-achievement.is-sweet .quest-achievement-inner{
+ border-color:#f1b2aa;
+ background:
+  radial-gradient(circle at 50% 0%,#d98f9b5e,transparent 57%),
+  linear-gradient(160deg,#70425b,#312032 70%);
+}
+.quest-achievement.is-sweet .achievement-kicker{color:#ffcaaf}
+.quest-achievement.is-sweet #achievement-reward{border-color:#efb3a4;color:#ffe1c9;background:#7c42546b}
+.quest-achievement.is-finale{
+ background:
+  radial-gradient(ellipse at 50% 14%,#7c719077,transparent 52%),
+  radial-gradient(ellipse at 50% 90%,#2d243aee,#0a0f1aec 85%);
+}
+.quest-achievement.is-finale::before{
+ content:"";
+ position:absolute;inset:0;pointer-events:none;z-index:-1;
+ opacity:.54;
+ background-image:
+  radial-gradient(circle at 12% 17%,#ffedc6 0 1px,transparent 2px),
+  radial-gradient(circle at 74% 14%,#f9daac 0 1.5px,transparent 2.5px),
+  radial-gradient(circle at 44% 63%,#ecdbfa 0 1px,transparent 2px),
+  radial-gradient(circle at 87% 73%,#ffffff 0 1px,transparent 2px);
+ background-size:211px 229px;
+}
+.quest-achievement.is-finale .quest-achievement-inner{
+ border-color:#ecd3a4;
+ background:
+  radial-gradient(ellipse at 50% 0%,#a69baf42,transparent 46%),
+  linear-gradient(170deg,#3b334c,#201a35 77%,#17182c);
+ box-shadow:inset 0 0 0 2px #eac49e29,0 0 28px #dfbc924b,0 18px 60px #040813dc;
+}
+.quest-achievement.is-finale .achievement-sigil{
+ font-size:4.5rem;
+ color:#ffdfa2;
+ filter:drop-shadow(0 0 23px #f2cc9acc);
+}
+.quest-achievement.is-finale .achievement-kicker{color:#f4d6b3;letter-spacing:.13em}
+.quest-achievement.is-finale #achievement-reward{background:#1c253bca;border-color:#b9afc7;color:#f6e5c6}
+.quest-achievement #achievement-epilogue{font:italic 1.02rem/1.52 Georgia,serif;color:#ffeaca;margin:16px auto 9px;max-width:34ch}
+.quest-achievement #achievement-epilogue[hidden]{display:none}
+.quest-achievement.is-finale button{background:linear-gradient(135deg,#ffe4ad,#bc91a6)}
+.quest-achievement.is-sweet button{background:linear-gradient(135deg,#ffdfad,#d29aad)}
+@media(max-height:720px){
+ .quest-achievement-inner{padding:16px 17px;max-height:92dvh}
+ .quest-achievement .achievement-sigil{font-size:2.4rem}
+ .quest-achievement h2{font-size:1.65rem}
+}
+@media(prefers-reduced-motion:reduce){
+ .quest-achievement.is-finale .achievement-sigil{animation:none}
+}
