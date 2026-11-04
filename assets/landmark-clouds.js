@@ -199,7 +199,8 @@
    * It does NOT require park completion to lift the final clouds. */
   const parkUnlocked=count>=parkIndex;
   mist.hidden=!portraitReady||parkUnlocked;
-  detour.style.display=count>=6&&!parkUnlocked?"":"none";
+  // The off-map Bangkok Haus card appears AS SOON AS dinner is the active quest.
+  detour.style.display=count>=chapters.findIndex(ch=>ch.id==="dinner")&&!parkUnlocked?"":"none";
   if(parkUnlocked){previousCount=count;return}
   const wanted=territories.slice(0,count+1);
   const ids=new Set(wanted.map(region=>region.id));
