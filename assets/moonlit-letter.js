@@ -58,5 +58,22 @@
   if(!finalScreen||finalScreen.hidden||!finalChapter||!finalProgress)return;
   window.setTimeout(()=>{if(completed.length===chapters.length)open()},window.__birthdayPreview?60:1120);
  },true);
+ /* Once the finale is truly complete, keep its letter accessible after reload.
+    This is a recovery affordance, never a shortcut past the quest. */
+ document.addEventListener("click",event=>{
+  if(!event.target?.closest?.('.rpg-toolbar [data-panel="settings"]'))return;
+  if(typeof completed==="undefined"||!Array.isArray(chapters))return;
+  const settings=document.querySelector(".rpg-settings");
+  if(!settings)return;
+  let reread=settings.querySelector("#moonlit-letter-reread");
+  if(!reread){
+   reread=document.createElement("button");
+   reread.type="button";reread.id="moonlit-letter-reread";
+   reread.textContent="♡ Read Farmer's Moonlit Letter";
+   reread.addEventListener("click",()=>{document.querySelector("#rpg-close")?.click();open()});
+   settings.append(reread);
+  }
+  reread.hidden=completed.length!==chapters.length||!!window.__birthdayPreview;
+ },false);
  document.documentElement.setAttribute("data-moonlit-letter-ready","true");
 })();
