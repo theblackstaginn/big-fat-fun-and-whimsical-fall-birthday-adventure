@@ -192,7 +192,7 @@
   }
   const limits={
    ruby:" L 1024 1536",candle:" L 1024 1536",
-   glass:" L 1024 1230",zuzu:" L 1024 751",
+   glass:" L 1024 1235",zuzu:" L 1024 773",
    river:" L 0 1455",dinner:" L 0 1304",
    sweet:" L 1024 1536"
   };
