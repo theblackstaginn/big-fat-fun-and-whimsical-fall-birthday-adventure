@@ -94,4 +94,24 @@
  });
  window.addEventListener("resize",()=>{if(modal.hidden)return;if(sizeCheck)cancelAnimationFrame(sizeCheck);sizeCheck=requestAnimationFrame(fit)});
  window.openMoonlitLetter=open;
+ /* A dedicated capture listener makes the gift resilient if a map render
+  * or preview callback interrupts the normal final achievement handler.
+  * It only arms at the actual Moonlit Finale, never at earlier unlocks. */
+ document.addEventListener("click",event=>{
+  const trigger=event.target?.closest?.("#achievement-reveal");
+  if(!trigger||modal.hidden===false)return;
+  const finalScreen=trigger.closest(".quest-achievement.is-finale");
+  const finalChapter=typeof selected!=="undefined"&&selected?.id==="park";
+  const finalProgress=typeof completed!=="undefined"&&Array.isArray(chapters)&&completed.length===chapters.length-1;
+  if(!finalScreen||finalScreen.hidden||!finalChapter||!finalProgress)return;
+  const testMode=!!window.__birthdayPreview;
+  window.setTimeout(()=>{
+   /* Normal play must complete the final chapter before opening the gift.
+    * Preview is isolated and uses its own simulated completion. */
+   const finished=typeof completed!=="undefined"&&completed.length===chapters.length;
+   if(!finished)return;
+   open();
+  },testMode?60:1120);
+ },true);
+ document.documentElement.setAttribute("data-moonlit-letter-ready","true");
 })();
