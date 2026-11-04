@@ -1,12 +1,18 @@
 /* Isolated click-through tour. Does not write progress, notes, photos or GPS data. */
 (()=>{
  "use strict";
+ const satchelButton=document.querySelector('.rpg-toolbar [data-panel="settings"]');
+ if(!satchelButton)return;
+ let previewInstalled=false;
+ function installPreview(){
  const settings=document.querySelector(".rpg-settings");
  const achievement=document.querySelector(".quest-achievement");
  const completeButton=document.querySelector("#complete-button");
  const noteButton=document.querySelector("#witch-memory-save");
  const photoInput=document.querySelector("#curios-photo-input");
  if(!settings||!achievement||!completeButton||!Array.isArray(chapters))return;
+ if(previewInstalled)return;
+ previewInstalled=true;
  const launch=document.createElement("button");
  launch.type="button";
  launch.id="preview-adventure-launch";
@@ -116,4 +122,7 @@
  achieve.addEventListener("click",celebration);
  bar.querySelector("#preview-exit").addEventListener("click",finish);
  window.addEventListener("pagehide",()=>{if(preview)window.__birthdayPreview=false});
+ }
+ satchelButton.addEventListener("click",installPreview);
+ if(document.querySelector(".rpg-settings"))installPreview();
 })();
