@@ -162,24 +162,14 @@
  mist.append(svg);
 
 
- /* Chapter-specific discovery shapes and their ordering are unchanged.
-  * Only a narrow grayscale feather and a few irregular lobes shape the
-  * border; no more rows of individually illustrated cloud icons. */
+ /* Fixed chapter discovery shapes retain their smooth continuous feather.
+  * No detached cutouts, scallops, or perforations along the boundary.
+  * The two cloud textures drift independently INSIDE the fixed mask. */
  const painted=new Map();
  let previousCount=-1;
  const parkIndex=chapters.findIndex(chapter=>chapter.id==="park");
  if(parkIndex!==8)throw Error("Unexpected chapter order for landmark cloud reveal");
  const featherSteps=[[45,.10],[26,.19],[12,.28]];
- const edgeAnchors={
-  ruby:[[344,1474],[480,1348],[600,1198],[786,1217],[953,1190]],
-  wonderland:[[68,1136],[185,1022],[331,1070],[435,1262],[420,1457]],
-  candle:[[386,1459],[489,1302],[573,1086],[752,996],[960,967]],
-  glass:[[610,1114],[716,935],[727,735],[689,529],[856,473]],
-  zuzu:[[585,553],[582,359],[740,270],[916,297]],
-  river:[[57,1115],[206,898],[294,702],[477,722],[571,857]],
-  dinner:[[54,962],[171,715],[301,578],[483,651],[675,671],[621,873]],
-  sweet:[[523,57],[652,226],[782,364],[918,528]]
- };
  function addTerritory(region,animated){
   const opacity=animated?0:1;
   const clearingGroup=node("g",{opacity,"data-discovered":region.id});
@@ -191,14 +181,6 @@
    }));
   }
   clearingGroup.append(node("path",{d:region.d,fill:"#000000"}));
-  for(const [i,point] of (edgeAnchors[region.id]||[]).entries()){
-   const variation=(i*31+region.id.length*17)%29;
-   clearingGroup.append(node("ellipse",{
-    cx:point[0]+variation-14,cy:point[1]+variation-16,
-    rx:25+variation,ry:23+(variation*3)%21,
-    fill:"#000000","fill-opacity":".91"
-   }));
-  }
   mask.append(clearingGroup);
   painted.set(region.id,{clearingGroup});
   if(!animated||!window.requestAnimationFrame)return;
