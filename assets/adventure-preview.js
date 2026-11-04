@@ -27,13 +27,16 @@
  bar.id="adventure-preview-bar";
  bar.className="adventure-preview-bar";
  bar.hidden=true;
- bar.innerHTML='<span class="preview-kicker">✧ PREVIEW MODE</span><strong id="preview-quest-title"></strong><small id="preview-quest-count"></small><div class="preview-buttons"><button id="preview-achieve" type="button">Play Achievement</button><button id="preview-exit" type="button">Exit Preview</button></div><button id="preview-final-letter" type="button">✧ Preview the Final Letter</button>';
+ bar.innerHTML='<div class="preview-drag-handle" tabindex="0" aria-label="Preview controls. Press and hold here to move. With a keyboard, use arrow keys."><span class="preview-kicker">✧ PREVIEW MODE · HOLD TO MOVE</span><strong id="preview-quest-title"></strong><small id="preview-quest-count"></small></div><div class="preview-buttons"><button id="preview-achieve" type="button">Play Achievement</button><button id="preview-exit" type="button">Exit Preview</button></div><button id="preview-final-letter" type="button">✧ Preview the Final Letter</button>';
  document.body.append(bar);
  const style=document.createElement("style");
  style.textContent=[
  '.adventure-preview-help{margin:0 0 10px;color:#d9bca5;font:.75rem/1.5 system-ui,sans-serif}',
- '.adventure-preview-bar{position:fixed;z-index:80;bottom:calc(env(safe-area-inset-bottom,0px) + 113px);left:50%;transform:translateX(-50%);box-sizing:border-box;width:min(92vw,355px);display:grid;gap:5px;padding:12px 14px;border:1px solid #e2a87c;border-radius:15px;background:linear-gradient(145deg,#56374dea,#2b2135f5);color:#ffead0;box-shadow:0 9px 32px #110b17ae;text-align:center}',
+ '.adventure-preview-bar{position:fixed;z-index:80;bottom:calc(env(safe-area-inset-bottom,0px) + 113px);left:50%;transform:translate(calc(-50% + var(--preview-shift-x,0px)),var(--preview-shift-y,0px));box-sizing:border-box;width:min(92vw,355px);display:grid;gap:5px;padding:12px 14px;border:1px solid #e2a87c;border-radius:15px;background:linear-gradient(145deg,#56374dea,#2b2135f5);color:#ffead0;box-shadow:0 9px 32px #110b17ae;text-align:center}',
  '.adventure-preview-bar[hidden]{display:none!important}',
+ '.preview-drag-handle{display:grid;gap:5px;padding:2px 4px 4px;margin:-2px -4px 0;cursor:grab;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;border-radius:8px}',
+ '.preview-drag-handle:focus-visible{outline:2px solid #ffe5bb;outline-offset:2px}',
+ '.adventure-preview-bar.is-being-dragged .preview-drag-handle{cursor:grabbing;background:#f4c59114}',
  '.preview-kicker{color:#efb993;font:700 .62rem/1.3 system-ui,sans-serif;letter-spacing:.18em}',
  '#preview-quest-title{font:700 1.1rem/1.23 Georgia,serif}',
  '#preview-quest-count{color:#e7c6a8;font:.7rem/1.4 system-ui,sans-serif}',
@@ -50,6 +53,74 @@
  const count=bar.querySelector("#preview-quest-count");
  const achieve=bar.querySelector("#preview-achieve");
  const reveal=achievement.querySelector("#achievement-reveal");
+ const dragHandle=bar.querySelector(".preview-drag-handle");
+ let shiftX=0,shiftY=0,press=null,holdTimer=null;
+ const setPosition=()=>{
+  bar.style.setProperty("--preview-shift-x",shiftX+"px");
+  bar.style.setProperty("--preview-shift-y",shiftY+"px");
+ };
+ // Limit movements to the visible phone viewport so controls cannot get lost.
+ function visibleBounds(){
+  const viewport=window.visualViewport;
+  const left=viewport?.offsetLeft||0,top=viewport?.offsetTop||0;
+  return {left:left+10,top:top+10,
+   right:left+(viewport?.width||window.innerWidth)-10,
+   bottom:top+(viewport?.height||window.innerHeight)-10};
+ }
+ function fitShift(deltaX,deltaY,rect){
+  const bounds=visibleBounds();
+  shiftX=press.baseX+Math.max(bounds.left-rect.left,Math.min(bounds.right-rect.right,deltaX));
+  shiftY=press.baseY+Math.max(bounds.top-rect.top,Math.min(bounds.bottom-rect.bottom,deltaY));
+  setPosition();
+ }
+ function stopPress(){
+  if(holdTimer!==null){clearTimeout(holdTimer);holdTimer=null}
+  if(press){
+   try{if(dragHandle.hasPointerCapture(press.id))dragHandle.releasePointerCapture(press.id)}catch{}
+  }
+  press=null;
+  bar.classList.remove("is-being-dragged");
+ }
+ dragHandle.addEventListener("pointerdown",event=>{
+  if(!preview||press||event.isPrimary===false||event.button!==0)return;
+  press={id:event.pointerId,x:event.clientX,y:event.clientY,
+   baseX:shiftX,baseY:shiftY,rect:bar.getBoundingClientRect(),ready:false};
+  holdTimer=window.setTimeout(()=>{
+   holdTimer=null;
+   if(!press||!preview)return;
+   press.ready=true;
+   bar.classList.add("is-being-dragged");
+   try{dragHandle.setPointerCapture(press.id)}catch{}
+  },420);
+ });
+ window.addEventListener("pointermove",event=>{
+  if(!press||event.pointerId!==press.id||!preview)return;
+  const dx=event.clientX-press.x,dy=event.clientY-press.y;
+  if(!press.ready){
+   if(Math.hypot(dx,dy)>12)stopPress();
+   return;
+  }
+  if(event.cancelable)event.preventDefault();
+  fitShift(dx,dy,press.rect);
+ },{passive:false});
+ window.addEventListener("pointerup",event=>{
+  if(press&&event.pointerId===press.id)stopPress();
+ });
+ window.addEventListener("pointercancel",event=>{
+  if(press&&event.pointerId===press.id)stopPress();
+ });
+ window.addEventListener("blur",stopPress);
+ dragHandle.addEventListener("contextmenu",event=>{if(preview)event.preventDefault()});
+ dragHandle.addEventListener("keydown",event=>{
+  if(!preview||!["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(event.key))return;
+  event.preventDefault();
+  const step=event.shiftKey?40:18,rect=bar.getBoundingClientRect(),bounds=visibleBounds();
+  const dx=event.key==="ArrowLeft"?-step:event.key==="ArrowRight"?step:0;
+  const dy=event.key==="ArrowUp"?-step:event.key==="ArrowDown"?step:0;
+  shiftX+=Math.max(bounds.left-rect.left,Math.min(bounds.right-rect.right,dx));
+  shiftY+=Math.max(bounds.top-rect.top,Math.min(bounds.bottom-rect.bottom,dy));
+  setPosition();
+ });
  function paint(){
   if(!preview)return;
   const done=completed.length===chapters.length;
@@ -65,6 +136,8 @@
  function begin(){
   if(preview)return;
   snapshot={ids:completed.slice(),selectedId:selected.id};
+  stopPress();
+  shiftX=0;shiftY=0;setPosition();
   preview=true;
   window.__birthdayPreview=true;
   if(typeof stopLivePlayerTracking==="function")stopLivePlayerTracking();
@@ -83,6 +156,7 @@
  }
  function finish(){
   if(!preview)return;
+  stopPress();
   preview=false;
   window.__birthdayPreview=false;
   achievement.hidden=true;
