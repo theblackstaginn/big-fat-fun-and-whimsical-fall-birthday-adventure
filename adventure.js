@@ -869,7 +869,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   document.body.classList.add("rpg-fullscreen");
   const hud=document.createElement("div");
   hud.className="rpg-hud";
-  hud.innerHTML='<div class="rpg-topbar"><div class="rpg-brand"><span class="rpg-sigil" aria-hidden="true">☾</span><span class="rpg-title">The Rogue Witch’s <em>Excursion</em></span></div><div class="rpg-top-actions"><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false" aria-label="Locate me" title="Locate me">⌖</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><button type="button" class="rpg-icon" data-panel="story" aria-label="Read the birthday dedication" title="A letter for Jess">♡</button></div></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite"><span aria-hidden="true">✦</span> <span id="rpg-count">Chapter 1 of 7</span> <span aria-hidden="true">✦</span></div><nav class="rpg-toolbar" aria-label="Adventure controls"><button type="button" data-panel="quest" aria-label="Open quest journal"><span aria-hidden="true">✧</span><small>Journal</small></button><button type="button" data-panel="notes" aria-label="Open curiosities and notes"><span aria-hidden="true">❦</span><small>Curios</small></button><button type="button" data-panel="story" aria-label="Read the birthday letter"><span aria-hidden="true">♡</span><small>Letter</small></button><button type="button" data-panel="settings" aria-label="Open satchel and settings"><span aria-hidden="true">⚙</span><small>Satchel</small></button></nav></div>';
+  hud.innerHTML='<div class="rpg-topbar"><div class="rpg-brand"><span class="rpg-sigil" aria-hidden="true">☾</span><span class="rpg-title">The Rogue Witch’s <em>Excursion</em></span></div><div class="rpg-top-actions"><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false" aria-label="Locate me" title="Locate me">⌖</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><button type="button" class="rpg-icon" data-panel="story" aria-label="Read the birthday dedication" title="A letter for Jess">♡</button></div></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite"><span aria-hidden="true">✦</span> <span id="rpg-count">Chapter 1 of 7</span> <span aria-hidden="true">✦</span></div><nav class="rpg-toolbar" aria-label="Adventure controls"><button type="button" data-panel="quest" aria-label="Open quest journal"><span aria-hidden="true">✧</span><small>Journal</small></button><button type="button" data-panel="notes" aria-label="Open curiosities and notes"><span aria-hidden="true">❦</span><small>Curios</small></button><button type="button" data-panel="story" aria-label="Read the birthday letter"><span aria-hidden="true">♡</span><small>Letter</small></button><button type="button" data-panel="satchel" aria-label="Open adventurer’s satchel"><span aria-hidden="true">✦</span><small>Satchel</small></button><button type="button" data-panel="settings" aria-label="Open adventure settings"><span aria-hidden="true">⚙</span><small>Settings</small></button></nav></div>';
   art.append(hud);
   const shade=document.createElement("div");shade.className="rpg-shade";shade.hidden=true;
   const sheet=document.createElement("section");sheet.className="rpg-sheet";sheet.hidden=true;sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-label","Adventure journal");
@@ -877,12 +877,39 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   document.body.append(shade,sheet);
   const body=sheet.querySelector("#rpg-sheet-body"),title=sheet.querySelector("#rpg-sheet-title");
   const content={quest:document.querySelector(".quest-section"),notes:document.querySelector(".field-notes"),story:document.querySelector(".hero-copy"),finale:document.querySelector(".finale")};
-  const settings=document.createElement("div");settings.className="rpg-settings";settings.innerHTML='<p>Every witch needs a satchel. Your visited chapters stay tucked away on this device.</p><button type="button" id="rpg-stop-location" hidden>Stop GPS tracking</button><button type="button" id="rpg-print">Print the adventure map</button><button type="button" id="rpg-reset">Start the journey over</button><button type="button" id="rpg-finale">Read the birthday blessing</button>';
+  // The Satchel tracks visited chapters without changing existing save data.
+  const satchel=document.createElement("div");
+  satchel.className="rpg-satchel";
+  content.satchel=satchel;
+  const renderSatchel=()=>{
+    const visited=chapters.filter(chapter=>completed.includes(chapter.id));
+    const intro=document.createElement("p");
+    intro.textContent="Each completed chapter is tucked safely into your adventurer’s satchel.";
+    const tally=document.createElement("p");
+    tally.className="rpg-satchel-count";
+    tally.textContent=visited.length+" of "+chapters.length+" chapters visited";
+    if(visited.length){
+      const list=document.createElement("ol");
+      list.className="rpg-satchel-chapters";
+      for(const chapter of visited){
+        const item=document.createElement("li");
+        item.textContent=chapter.title;
+        list.append(item);
+      }
+      satchel.replaceChildren(intro,tally,list);
+    }else{
+      const empty=document.createElement("p");
+      empty.textContent="Your satchel is ready. Your first discovery awaits!";
+      satchel.replaceChildren(intro,tally,empty);
+    }
+  };
+  const settings=document.createElement("div");settings.className="rpg-settings";settings.innerHTML='<p>Adventure controls, location tracking, and journey settings.</p><button type="button" id="rpg-stop-location" hidden>Stop GPS tracking</button><button type="button" id="rpg-print">Print the adventure map</button><button type="button" id="rpg-reset">Start the journey over</button><button type="button" id="rpg-finale">Read the birthday blessing</button>';
   const openPanel=(name)=>{
+    if(name==="satchel")renderSatchel();
     const target=content[name]||settings;
     if(!target)return;
     body.replaceChildren(target);
-    title.textContent=({quest:"The Rogue Witch’s Journal",notes:"Field Notes & Curios",story:"A Letter for Jess",finale:"The Birthday Blessing",settings:"The Adventurer’s Satchel"})[name]||"Adventure";
+    title.textContent=({quest:"The Rogue Witch’s Journal",notes:"Field Notes & Curios",story:"A Letter for Jess",finale:"The Birthday Blessing",satchel:"The Adventurer’s Satchel",settings:"Adventure Settings"})[name]||"Adventure";
     shade.hidden=false;sheet.hidden=false;sheet.classList.add("is-open");
     body.scrollTop=0;sheet.querySelector("#rpg-close").focus();
   };
