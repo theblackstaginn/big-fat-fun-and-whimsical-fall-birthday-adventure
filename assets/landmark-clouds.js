@@ -36,8 +36,8 @@
   defs.append(g);
  }
  gradient("linearGradient","quest-cloud-sky",[["0%","#f7fcff"],["44%","#e2f1fc"],["78%","#eaf7ff"],["100%","#daeefc"]],{x1:"0",y1:"0",x2:"0",y2:"1"});
- gradient("radialGradient","quest-cloud-top",[["0%","#ffffff",".98"],["55%","#ffffff",".96"],["80%","#f9fdff",".65"],["100%","#ecf7ff","0"]]);
- gradient("radialGradient","quest-cloud-bottom",[["0%","#9bc4e5",".48"],["57%","#b8d9f0",".28"],["100%","#e9f6ff","0"]]);
+ gradient("radialGradient","quest-cloud-top",[["0%","#ffffff",".96"],["38%","#ffffff",".89"],["64%","#f9fdff",".66"],["84%","#f3faff",".28"],["100%","#ecf7ff","0"]]);
+ gradient("radialGradient","quest-cloud-bottom",[["0%","#9bc4e5",".39"],["50%","#b8d9f0",".24"],["78%","#e0f2ff",".09"],["100%","#e9f6ff","0"]]);
  const mask=node("mask",{id:"quest-unique-landmark-mask",x:0,y:0,width:1024,height:1536,maskUnits:"userSpaceOnUse",maskContentUnits:"userSpaceOnUse",style:"mask-type:luminance"});
  mask.append(node("rect",{x:0,y:0,width:1024,height:1536,fill:"#ffffff"}));
  defs.append(mask);
@@ -68,27 +68,55 @@
  mist.classList.add("landmark-clouds");
  mist.append(svg);
 
- /* Masks grow as broad, connected terrain swaths.
-  * Three translucent outlines soften the irregular cloudfront like a watercolor,
-  * without a giant blur filter that can slow down Safari. */
+ /* Each discovery leaves a soft, layered bank of cloud rather than a
+  * crisp cut-out. Concentric translucent strokes feather the luminance mask
+  * over about 85 painting pixels, without a large SVG blur on iPhone Safari.
+  * The colored front remains INSIDE the same cloud mask, so overlapping
+  * discoveries never leave seams across previously explored terrain. */
  const painted=new Map();
  let previousCount=-1;
  const parkIndex=chapters.findIndex(chapter=>chapter.id==="park");
  if(parkIndex!==8)throw Error("Unexpected chapter order for landmark cloud reveal");
+ const featherSteps=[
+  [176,.04],[150,.06],[126,.09],[104,.12],[82,.16],
+  [64,.21],[46,.27],[30,.35],[16,.60]
+ ];
+ const cloudBanks=[
+  [168,"#f7fcff",.09],[116,"#a7cbe2",.12],
+  [88,"#ffffff",.15],[53,"#d1e8f7",.16],[26,"#ffffff",.22]
+ ];
  function addTerritory(region,animated){
-  const group=node("g",{opacity:animated?0:1,"data-discovered":region.id});
-  const soft=node("path",{d:region.d,fill:"none",stroke:"#000000","stroke-opacity":".18","stroke-width":74,"stroke-linecap":"round","stroke-linejoin":"round"});
-  const inner=node("path",{d:region.d,fill:"none",stroke:"#000000","stroke-opacity":".43","stroke-width":30,"stroke-linecap":"round","stroke-linejoin":"round"});
-  const clearing=node("path",{d:region.d,fill:"#000000"});
-  group.append(soft,inner,clearing);
-  mask.append(group);
-  painted.set(region.id,group);
+  const opacity=animated?0:1;
+  const clearingGroup=node("g",{opacity,"data-discovered":region.id});
+  for(const [width,alpha] of featherSteps){
+   clearingGroup.append(node("path",{
+    d:region.d,fill:"none",stroke:"#000000",
+    "stroke-opacity":alpha,"stroke-width":width,
+    "stroke-linecap":"round","stroke-linejoin":"round"
+   }));
+  }
+  clearingGroup.append(node("path",{d:region.d,fill:"#000000"}));
+  mask.append(clearingGroup);
+
+  const cloudFront=node("g",{opacity,"data-cloud-front":region.id});
+  for(const [width,color,alpha] of cloudBanks){
+   cloudFront.append(node("path",{
+    d:region.d,fill:"none",stroke:color,
+    "stroke-opacity":alpha,"stroke-width":width,
+    "stroke-linecap":"round","stroke-linejoin":"round"
+   }));
+  }
+  cloudGroup.append(cloudFront);
+  painted.set(region.id,{clearingGroup,cloudFront});
+
   if(!animated||!window.requestAnimationFrame)return;
   const started=performance.now();
   const frame=now=>{
-   if(!group.isConnected)return;
+   if(!clearingGroup.isConnected)return;
    const t=Math.min(1,Math.max(0,(now-started)/1200));
-   group.setAttribute("opacity",String(1-Math.pow(1-t,3)));
+   const amount=String(1-Math.pow(1-t,3));
+   clearingGroup.setAttribute("opacity",amount);
+   cloudFront.setAttribute("opacity",amount);
    if(t<1)requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
@@ -104,8 +132,12 @@
   const wanted=territories.slice(0,count+1);
   const ids=new Set(wanted.map(region=>region.id));
   /* Preview exit/reset restores the earlier cloud coverage exactly. */
-  for(const [id,group] of painted){
-   if(!ids.has(id)){group.remove();painted.delete(id)}
+  for(const [id,entry] of painted){
+   if(!ids.has(id)){
+    entry.clearingGroup.remove();
+    entry.cloudFront.remove();
+    painted.delete(id);
+   }
   }
   const freshStep=previousCount>=0&&count===previousCount+1;
   const reduceMotion=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
