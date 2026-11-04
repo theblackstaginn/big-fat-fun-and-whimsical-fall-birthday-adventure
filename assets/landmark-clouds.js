@@ -1,7 +1,7 @@
-/* Destination-only cloudscape over Jess's 1024x1536 Helen illustration.
- * The map is readable; only locked story locations remain beneath soft fog.
- * Each unlock releases its destination cloud, and the final park clears all.
- * Existing quest progress, memories, achievements, and GPS are untouched. */
+/* Soft storybook cloud banks over Jess's 1024x1536 Helen illustration.
+ * Only FUTURE destinations are veiled. Each has a slowly moving scalloped silhouette.
+ * Every solid-white puff enters ONE shared mask/feather pass: touching clouds
+ * merge without visible overlap rings. Quest data and location logic are untouched. */
 (()=>{
  "use strict";
  const mist=document.querySelector("#overworld-fog");
@@ -44,17 +44,24 @@
  gradient("linearGradient","quest-cloud-sky",[
   ["0%","#c6d6e0"],["50%","#c2d3dd"],["100%","#d9e3ea"]
  ],{x1:"0",y1:"0",x2:"0",y2:"1"});
- /* Broad, feathered fog banks. No detached puffs, lobes, or long tails. */
- gradient("radialGradient","quest-locked-landmark-veil",[
-  ["0%","#ffffff","1"],["68%","#ffffff","1"],
-  ["81%","#ffffff",".98"],["91%","#ffffff",".70"],
-  ["100%","#000000","0"]
- ]);
+ /* One feather pass AFTER compositing all opaque puff silhouettes.
+  * Nearby clouds fuse seamlessly: no separate oval opacity boundaries. */
+ const feather=node("filter",{
+  id:"quest-locked-cloud-union-feather",filterUnits:"userSpaceOnUse",
+  x:-50,y:-50,width:1124,height:1636
+ });
+ feather.append(node("feGaussianBlur",{in:"SourceGraphic",stdDeviation:9}));
+ defs.append(feather);
  const mask=node("mask",{
   id:"quest-unique-landmark-mask",x:0,y:0,width:1024,height:1536,
   maskUnits:"userSpaceOnUse",maskContentUnits:"userSpaceOnUse",style:"mask-type:luminance"
  });
  mask.append(node("rect",{x:0,y:0,width:1024,height:1536,fill:"#000000"}));
+ /* All currently locked shapes share this ONE blurred, seamless union. */
+ const bankUnion=node("g",{
+  id:"quest-locked-cloud-union",filter:"url(#quest-locked-cloud-union-feather)"
+ });
+ mask.append(bankUnion);
  defs.append(mask);
  svg.append(defs);
  const cloudGroup=node("g",{mask:"url(#quest-unique-landmark-mask)"});
@@ -151,7 +158,9 @@
   ".landmark-clouds .quest-cloud-drift-front{transform-box:view-box;animation:quest-atmosphere-drift-front 71s ease-in-out infinite alternate}",
   "@keyframes quest-atmosphere-drift-back{from{transform:translate(-13px,-5px)}to{transform:translate(15px,8px)}}",
   "@keyframes quest-atmosphere-drift-front{from{transform:translate(17px,-9px)}to{transform:translate(-14px,10px)}}",
-  "@media(prefers-reduced-motion:reduce){.landmark-clouds .quest-cloud-drift-back,.landmark-clouds .quest-cloud-drift-front{animation:none!important}}"
+  ".landmark-clouds [data-locked-destination]{transform-box:fill-box;transform-origin:center;animation:quest-cloud-bank-sway 31s ease-in-out infinite alternate}",
+  "@keyframes quest-cloud-bank-sway{from{transform:translate(-6px,3px)}to{transform:translate(6px,-4px)}}",
+  "@media(prefers-reduced-motion:reduce){.landmark-clouds .quest-cloud-drift-back,.landmark-clouds .quest-cloud-drift-front,.landmark-clouds [data-locked-destination]{animation:none!important}}"
  ].join("\n");
  document.head.append(driftStyle);
  svg.append(cloudGroup);
@@ -186,12 +195,35 @@
    }
    return;
   }
+  const index=lockedLandmarks.indexOf(site);
   const group=node("g",{"data-locked-destination":site.id,opacity:1});
+  /* Rounded crown and smaller natural billows form one solid, cloud-shaped bank. */
   group.append(node("ellipse",{
-   cx:site.cx,cy:site.cy,rx:site.rx,ry:site.ry,
-   fill:"url(#quest-locked-landmark-veil)"
+   cx:site.cx,cy:site.cy+site.ry*.04,
+   rx:site.rx*.77,ry:site.ry*.67,fill:"#ffffff"
   }));
-  mask.append(group);
+  const billows=[
+   [-.64,-.08,.33,.52],[-.49,-.38,.31,.46],
+   [-.17,-.53,.35,.45],[.21,-.50,.37,.48],
+   [.49,-.29,.37,.49],[.70,.04,.31,.45],
+   [.53,.33,.36,.40],[.13,.43,.47,.38],
+   [-.30,.42,.41,.38],[-.62,.22,.35,.40]
+  ];
+  for(let i=0;i<billows.length;i++){
+   const [x,y,w,h]=billows[i];
+   const variation=Math.sin((index+1)*9.73+i*2.47);
+   group.append(node("ellipse",{
+    cx:site.cx+(x+variation*.028)*site.rx,
+    cy:site.cy+(y+variation*.040)*site.ry,
+    rx:site.rx*w*(1+variation*.07),
+    ry:site.ry*h*(1-variation*.055),
+    fill:"#ffffff"
+   }));
+  }
+  // Gently drift each bank independently, only a handful of map pixels.
+  group.style.animationDuration=(25+(index*7)%16)+"s";
+  group.style.animationDelay=(-index*4.7)+"s";
+  bankUnion.append(group);
   banks.set(site.id,{group,token:0,fading:false});
  }
  function clearBank(id,animated){
