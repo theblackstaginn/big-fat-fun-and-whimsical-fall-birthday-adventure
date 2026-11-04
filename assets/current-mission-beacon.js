@@ -15,7 +15,7 @@
   ruby:[660,1220],
   wonderland:[293,1046],
   candle:[652,1013],
-  glass:[729,465],
+  town:[729,465], // Curiosity Walk: active quest at the Glassblowing Shop
   zuzu:[650,321],
   river:[355,786],
   sweet:[335,317],
