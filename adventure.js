@@ -347,21 +347,22 @@ function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(leafletPr
 /* Stable GPS/map anchors for all nine stops. Building-level approximations,
  * not surveyed doorways; follow the Journal address for walking directions.
  * Ruby and ZuZu existing published anchors; Wonderland public shop listing;
- * Candle is in the 705 Brucken Strasse plaza next to Spice 55, position refined
- * from the user's nearby-streets screenshot; Glass: 8600 N Main storefront row;
+ * Candle is in 705 Brucken Strasse Building 101 beside Spice 55; pinned
+ * adjacent to the property position given by Spice 55. Glass: 8600 N Main storefront row;
  * River: GA 17/75 Chattahoochee crossing (HistoricBridges.org); Bangkok:
  * official tourism listing Google Maps location; Hansel: 8651 N Main shop,
- * not the second 8078 South Main factory; Park: OSM park feature. */
+ * North Main business listing coordinates, not the second 8078 South Main factory;
+ * Park: OSM park feature. */
 const questAnchors=Object.freeze({
  ruby:[34.700059,-83.721920],
  wonderland:[34.699500,-83.724000],
- candle:[34.698600,-83.718580],
+ candle:[34.698250,-83.718590],
  town:[34.701430,-83.730150], /* pre-split Curiosity Walk fallback */
  glass:[34.701430,-83.730150],
  zuzu:[34.701681,-83.731017],
  river:[34.700886,-83.729030],
  dinner:[34.6999002,-83.7215628],
- sweet:[34.7014839,-83.7315675],
+ sweet:[34.7011191,-83.7309174],
  park:[34.702860,-83.731570]
 });
 /* ZuZu's Petals is a separate visual pin at White Horse Square, 8660 N Main
@@ -658,7 +659,16 @@ async function renderVillageAtlas(center,features){
  }
  await neighborhoodLoad;
  if(request!==neighborhoodRequest||!neighborhoodMap||nearby.hidden)return;
- neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42});
+ /* Keep the active pin visible ABOVE the movable Preview Mode control card.
+  * MapLibre remains georeferenced; only the screen-space camera offset changes. */
+ const previewCard=document.querySelector("#adventure-preview-bar");
+ const previewBlocking=!!window.__birthdayPreview&&previewCard&&!previewCard.hidden;
+ const mapBox=container.getBoundingClientRect();
+ const previewTop=previewBlocking?previewCard.getBoundingClientRect().top:0;
+ const safeTop=document.querySelector(".nearby-heading")?.getBoundingClientRect().bottom||mapBox.top+130;
+ const safeTarget=previewBlocking?Math.max(safeTop+82,Math.min(previewTop-56,(safeTop+previewTop)/2)):mapBox.top+mapBox.height*.5;
+ const cameraY=previewBlocking?Math.max(-mapBox.height*.27,Math.min(0,safeTarget-(mapBox.top+mapBox.height/2))):0;
+ neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42,offset:[0,cameraY]});
  for(const marker of neighborhoodPins)marker.remove();
  neighborhoodPins=[];
  for(const {chapter,point,name,sideStop} of withZuZuNearbyMarker(features)){
