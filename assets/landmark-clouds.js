@@ -36,66 +36,117 @@
   defs.append(g);
  }
 
- /* Unexplored land is covered by a proper bank of illustrated cumulus,
-  * not a white rectangle with a blurry cut-out. Blue channels between
-  * individual lobes make each cloud silhouette readable on small screens. */
+ /* The locked map is covered by continuous, irregular atmospheric cloud
+  * volume. A pair of low-resolution procedural textures is created ONCE,
+  * then moved gently by CSS: no stamped shapes, per-frame canvas rendering,
+  * external requests, or drifting unlock geometry. */
  gradient("linearGradient","quest-cloud-sky",[
-  ["0%","#cddfeb"],["42%","#bfd5e4"],["100%","#dae8f0"]
+  ["0%","#c6d6e0"],["50%","#c2d3dd"],["100%","#d9e3ea"]
  ],{x1:"0",y1:"0",x2:"0",y2:"1"});
- gradient("linearGradient","quest-cloud-shadow",[
-  ["0%","#a7c3d6",".3"],["48%","#9abacf",".75"],["100%","#b6cfe0","0"]
- ],{x1:"0",y1:"0",x2:"0",y2:"1"});
- gradient("linearGradient","quest-cloud-body",[
-  ["0%","#ffffff"],["48%","#f3faff"],["84%","#e4f0f8"],["100%","#cbddea"]
- ],{x1:"0",y1:"0",x2:"0",y2:"1"});
- gradient("linearGradient","quest-cloud-underbelly",[
-  ["0%","#dcecf5"],["65%","#b9d1e1"],["100%","#a9c5d7"]
- ],{x1:"0",y1:"0",x2:"0",y2:"1"});
- const mask=node("mask",{id:"quest-unique-landmark-mask",x:0,y:0,width:1024,height:1536,maskUnits:"userSpaceOnUse",maskContentUnits:"userSpaceOnUse",style:"mask-type:luminance"});
+ const mask=node("mask",{
+  id:"quest-unique-landmark-mask",x:0,y:0,width:1024,height:1536,
+  maskUnits:"userSpaceOnUse",maskContentUnits:"userSpaceOnUse",style:"mask-type:luminance"
+ });
  mask.append(node("rect",{x:0,y:0,width:1024,height:1536,fill:"#ffffff"}));
  defs.append(mask);
  svg.append(defs);
  const cloudGroup=node("g",{mask:"url(#quest-unique-landmark-mask)"});
- cloudGroup.append(node("rect",{x:0,y:0,width:1024,height:1536,fill:"url(#quest-cloud-sky)"}));
-
- /* A recognizable cloud: four asymmetric rounded towers, a broad luminous
-  * body, and a soft blue underside. No giant blurry radial ovals or repeated
-  * frontier-following contour strokes. All shapes stay vector crisp. */
- function drawCumulus(parent,x,y,scale,variation,opacity=1){
-  const g=node("g",{
-   transform:"translate("+x.toFixed(1)+" "+y.toFixed(1)+") scale("+scale.toFixed(3)+")",
-   opacity:opacity.toFixed(2)
-  });
-  const shift=(variation%7-3)*4;
-  g.append(node("ellipse",{cx:5,cy:35,rx:121,ry:47,fill:"url(#quest-cloud-shadow)",opacity:".71"}));
-  g.append(node("ellipse",{cx:0,cy:14,rx:116,ry:42,fill:"url(#quest-cloud-underbelly)"}));
-  g.append(node("ellipse",{cx:-76,cy:-6,rx:41,ry:36,fill:"url(#quest-cloud-body)"}));
-  g.append(node("ellipse",{cx:-43,cy:-32,rx:48,ry:55,fill:"url(#quest-cloud-body)"}));
-  g.append(node("ellipse",{cx:shift+15,cy:-46,rx:55,ry:66,fill:"url(#quest-cloud-body)"}));
-  g.append(node("ellipse",{cx:69,cy:-20,rx:43,ry:49,fill:"url(#quest-cloud-body)"}));
-  g.append(node("ellipse",{cx:98,cy:2,rx:26,ry:29,fill:"url(#quest-cloud-body)"}));
-  // A sweeping lower cloud pillow joins the separate lobes naturally.
-  g.append(node("ellipse",{cx:0,cy:17,rx:116,ry:33,fill:"url(#quest-cloud-body)"}));
-  g.append(node("ellipse",{cx:shift-26,cy:-57,rx:30,ry:16,fill:"#ffffff",opacity:".36"}));
-  g.append(node("ellipse",{cx:52,cy:-34,rx:25,ry:11,fill:"#ffffff",opacity:".32"}));
-  g.append(node("path",{
-   d:"M -93 38 Q -37 55 10 49 T 102 35",
-   fill:"none",stroke:"#adc9db","stroke-width":3,"stroke-opacity":".44","stroke-linecap":"round"
-  }));
-  parent.append(g);
- }
- const distant=node("g",{"aria-hidden":"true"});
- // Staggered, unequal clouds leave gentle sky-colored valleys between forms.
- for(let row=0;row<9;row++){
-  for(let col=0;col<5;col++){
-   const n=row*13+col*7;
-   const x=-95+col*271+(row%2?122:0)+((n*17)%47)-24;
-   const y=108+row*183+((n*23)%65)-32;
-   const scale=.67+((n*19)%31)/100;
-   drawCumulus(distant,x,y,scale,n,.73+((n*11)%19)/100);
+ cloudGroup.append(node("rect",{
+  x:0,y:0,width:1024,height:1536,fill:"url(#quest-cloud-sky)"
+ }));
+ const clamp=(value,min,max)=>Math.max(min,Math.min(max,value));
+ const smooth=(a,b,v)=>{
+  const t=clamp((v-a)/(b-a),0,1);
+  return t*t*(3-2*t);
+ };
+ function makeCloudTexture(seed,foreground=false){
+  const width=540,height=810;
+  const canvas=document.createElement("canvas");
+  canvas.width=width;canvas.height=height;
+  const ctx=canvas.getContext("2d");
+  if(!ctx)return null;
+  let state=seed>>>0;
+  const random=()=>{
+   state=(Math.imul(state,1664525)+1013904223)>>>0;
+   return state/4294967296;
+  };
+  /* Interpolated noise at five independent scales makes asymmetric cloud
+   * masses with small filaments, never repeated rows of puff-shaped icons. */
+  function noise(cell){
+   const cols=Math.ceil(width/cell)+6,rows=Math.ceil(height/cell)+6;
+   const values=new Float32Array(cols*rows);
+   for(let i=0;i<values.length;i++)values[i]=random();
+   return (x,y)=>{
+    const gx=clamp(x/cell+2,0,cols-1.001);
+    const gy=clamp(y/cell+2,0,rows-1.001);
+    const ix=Math.floor(gx),iy=Math.floor(gy);
+    const tx=smooth(0,1,gx-ix),ty=smooth(0,1,gy-iy);
+    const top=iy*cols+ix,bottom=top+cols;
+    const upper=values[top]*(1-tx)+values[top+1]*tx;
+    const lower=values[bottom]*(1-tx)+values[bottom+1]*tx;
+    return upper*(1-ty)+lower*ty;
+   };
   }
+  const large=noise(215),medium=noise(107),small=noise(49);
+  const fine=noise(24),grain=noise(11);
+  const warpX=noise(144),warpY=noise(119);
+  const image=ctx.createImageData(width,height),data=image.data;
+  for(let y=0;y<height;y++){
+   for(let x=0;x<width;x++){
+    const wx=x+(warpX(x,y)-.5)*64;
+    const wy=y+(warpY(x,y)-.5)*53;
+    const big=large(wx,wy),mid=medium(wx,wy),soft=small(wx,wy);
+    let density=.36*big+.31*mid+.20*soft
+       +.095*fine(wx,wy)+.035*grain(wx,wy);
+    // Broad bent fronts, rather than a perfectly evenly spaced blanket.
+    density+=.048*Math.sin(wy/113+Math.sin(wx/159)*1.2);
+    const mass=smooth(.32,.65,density);
+    const contour=smooth(.32,.51,density)*(1-smooth(.54,.70,density));
+    const topLight=smooth(.51,.72,density);
+    const detail=(fine(wx,wy)-.5)*5+(grain(wx,wy)-.5)*2.2;
+    const i=(y*width+x)*4;
+    if(foreground){
+     // Sparse translucent wisps at a different speed than the main bank.
+     const alpha=Math.round(118*smooth(.47,.70,density));
+     data[i]=clamp(211+mass*39+detail,0,255);
+     data[i+1]=clamp(226+mass*27+detail,0,255);
+     data[i+2]=clamp(235+mass*16+detail,0,255);
+     data[i+3]=alpha;
+    }else{
+     data[i]=clamp(190+mass*61-contour*25+topLight*6+detail,0,255);
+     data[i+1]=clamp(207+mass*44-contour*19+topLight*4+detail,0,255);
+     data[i+2]=clamp(218+mass*33-contour*12+topLight*2+detail,0,255);
+     data[i+3]=255;
+    }
+   }
+  }
+  ctx.putImageData(image,0,0);
+  try{return canvas.toDataURL("image/png")}catch{return null}
  }
- cloudGroup.append(distant);
+ function movingImage(seed,foreground,cls){
+  const image=node("image",{
+   x:-96,y:-145,width:1216,height:1826,
+   preserveAspectRatio:"none",class:cls,
+   opacity:foreground?".75":"1"
+  });
+  const png=makeCloudTexture(seed,foreground);
+  if(!png)return;
+  image.setAttribute("href",png);
+  image.setAttributeNS("http://www.w3.org/1999/xlink","href",png);
+  cloudGroup.append(image);
+ }
+ // Enlarged beyond the viewport so the very slow drift never leaves gaps.
+ movingImage(79041,false,"quest-cloud-drift-back");
+ movingImage(12709,true,"quest-cloud-drift-front");
+ const driftStyle=document.createElement("style");
+ driftStyle.textContent=[
+  ".landmark-clouds .quest-cloud-drift-back{transform-box:view-box;animation:quest-atmosphere-drift-back 54s ease-in-out infinite alternate}",
+  ".landmark-clouds .quest-cloud-drift-front{transform-box:view-box;animation:quest-atmosphere-drift-front 71s ease-in-out infinite alternate}",
+  "@keyframes quest-atmosphere-drift-back{from{transform:translate(-13px,-5px)}to{transform:translate(15px,8px)}}",
+  "@keyframes quest-atmosphere-drift-front{from{transform:translate(17px,-9px)}to{transform:translate(-14px,10px)}}",
+  "@media(prefers-reduced-motion:reduce){.landmark-clouds .quest-cloud-drift-back,.landmark-clouds .quest-cloud-drift-front{animation:none!important}}"
+ ].join("\n");
+ document.head.append(driftStyle);
  svg.append(cloudGroup);
  /* Draw the off-map dinner destination as a proper side-trip compass card.
     It appears when the dinner chapter unlocks, and is not a false storefront. */
@@ -111,63 +162,24 @@
  mist.append(svg);
 
 
- /* Keep the original territory-clearing geometry. A narrow mask feather
-  * keeps the art sharp; rounded cloud heads interrupt the boundary itself. */
+ /* Chapter-specific discovery shapes and their ordering are unchanged.
+  * Only a narrow grayscale feather and a few irregular lobes shape the
+  * border; no more rows of individually illustrated cloud icons. */
  const painted=new Map();
  let previousCount=-1;
  const parkIndex=chapters.findIndex(chapter=>chapter.id==="park");
  if(parkIndex!==8)throw Error("Unexpected chapter order for landmark cloud reveal");
- const featherSteps=[[34,.18],[16,.30]];
- const cloudAnchors={
-  ruby:[[344,1474],[419,1418],[480,1348],[520,1243],[600,1198],[691,1194],[786,1217],[865,1214],[953,1190]],
-  wonderland:[[68,1136],[122,1066],[185,1022],[264,1022],[331,1070],[387,1165],[435,1262],[471,1360],[420,1457]],
-  candle:[[386,1459],[436,1380],[489,1302],[526,1194],[573,1086],[654,1006],[752,996],[861,983],[960,967]],
-  glass:[[610,1114],[665,1021],[716,935],[743,835],[727,735],[689,637],[689,529],[760,475],[856,473],[960,498]],
-  zuzu:[[585,553],[568,461],[582,359],[650,278],[740,270],[825,281],[916,297],[986,283]],
-  river:[[57,1115],[139,1001],[206,898],[244,783],[294,702],[380,714],[477,722],[560,766],[571,857],[505,990]],
-  dinner:[[54,962],[122,829],[171,715],[220,600],[301,578],[387,646],[483,651],[580,614],[675,671],[704,773],[621,873],[536,984]],
-  sweet:[[523,57],[569,150],[652,226],[744,271],[782,364],[826,453],[918,528],[991,594]]
+ const featherSteps=[[45,.10],[26,.19],[12,.28]];
+ const edgeAnchors={
+  ruby:[[344,1474],[480,1348],[600,1198],[786,1217],[953,1190]],
+  wonderland:[[68,1136],[185,1022],[331,1070],[435,1262],[420,1457]],
+  candle:[[386,1459],[489,1302],[573,1086],[752,996],[960,967]],
+  glass:[[610,1114],[716,935],[727,735],[689,529],[856,473]],
+  zuzu:[[585,553],[582,359],[740,270],[916,297]],
+  river:[[57,1115],[206,898],[294,702],[477,722],[571,857]],
+  dinner:[[54,962],[171,715],[301,578],[483,651],[675,671],[621,873]],
+  sweet:[[523,57],[652,226],[782,364],[918,528]]
  };
- function randomFor(id){
-  let seed=2166136261;
-  for(const char of id)seed=Math.imul(seed^char.charCodeAt(0),16777619)>>>0;
-  return ()=>{
-   seed=(Math.imul(seed,1664525)+1013904223)>>>0;
-   return seed/4294967296;
-  };
- }
-
- function frontierCloudHeads(region){
-  const anchors=cloudAnchors[region.id]||[];
-  const random=randomFor(region.id);
-  const heads=[];
-  anchors.forEach(([x,y],i)=>{
-   // Avoid the repetitive bead-on-a-string look.
-   if(i%2===1&&random()>.46)return;
-   const a=anchors[Math.max(0,i-1)],b=anchors[Math.min(anchors.length-1,i+1)];
-   const dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy)||1;
-   const tx=dx/length,ty=dy/length;
-   const nx=ty,ny=-tx;
-   const drift=(random()-.5)*29;
-   const offset=17+random()*20;
-   heads.push({
-    x:x+tx*drift+nx*offset,
-    y:y+ty*drift+ny*offset,
-    nx,ny,tx,ty,
-    scale:.67+random()*.23,
-    variation:i+Math.floor(random()*13)
-   });
-  });
-  return heads;
- }
- function makeCloudBank(region,opacity,heads){
-  const front=node("g",{opacity,"data-cloud-front":region.id});
-  heads.forEach((h,i)=>{
-   const x=h.x+h.nx*16,y=h.y+h.ny*16;
-   drawCumulus(front,x,y,h.scale,i+h.variation,.96);
-  });
-  return front;
- }
  function addTerritory(region,animated){
   const opacity=animated?0:1;
   const clearingGroup=node("g",{opacity,"data-discovered":region.id});
@@ -179,33 +191,22 @@
    }));
   }
   clearingGroup.append(node("path",{d:region.d,fill:"#000000"}));
-  const heads=frontierCloudHeads(region);
-  /* Small solid cloud lobes lean over the uncovered land: the frontier
-   * has a fluffy silhouette instead of looking like cut paper or paint. */
-  for(const h of heads){
+  for(const [i,point] of (edgeAnchors[region.id]||[]).entries()){
+   const variation=(i*31+region.id.length*17)%29;
    clearingGroup.append(node("ellipse",{
-    cx:h.x,cy:h.y,rx:52*h.scale,ry:38*h.scale,
-    fill:"#ffffff","fill-opacity":".98"
-   }));
-   clearingGroup.append(node("ellipse",{
-    cx:h.x+h.tx*22+h.nx*8,cy:h.y+h.ty*22+h.ny*8,
-    rx:33*h.scale,ry:34*h.scale,fill:"#ffffff","fill-opacity":".96"
+    cx:point[0]+variation-14,cy:point[1]+variation-16,
+    rx:25+variation,ry:23+(variation*3)%21,
+    fill:"#000000","fill-opacity":".91"
    }));
   }
   mask.append(clearingGroup);
-
-  const cloudFront=makeCloudBank(region,opacity,heads);
-  cloudGroup.append(cloudFront);
-  painted.set(region.id,{clearingGroup,cloudFront});
-
+  painted.set(region.id,{clearingGroup});
   if(!animated||!window.requestAnimationFrame)return;
   const started=performance.now();
   const frame=now=>{
    if(!clearingGroup.isConnected)return;
    const t=Math.min(1,Math.max(0,(now-started)/1200));
-   const amount=String(1-Math.pow(1-t,3));
-   clearingGroup.setAttribute("opacity",amount);
-   cloudFront.setAttribute("opacity",amount);
+   clearingGroup.setAttribute("opacity",String(1-Math.pow(1-t,3)));
    if(t<1)requestAnimationFrame(frame);
   };
   requestAnimationFrame(frame);
@@ -224,7 +225,6 @@
   for(const [id,entry] of painted){
    if(!ids.has(id)){
     entry.clearingGroup.remove();
-    entry.cloudFront.remove();
     painted.delete(id);
    }
   }
