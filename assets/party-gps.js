@@ -33,7 +33,7 @@
   else status.textContent="Turn on GPS to recognize "+ch.title+" automatically, or tap We’re here.";
  }
  function mark(id,fromGps){
-  if(!id||arrived.has(id)||current().id!==id)return;
+  if(window.__birthdayPreview||!id||arrived.has(id)||current().id!==id)return;
   arrived.add(id);try{localStorage.setItem(key,JSON.stringify([...arrived]))}catch{}
   update();
   if(fromGps){toast.querySelector("p").textContent=current().title;toast.hidden=false}
@@ -46,7 +46,7 @@
   return 12742000*Math.atan2(Math.sqrt(z),Math.sqrt(Math.max(0,1-z)));
  }
  async function check(point){
-  if(!point||completed.length>=chapters.length)return;
+  if(window.__birthdayPreview||!point||completed.length>=chapters.length)return;
   lastPoint=point.slice();
   const chapter=current(),id=chapter.id,turn=++sequence;
   if(arrived.has(id))return;
