@@ -69,6 +69,12 @@ jobs:
             mkdir -p dist/assets/satchel/jars
             unzip -j -o assets/Jess_Approved_Oddities_Jars_Under25MB.zip '*.webp' -d dist/assets/satchel/jars
           fi
+      - name: Overlay corrected transparent oddities jars
+        run: |
+          if [ -f assets/Jess_Oddities_Jars_Transparent_Fixed.zip ]; then
+            mkdir -p dist/assets/satchel/jars
+            unzip -j -o assets/Jess_Oddities_Jars_Transparent_Fixed.zip '*.webp' -d dist/assets/satchel/jars
+          fi
       - name: Unpack Treasure Haul inventory artwork
         run: |
           if [ -f assets/Jess_Treasure_Haul_Inventory_Assets.zip ]; then
