@@ -69,6 +69,12 @@ jobs:
             mkdir -p dist/assets/satchel/jars
             unzip -j -o assets/Jess_Approved_Oddities_Jars_Under25MB.zip '*.webp' -d dist/assets/satchel/jars
           fi
+      - name: Unpack Treasure Haul inventory artwork
+        run: |
+          if [ -f assets/Jess_Treasure_Haul_Inventory_Assets.zip ]; then
+            mkdir -p dist/assets/satchel/inventory
+            unzip -j -o assets/Jess_Treasure_Haul_Inventory_Assets.zip treasure_haul_inventory_grid.png treasure_haul_empty_slot.png -d dist/assets/satchel/inventory
+          fi
       - name: Bake Ruby Mae original scene into 3D cork jar
         run: |
           python -m pip install numpy pillow trimesh
