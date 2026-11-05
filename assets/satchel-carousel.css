@@ -84,13 +84,22 @@
   background: transparent;
   box-shadow: none;
   color: inherit;
-  transform: translate(-50%, -94%);
-  transform-origin: 50% 94%;
-  aspect-ratio: 400 / 438;
+  transform: translate(-50%, -96%);
+  transform-origin: 50% 96%;
+  aspect-ratio: 1199 / 1312;
   pointer-events: auto;
   will-change: left,top,transform;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar .satchel-jar-sprite {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  filter: drop-shadow(0 3px 3px #24121c88);
 }
 .rpg-sheet.is-satchel-susan .satchel-jar:focus-visible {
   outline: 2px solid #f8d4a5;
