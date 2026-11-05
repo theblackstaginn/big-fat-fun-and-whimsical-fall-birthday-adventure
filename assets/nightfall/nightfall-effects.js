@@ -52,8 +52,13 @@
     <svg class="nightfall-sky" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" focusable="false">
       <g id="nightfall-twinkles"></g>
     </svg>
-    <img class="river-whitewater-layer river-whitewater-left" alt="" aria-hidden="true" decoding="async" src="${PATH}river-foam-highlights.webp">
-    <img class="river-whitewater-layer river-whitewater-right" alt="" aria-hidden="true" decoding="async" src="${PATH}river-foam-highlights.webp">`;
+    <!-- Two alternating, continuously moving passes per channel; the reset is invisible. -->
+    <div class="river-whitewater-system">
+      <img class="river-whitewater-layer river-whitewater-left river-whitewater-phase-a" alt="" aria-hidden="true" decoding="async" src="${PATH}river-foam-highlights.webp">
+      <img class="river-whitewater-layer river-whitewater-left river-whitewater-phase-b" alt="" aria-hidden="true" decoding="async" src="${PATH}river-foam-highlights.webp">
+      <img class="river-whitewater-layer river-whitewater-right river-whitewater-phase-a" alt="" aria-hidden="true" decoding="async" src="${PATH}river-foam-highlights.webp">
+      <img class="river-whitewater-layer river-whitewater-right river-whitewater-phase-b" alt="" aria-hidden="true" decoding="async" src="${PATH}river-foam-highlights.webp">
+    </div>`;
   cursor.insertAdjacentElement('afterend',overlay);
 
   // Fixed-seed stars remain only in the reduced nighttime sky, never over the unchanged daytime art.

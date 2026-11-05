@@ -52,43 +52,64 @@
 }
 @keyframes nightfall-star-twinkle{0%,100%{opacity:.18}30%{opacity:.7}65%{opacity:.36}88%{opacity:1}}
 
-/* This WebP contains ONLY real foam from the approved painted rapids.
-   No SVG loops, new lines over rocks, or displaced water/sky. Both image
-   instances share one cached 36 KB file and occupy the exact map canvas. */
+/* The original 36 KB painted whitewater texture is reused four times,
+   all from the browser cache. Two passes per river section run in the SAME
+   downstream direction, half a cycle apart. Each fades fully out before it
+   resets, while its partner remains visible: no jump, reversal or blank gap.
+   The river/sky painting and existing rock edges never move. */
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-system {
+  position:absolute;inset:0;
+  pointer-events:none;
+  opacity:.56;
+  mix-blend-mode:screen;
+  transition:opacity 1.6s ease-in-out;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .river-whitewater-system{opacity:.56}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .river-whitewater-system{opacity:.68}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .river-whitewater-system{opacity:.82}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .river-whitewater-system{opacity:.96}
 .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-layer {
-  position:absolute;
-  inset:0;
-  width:100%;height:100%;max-width:none;
+  position:absolute;inset:0;
   display:block;
+  width:100%;height:100%;max-width:none;
   object-fit:cover;object-position:center;
   pointer-events:none;
-  mix-blend-mode:screen;
+  opacity:0;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
   will-change:transform,opacity;
 }
+/* Preserve the existing left/right channel separation. Foam itself is
+   transparent except at the genuine rapids in the approved illustration. */
 .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-left {
   clip-path:inset(0 55% 0 0);
-  animation:river-natural-rapids-down 5.4s ease-in-out -1.9s infinite;
+  animation-name:river-foam-downstream;
+  animation-duration:10.8s;
 }
 .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-right {
   clip-path:inset(0 0 0 50%);
-  animation:river-natural-rapids-across 6.7s ease-in-out -3.8s infinite;
+  animation-name:river-foam-crossstream;
+  animation-duration:12.6s;
 }
-/* The upper creek courses down around rocks; water under the stone arches
-   drifts sideways. Light pulses gently as foam passes through. */
-@keyframes river-natural-rapids-down {
-  0%{opacity:.42;transform:translate3d(0,-3px,0)}
-  28%{opacity:.77;transform:translate3d(.5px,0,0)}
-  62%{opacity:.56;transform:translate3d(-.5px,3px,0)}
-  85%{opacity:.81;transform:translate3d(1px,4px,0)}
-  100%{opacity:.42;transform:translate3d(0,6px,0)}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-left.river-whitewater-phase-b {
+  animation-delay:-5.4s;
 }
-@keyframes river-natural-rapids-across {
-  0%{opacity:.36;transform:translate3d(-4px,-.5px,0)}
-  29%{opacity:.70;transform:translate3d(-1px,.4px,0)}
-  58%{opacity:.51;transform:translate3d(2px,-.4px,0)}
-  83%{opacity:.76;transform:translate3d(4px,.6px,0)}
-  100%{opacity:.36;transform:translate3d(6px,0,0)}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-right.river-whitewater-phase-b {
+  animation-delay:-6.3s;
 }
+/* Each 50% midpoint is the brightest; one pass is at full strength
+   precisely while its partner is invisibly resetting. */
+@keyframes river-foam-downstream {
+  0%{opacity:0;transform:translate3d(0,-14px,0)}
+  50%{opacity:.66;transform:translate3d(0,0,0)}
+  100%{opacity:0;transform:translate3d(0,14px,0)}
+}
+@keyframes river-foam-crossstream {
+  0%{opacity:0;transform:translate3d(-16px,0,0)}
+  50%{opacity:.66;transform:translate3d(0,0,0)}
+  100%{opacity:0;transform:translate3d(16px,0,0)}
+}
+/* Don't spend animation frames on an invisible Nearby Streets layer. */
 .rpg-fullscreen .map-canvas:not(.portrait-loaded) #nightfall-atmosphere .river-whitewater-layer {
   animation-play-state:paused!important;
 }
@@ -101,6 +122,7 @@
   .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-layer,
   .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family{animation:none!important}
   .rpg-fullscreen .map-canvas .nightfall-star{opacity:.65}
-  .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-layer{opacity:.52;transform:none!important}
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-phase-a{opacity:.55!important;transform:none!important}
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-phase-b{opacity:0!important;transform:none!important}
 }
 @media print{.rpg-fullscreen .map-canvas #nightfall-atmosphere{display:none!important}}
