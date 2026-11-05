@@ -30,14 +30,14 @@ function unlock(){
 function paint(){
  if(!stage||!active)return;
  const rect=stage.getBoundingClientRect();if(!rect.width||!rect.height)return;
- const h=rect.height,vh=h*.74,cy=h*.19+vh/2,cx=rect.width/2,focal=vh/(2*Math.tan(Math.PI/12));
+ const h=rect.height,vh=h*.74,cy=h*.19+vh/2+h*.04,cx=rect.width/2,focal=vh/(2*Math.tan(Math.PI/12));
  const norm=(angle%T+T)%T;
  if(modelReady){try{viewer.currentTime=12*norm/T}catch{}}
  items.forEach(([id],i)=>{
   const a=-Math.PI/2+i*STEP,x=2.08*Math.cos(a),z=2.08*Math.sin(a);
   const xx=x*Math.cos(angle)-z*Math.sin(angle),zz=x*Math.sin(angle)+z*Math.cos(angle);
   const sinP=Math.sin(62*Math.PI/180),cosP=Math.cos(62*Math.PI/180),yy=.065; // jar-seat Y = 0.615m; camera target Y = 0.55m
-  const scale=focal/(11-(yy*cosP+zz*sinP));
+  const scale=focal/(10-(yy*cosP+zz*sinP));
   const b=buttons[i];if(!b)return;
   b.style.left=(cx+xx*scale).toFixed(1)+"px";
   b.style.top=(cy-(yy*sinP-zz*cosP)*scale).toFixed(1)+"px";
@@ -73,7 +73,7 @@ function build(){
  viewer=document.createElement("model-viewer");viewer.className="satchel-model";
  const attrs={src:"assets/satchel/oddities_lazy_susan_spinning.glb",
   "animation-name":"One Gentle Full Turn - 12 Seconds",
-  "camera-orbit":"0deg 62deg 11m","camera-target":"0m 0.55m 0m",
+  "camera-orbit":"0deg 62deg 10m","camera-target":"0m 0.55m 0m",
   "field-of-view":"30deg",exposure:"1.35","environment-image":"neutral",
   "shadow-intensity":"0","interaction-prompt":"none",loading:"eager","aria-hidden":"true"};
  Object.entries(attrs).forEach(([key,value])=>viewer.setAttribute(key,value));
