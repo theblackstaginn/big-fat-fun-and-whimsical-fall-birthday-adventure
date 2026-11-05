@@ -943,10 +943,10 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
    const streetsButton=mapRail.querySelector("#mode-nearby");
    atlasButton.setAttribute("aria-label","Show enchanted overworld");
    atlasButton.title="Enchanted Atlas";
-   atlasButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6 9 3l6 3 6-3v15l-6 3-6-3-6 3zM9 3v15M15 6v15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+   atlasButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/map-view-compass.webp" alt="" aria-hidden="true" draggable="false">';
    streetsButton.setAttribute("aria-label","Show nearby village streets");
    streetsButton.title="Village Streets";
-   streetsButton.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="12" r="3.8" fill="currentColor"/></svg>';
+   streetsButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/village-streets-star.webp" alt="" aria-hidden="true" draggable="false">';
    const addButton=(id,label,icon)=>{
     const button=document.createElement("button");
     button.type="button";button.id=id;button.className="map-rail-button";
