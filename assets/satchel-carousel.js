@@ -36,7 +36,7 @@ function paint(){
  items.forEach(([id],i)=>{
   const a=-Math.PI/2+i*STEP,x=2.08*Math.cos(a),z=2.08*Math.sin(a);
   const xx=x*Math.cos(angle)-z*Math.sin(angle),zz=x*Math.sin(angle)+z*Math.cos(angle);
-  const sinP=Math.sin(62*Math.PI/180),cosP=Math.cos(62*Math.PI/180),yy=.42;
+  const sinP=Math.sin(62*Math.PI/180),cosP=Math.cos(62*Math.PI/180),yy=.065; // jar-seat Y = 0.615m; camera target Y = 0.55m
   const scale=focal/(11-(yy*cosP+zz*sinP));
   const b=buttons[i];if(!b)return;
   b.style.left=(cx+xx*scale).toFixed(1)+"px";
