@@ -11,6 +11,7 @@ const items=[
 ],T=Math.PI*2,STEP=T/9;
 let stage,viewer,fallback,ring,jarCanvas,buttons=[],angle=Math.PI,selected=0,active=false,modelReady=false;
 let animation=0,drag=null,moved=false,pending=false;
+const jarSprites={empty:"assets/satchel/jars/empty_site.webp",ruby:"assets/satchel/jars/ruby_site.webp"};
 let THREE=null,renderer3d=null,scene3d=null,camera3d=null,jarRoots=Array(9).fill(null);
 let artMeshes=Array(9).fill(null),artTextures=Array(9).fill(null),artLoading=Array(9).fill(false),threePromise=null;
 const jarScale=1.21;
@@ -53,6 +54,7 @@ function unlock(){
   const open=n>=threshold;
   b.setAttribute("aria-label",open?"Collected jar "+(i+1):"Undiscovered jar "+(i+1));
   if(open){if(i!==0&&!artMeshes[i])showArt(i,id)}
+  const sprite=b.querySelector(".satchel-jar-sprite");if(sprite){sprite.src=open&&i===0?jarSprites.ruby:jarSprites.empty;}
   else removeArt(i);
  });
 }
@@ -116,12 +118,13 @@ function paint(){
   const a=-Math.PI/2+i*STEP,x=2.08*Math.cos(a),z=2.08*Math.sin(a);
   const xx=x*Math.cos(angle)-z*Math.sin(angle),zz=x*Math.sin(angle)+z*Math.cos(angle);
   const root=jarRoots[i];
-  if(root){root.scale.setScalar(jarScale);root.position.set(xx*1.28,seatY-.04*jarScale,zz);root.rotation.y=-angle}
+  if(root){root.visible=false;}
   const scale=focal/(10-(seatY*cosP+zz*sinP));
   const b=buttons[i];if(!b)return;
   b.style.left=(cx+xx*1.28*scale).toFixed(1)+"px";
   b.style.top=(cy-(seatY*sinP-zz*cosP)*scale).toFixed(1)+"px";
-  b.style.width=clamp(scale*1.48,72,200).toFixed(1)+"px";
+  b.style.width=clamp(scale*2.08,90,245).toFixed(1)+"px";
+  b.style.transform="translate(-50%,-95%) scale("+(clamp(scale*1.3,.65,1.15)).toFixed(3)+")";
   b.style.zIndex=String(Math.round((zz+3)*100));
   b.classList.toggle("is-front",i===selected);
   b.setAttribute("aria-pressed",String(i===selected));
@@ -165,6 +168,9 @@ function build(){
  items.forEach(([id],i)=>{
   const b=document.createElement("button");b.type="button";b.className="satchel-jar";
   b.setAttribute("aria-label","Jar "+(i+1));b.setAttribute("aria-pressed","false");
+  const sprite=document.createElement("img");sprite.className="satchel-jar-sprite";sprite.src=jarSprites.empty;sprite.alt="";sprite.draggable=false;
+  sprite.onerror=()=>{sprite.style.visibility="hidden"};sprite.onload=()=>{sprite.style.visibility="visible"};
+  b.append(sprite);
   b.addEventListener("click",()=>{if(!moved)choose(i)});
   buttons.push(b);ring.append(b);
  });
