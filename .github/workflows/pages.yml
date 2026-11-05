@@ -30,6 +30,12 @@ jobs:
           mkdir dist
           cp index.html styles.css adventure.js dist/
           cp -R assets dist/assets
+      - name: Unpack optional illustrated Journal artwork
+        run: |
+          if [ -f assets/Jess_Journal_Art_Pack.zip ]; then
+            mkdir -p dist/assets/journal
+            unzip -j -o assets/Jess_Journal_Art_Pack.zip journal_page.webp bronze_scrollbar_track.webp amethyst_slider.webp -d dist/assets/journal
+          fi
       - name: Render synthetic vegetation from 2023 USDA NAIP
         run: |
           python -m pip install Pillow==11.3.0
