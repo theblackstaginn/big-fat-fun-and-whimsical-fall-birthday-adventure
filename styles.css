@@ -660,3 +660,66 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 }
 .rpg-fullscreen .map-compass{display:none}
 @media print{.rpg-fullscreen .map-mode-switch{display:none!important}}
+
+
+/* Bangkok Haus: enlarged viewport-centered quest sign for the dinner detour.
+   The existing wooden artwork stays intact; HUD rails and toolbar stack above
+   it. Soft plum-violet enchantment makes this the single obvious next stop. */
+#quest-bangkok-side-trip{display:none}
+.rpg-fullscreen .hero-art #quest-bangkok-side-trip:not([hidden]){
+ display:block;
+ position:absolute;
+ z-index:22;
+ left:calc(50% + clamp(14px,5vw,22px));
+ top:63%;
+ transform:translate(-50%,-50%);
+ width:min(82vw,510px);
+ max-width:calc(100vw - 30px);
+ margin:0;
+ padding:0;
+ border:0;
+ border-radius:16px;
+ background:none;
+ overflow:visible;
+ cursor:pointer;
+ touch-action:manipulation;
+ isolation:isolate;
+}
+.rpg-fullscreen .hero-art #quest-bangkok-side-trip::before{
+ content:"";
+ position:absolute;
+ z-index:-1;
+ inset:10% 4% 8%;
+ border-radius:50%;
+ background:radial-gradient(ellipse at center,rgba(171,93,255,.70) 0%,rgba(128,54,203,.45) 39%,rgba(85,32,144,.19) 66%,transparent 83%);
+ filter:blur(18px);
+ transform:scale(1.12);
+ animation:bangkok-destination-aura 4.6s ease-in-out infinite alternate;
+ pointer-events:none;
+}
+.rpg-fullscreen .hero-art #quest-bangkok-side-trip img{
+ position:relative;
+ display:block;
+ width:100%;
+ height:auto;
+ max-height:26dvh;
+ object-fit:contain;
+ filter:drop-shadow(0 0 10px rgba(167,88,246,.70)) drop-shadow(0 9px 13px rgba(23,9,31,.82));
+ pointer-events:none;
+}
+.rpg-fullscreen .hero-art #quest-bangkok-side-trip:focus-visible{
+ outline:3px solid #f6d9a8;
+ outline-offset:5px;
+}
+@keyframes bangkok-destination-aura{
+ from{opacity:.72;transform:scale(1.05)}
+ to{opacity:1;transform:scale(1.17)}
+}
+@media(max-height:580px){
+ .rpg-fullscreen .hero-art #quest-bangkok-side-trip:not([hidden]){top:58%;width:min(74vw,360px)}
+ .rpg-fullscreen .hero-art #quest-bangkok-side-trip img{max-height:20dvh}
+}
+@media(prefers-reduced-motion:reduce){
+ .rpg-fullscreen .hero-art #quest-bangkok-side-trip::before{animation:none!important;opacity:.85}
+}
+@media print{#quest-bangkok-side-trip{display:none!important}}

@@ -173,10 +173,30 @@
  ].join("\n");
  document.head.append(driftStyle);
  svg.append(cloudGroup);
- /* The dinner stop is a right-pointing wooden direction sign, not a false storefront. */
- const detour=node("g",{id:"quest-bangkok-side-trip",style:"display:none"});
- detour.append(node("image",{x:710,y:854,width:278,height:139,href:"assets/bangkok-haus-direction-sign.webp",preserveAspectRatio:"xMidYMid meet"}));
- svg.append(detour);
+ /* Bangkok Haus is an off-map destination, not a painted storefront.
+    Anchor its enlarged cue to the viewport-sized hero, not the map SVG,
+    so camera panning and aspect ratios cannot push it off the screen. */
+ const dinnerIndex=chapters.findIndex(chapter=>chapter.id==="dinner");
+ const detour=document.createElement("button");
+ detour.type="button";
+ detour.id="quest-bangkok-side-trip";
+ detour.hidden=true;
+ detour.setAttribute("aria-label","Open Bangkok Haus dinner destination in the Journal");
+ detour.title="Bangkok Haus · your next destination";
+ const signImage=document.createElement("img");
+ signImage.src="assets/bangkok-haus-direction-sign.webp";
+ signImage.alt="";
+ signImage.draggable=false;
+ signImage.decoding="async";
+ detour.append(signImage);
+ const detourHost=mist.closest(".hero-art");
+ detourHost?.append(detour);
+ detour.addEventListener("click",()=>{
+  if(completed.length!==dinnerIndex)return;
+  selected=chapters[dinnerIndex];
+  renderProgress();
+  document.querySelector('.rpg-hud [data-panel="quest"]')?.click();
+ });
  mist.classList.add("landmark-clouds");
  mist.append(svg);
 
@@ -258,8 +278,12 @@
   const count=Math.min(completed.length,chapters.length);
   const parkUnlocked=count>=parkIndex;
   mist.hidden=!portraitReady||parkUnlocked;
-  // Dinner remains a side trip, not a fictional on-map storefront or beacon.
-  detour.style.display=count>=chapters.findIndex(ch=>ch.id==="dinner")&&!parkUnlocked?"":"none";
+  // Dinner is the ONLY active sign; remove it on adjacent chapters or Streets.
+  // Keeping it separate from the fog allows a luminous aura without
+  // altering the original clouds or world painting.
+  const overview=document.querySelector("#overview-view");
+  detour.hidden=!(count===dinnerIndex&&portraitReady&&!painting.hidden&&
+   overview&&!overview.hidden&&document.body.classList.contains("rpg-fullscreen"));
   if(parkUnlocked){previousCount=count;return}
   // The current destination is already revealed; only FUTURE stops stay hidden.
   const lockedIds=new Set(chapters.slice(count+1).map(ch=>ch.id));
@@ -273,6 +297,10 @@
   }
   previousCount=count;
  }
+ // The map-mode toggle does not call updateSceneArtwork, so recheck after
+ // the existing click handlers switch between the Overworld and Streets.
+ document.querySelector("#mode-overview")?.addEventListener("click",refresh);
+ document.querySelector("#mode-nearby")?.addEventListener("click",refresh);
  const original=updateSceneArtwork;
  updateSceneArtwork=function(){original();refresh()};
  refresh();
