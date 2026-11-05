@@ -238,3 +238,7 @@
 .rpg-fullscreen .hero-art > .map-mode-switch > button:is(#mode-overview,#mode-nearby):focus-visible{
   outline:2px solid #ffe4b5;outline-offset:1px;border-radius:12px;
 }
+
+/* Actual image elements replace the original inline SVGs in the left map rail. */
+.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#mode-nearby){background-image:none!important}
+.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#mode-nearby) > img.map-rail-art{display:block!important;visibility:visible!important;width:42px;height:42px;max-width:100%;object-fit:contain;margin:auto;pointer-events:none}
