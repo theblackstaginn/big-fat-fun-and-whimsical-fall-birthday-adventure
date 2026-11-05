@@ -869,14 +869,30 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   document.body.classList.add("rpg-fullscreen");
   const hud=document.createElement("div");
   hud.className="rpg-hud";
-  hud.innerHTML='<div class="rpg-topbar"><div class="rpg-brand"><span class="rpg-sigil" aria-hidden="true">☾</span><span class="rpg-title">The Rogue Witch’s <em>Excursion</em></span></div><div class="rpg-top-actions"><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false" aria-label="Locate me" title="Locate me">⌖</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><button type="button" class="rpg-icon" data-panel="story" aria-label="Read the birthday dedication" title="A letter for Jess">♡</button></div></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite"><span aria-hidden="true">✦</span> <span id="rpg-count">Chapter 1 of 7</span> <span aria-hidden="true">✦</span></div><nav class="rpg-toolbar" aria-label="Adventure controls"><button type="button" data-panel="quest" aria-label="Open quest journal"><span aria-hidden="true">✧</span><small>Journal</small></button><button type="button" data-panel="notes" aria-label="Open curiosities and notes"><span aria-hidden="true">❦</span><small>Curios</small></button><button type="button" data-panel="story" aria-label="Read the birthday letter"><span aria-hidden="true">♡</span><small>Letter</small></button><button type="button" data-panel="satchel" aria-label="Open adventurer’s satchel"><span aria-hidden="true">✦</span><small>Satchel</small></button><button type="button" data-panel="settings" aria-label="Open adventure settings"><span aria-hidden="true">⚙</span><small>Settings</small></button></nav></div>';
+  hud.innerHTML='<div class="rpg-topbar"><div class="rpg-brand"><span class="rpg-sigil" aria-hidden="true">☾</span><span class="rpg-title">The Rogue Witch’s <em>Excursion</em></span></div><div class="rpg-top-actions"><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false" aria-label="Locate me" title="Locate me">⌖</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><button type="button" class="rpg-icon" data-panel="story" aria-label="Hear the birthday introduction" title="System transmission">♡</button></div></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite"><span aria-hidden="true">✦</span> <span id="rpg-count">Chapter 1 of 7</span> <span aria-hidden="true">✦</span></div><nav class="rpg-toolbar" aria-label="Adventure controls"><button type="button" data-panel="quest" aria-label="Open quest journal"><span aria-hidden="true">✧</span><small>Journal</small></button><button type="button" data-panel="notes" aria-label="Open curiosities and notes"><span aria-hidden="true">❦</span><small>Curios</small></button><button type="button" data-panel="story" aria-label="Open birthday introduction"><span aria-hidden="true">♡</span><small>Intro</small></button><button type="button" data-panel="satchel" aria-label="Open adventurer’s satchel"><span aria-hidden="true">✦</span><small>Satchel</small></button><button type="button" data-panel="settings" aria-label="Open adventure settings"><span aria-hidden="true">⚙</span><small>Settings</small></button></nav></div>';
   art.append(hud);
   const shade=document.createElement("div");shade.className="rpg-shade";shade.hidden=true;
   const sheet=document.createElement("section");sheet.className="rpg-sheet";sheet.hidden=true;sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-label","Adventure journal");
   sheet.innerHTML='<div class="rpg-sheet-head"><strong id="rpg-sheet-title">The Witch’s Journal</strong><button type="button" id="rpg-close" aria-label="Close panel">✕</button></div><div class="rpg-sheet-body" id="rpg-sheet-body"></div>';
   document.body.append(shade,sheet);
   const body=sheet.querySelector("#rpg-sheet-body"),title=sheet.querySelector("#rpg-sheet-title");
-  const content={quest:document.querySelector(".quest-section"),notes:document.querySelector(".field-notes"),story:document.querySelector(".hero-copy"),finale:document.querySelector(".finale")};
+  /* An original, gloriously unstable RPG system A.I. greets Jess.
+     Farmer's private handfasting letter is intentionally NOT here. */
+  const intro=document.createElement("article");
+  intro.className="rpg-ai-intro";
+  intro.innerHTML=[
+    '<p class="rpg-ai-status"><span aria-hidden="true">◈</span> SYSTEM TRANSMISSION // BIRTHDAY INSTANCE</p>',
+    '<p class="rpg-ai-alert">⚠ ATTENTION, ROGUE WITCH JESS ⚠</p>',
+    '<h3>WELCOME TO YOUR BIRTHDAY, YOU MAGNIFICENT PROBLEM.</h3>',
+    '<p>Well, well, well. The birthday girl has entered the adventure. Your husband, <strong>Farmer</strong>, apparently looked at a perfectly normal birthday and declared, <em>“No. I need to turn an entire mountain town into a quest.”</em></p>',
+    '<p>He built this for you. A real map. Hidden chapters. Curious little shops. Completely irresponsible levels of devotion. I suggested a nice card. <strong>THE MAN ADDED GPS.</strong> I am deeply concerned. And, against my better judgment, impressed.</p>',
+    '<div class="rpg-ai-stats" aria-label="Game settings"><span>QUEST STATUS <strong>AUTHORIZED</strong></span><span>DIFFICULTY <strong>PEACEFUL</strong></span><span>WHIMSY LEVEL <strong>CATASTROPHIC</strong></span></div>',
+    '<p>Follow each unlocked chapter. Find your friends. Collect treasures and memories. Enjoy every strange, lovely minute at your own pace. No battles. No timer. Unless you count the ongoing war against parking.</p>',
+    '<div class="rpg-ai-achievement"><span class="rpg-ai-achievement-label">★ NEW ACHIEVEMENT UNLOCKED ★</span><strong>ABSURDLY ADORED</strong><p>Reward: One handmade adventure from a wizard who thinks you are the entire universe. <em>Disgustingly sweet.</em></p></div>',
+    '<p class="rpg-ai-farewell">Now go have the birthday you deserve. And do not tell anyone I said something nice. I have a reputation to maintain.</p>',
+    '<button type="button" class="rpg-ai-begin">BEGIN THE ADVENTURE <span aria-hidden="true">✦</span></button>'
+  ].join("");
+  const content={quest:document.querySelector(".quest-section"),notes:document.querySelector(".field-notes"),story:intro,finale:document.querySelector(".finale")};
   // The Satchel tracks visited chapters without changing existing save data.
   const satchel=document.createElement("div");
   satchel.className="rpg-satchel";
@@ -909,7 +925,8 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
     const target=content[name]||settings;
     if(!target)return;
     body.replaceChildren(target);
-    title.textContent=({quest:"The Rogue Witch’s Journal",notes:"Field Notes & Curios",story:"A Letter for Jess",finale:"The Birthday Blessing",satchel:"The Adventurer’s Satchel",settings:"Adventure Settings"})[name]||"Adventure";
+    sheet.classList.toggle("is-ai-intro",name==="story");
+    title.textContent=({quest:"The Rogue Witch’s Journal",notes:"Field Notes & Curios",story:"INCOMING TRANSMISSION",finale:"The Birthday Blessing",satchel:"The Adventurer’s Satchel",settings:"Adventure Settings"})[name]||"Adventure";
     shade.hidden=false;sheet.hidden=false;sheet.classList.add("is-open");
     body.scrollTop=0;sheet.querySelector("#rpg-close").focus();
   };
@@ -970,8 +987,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   settings.querySelector("#rpg-print").addEventListener("click",()=>window.print());
   settings.querySelector("#rpg-reset").addEventListener("click",()=>{document.querySelector("#reset-progress").click();closePanel()});
   settings.querySelector("#rpg-finale").addEventListener("click",()=>openPanel("finale"));
-  const oldBegin=content.story.querySelector('a[href="#quest"]');
-  if(oldBegin)oldBegin.addEventListener("click",event=>{event.preventDefault();openPanel("quest")});
+  intro.querySelector(".rpg-ai-begin").addEventListener("click",()=>openPanel("quest"));
   const oldRender=renderProgress;
   renderProgress=function(){oldRender();const count=document.querySelector("#rpg-count");if(count)count.textContent=completed.length===chapters.length?"Adventure complete":`Scene ${activeScene().number} · Chapter ${Math.min(completed.length+1,chapters.length)} of ${chapters.length}`};
   const oldMap=renderMap;
