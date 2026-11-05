@@ -13,7 +13,7 @@
   text-shadow:none!important;
   filter:drop-shadow(0 2px 3px #160a12af);
 }
-.rpg-fullscreen .map-mode-switch > #mode-overview{background-image:url("ui-icons/map-view-compass.webp")!important}
+
 .rpg-fullscreen .map-mode-switch > #map-quest{background-image:url("ui-icons/quest-log-scroll.webp")!important}
 .rpg-fullscreen .map-mode-switch > #map-player{background-image:url("ui-icons/character-witch-hat.webp")!important}
 .rpg-fullscreen .map-mode-switch > #rpg-locate{background-image:url("ui-icons/gps-eye-of-sauron.webp")!important}
@@ -73,7 +73,7 @@
   text-shadow:none!important;
   filter:drop-shadow(0 2px 3px #160a12af);
 }
-.rpg-fullscreen .map-mode-switch > #mode-nearby{background-image:url("ui-icons/village-streets-star.webp")!important}
+
 .rpg-fullscreen .map-mode-switch > #map-zoom-in{background-image:url("ui-icons/zoom-in-bronze-plus.webp")!important}
 .rpg-fullscreen .map-mode-switch > #map-zoom-out{background-image:url("ui-icons/zoom-out-bronze-minus.webp")!important}
 .rpg-fullscreen .map-mode-switch > #map-home{background-image:url("ui-icons/home-cottage.webp")!important}
@@ -215,30 +215,23 @@
 .rpg-fullscreen .rpg-toolbar button > span{width:45px!important;height:45px!important}
 @media(max-width:365px){.rpg-fullscreen .rpg-toolbar button > span{width:40px!important;height:40px!important}}
 
-/* Actual Overworld / Nearby view switch lives in .hero-art, not the HUD rail.
-   Keep the existing two-button layout and handlers; replace only its artwork. */
-.rpg-fullscreen .hero-art > .map-mode-switch > button:is(#mode-overview,#mode-nearby){
+/* The two approved map images REPLACE their old medallions; no stacked backgrounds.
+   Match the 40px artwork used by the other sidebar controls. */
+.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#mode-nearby){
+  background-image:none!important;
   background-color:transparent!important;
-  background-repeat:no-repeat!important;
-  background-position:center!important;
-  background-size:52px 52px!important;
-  border:0!important;
-  box-shadow:none!important;
-  color:transparent!important;
-  font-size:0!important;
-  text-shadow:none!important;
-  min-height:60px;
-  filter:drop-shadow(0 2px 4px #170b17c0);
+  background-size:0!important;
+  min-height:40px!important;
+  height:40px!important;
+  padding:0!important;
 }
-.rpg-fullscreen .hero-art > .map-mode-switch > #mode-overview{background-image:url("ui-icons/map-view-compass.webp")!important}
-.rpg-fullscreen .hero-art > .map-mode-switch > #mode-nearby{background-image:url("ui-icons/village-streets-star.webp")!important}
-.rpg-fullscreen .hero-art > .map-mode-switch > button:is(#mode-overview,#mode-nearby).is-active{
-  filter:drop-shadow(0 0 7px #eabf7a) drop-shadow(0 2px 4px #170b17c0);
+.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#mode-nearby) > img.map-rail-art{
+  display:block!important;
+  visibility:visible!important;
+  width:40px!important;
+  height:40px!important;
+  max-width:none!important;
+  object-fit:contain!important;
+  margin:0!important;
+  pointer-events:none;
 }
-.rpg-fullscreen .hero-art > .map-mode-switch > button:is(#mode-overview,#mode-nearby):focus-visible{
-  outline:2px solid #ffe4b5;outline-offset:1px;border-radius:12px;
-}
-
-/* Actual image elements replace the original inline SVGs in the left map rail. */
-.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#mode-nearby){background-image:none!important}
-.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#mode-nearby) > img.map-rail-art{display:block!important;visibility:visible!important;width:34px;height:34px;max-width:100%;object-fit:contain;margin:auto;pointer-events:none}
