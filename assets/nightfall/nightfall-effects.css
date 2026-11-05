@@ -46,21 +46,61 @@
 }
 .rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-sky{opacity:.55}
 .rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-sky{opacity:1}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-river{opacity:.55}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-river{opacity:.74}
 .rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-river{opacity:1}
 .rpg-fullscreen .map-canvas .nightfall-star {
   opacity:.32;animation:nightfall-star-twinkle var(--star-period,5s) ease-in-out var(--star-delay,0s) infinite alternate;
 }
 @keyframes nightfall-star-twinkle{0%,100%{opacity:.18}30%{opacity:.7}65%{opacity:.36}88%{opacity:1}}
+/* Gold and silver ripples drift over the painted river, not the banks. */
 .rpg-fullscreen .map-canvas .nightfall-water-glint {
-  opacity:.22;
+  opacity:.25;
   animation:nightfall-river-flow var(--flow-period,5.5s) linear var(--flow-delay,0s) infinite;
 }
 @keyframes nightfall-river-flow {
-  0%{opacity:.05;transform:translate(-3px,-9px)}
-  32%{opacity:.55;transform:translate(0,0)}
-  69%{opacity:.37;transform:translate(3px,7px)}
-  100%{opacity:0;transform:translate(5px,14px)}
+  0%{opacity:0;transform:translate(var(--flow-start-x,-3px),var(--flow-start-y,-8px))}
+  26%{opacity:.52;transform:translate(0,0)}
+  48%{opacity:.82;transform:translate(1px,2px)}
+  73%{opacity:.46;transform:translate(3px,7px)}
+  100%{opacity:0;transform:translate(var(--flow-end-x,5px),var(--flow-end-y,14px))}
+}
+/* Six lightweight current groups, rather than distorting the entire image.
+   The original water group retains its required -174px alignment. */
+.rpg-fullscreen .map-canvas .nightfall-current-group {
+  opacity:.55;
+  transform-box:fill-box;
+  animation-duration:var(--current-period,7.5s);
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+}
+.rpg-fullscreen .map-canvas .nightfall-current-down-0 {--current-period:6.4s;animation-name:nightfall-current-down;animation-delay:-1.4s}
+.rpg-fullscreen .map-canvas .nightfall-current-down-1 {--current-period:8.1s;animation-name:nightfall-current-down;animation-delay:-4.2s}
+.rpg-fullscreen .map-canvas .nightfall-current-down-2 {--current-period:9.3s;animation-name:nightfall-current-down;animation-delay:-2.7s}
+.rpg-fullscreen .map-canvas .nightfall-current-across-0 {--current-period:7.2s;animation-name:nightfall-current-across;animation-delay:-1.2s}
+.rpg-fullscreen .map-canvas .nightfall-current-across-1 {--current-period:8.6s;animation-name:nightfall-current-across;animation-delay:-3.8s}
+.rpg-fullscreen .map-canvas .nightfall-current-across-2 {--current-period:10.1s;animation-name:nightfall-current-across;animation-delay:-5.6s}
+@keyframes nightfall-current-down {
+  0%{opacity:0;transform:translate(-2px,-10px)}
+  28%{opacity:.42}
+  54%{opacity:.62;transform:translate(1px,3px)}
+  82%{opacity:.28}
+  100%{opacity:0;transform:translate(3px,16px)}
+}
+@keyframes nightfall-current-across {
+  0%{opacity:0;transform:translate(-12px,-2px)}
+  30%{opacity:.43}
+  55%{opacity:.60;transform:translate(2px,0)}
+  82%{opacity:.25}
+  100%{opacity:0;transform:translate(15px,3px)}
+}
+/* Pause offscreen and daytime water motion to save battery. */
+.rpg-fullscreen .map-canvas:not(.portrait-loaded) .nightfall-water-glint,
+.rpg-fullscreen .map-canvas:not(.portrait-loaded) .nightfall-current-group,
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .nightfall-water-glint,
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-water-glint,
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .nightfall-current-group,
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-current-group{
+  animation-play-state:paused!important;
 }
 @media(prefers-reduced-motion:reduce){
   .rpg-fullscreen .map-canvas .nightfall-painted-layer,
@@ -68,8 +108,10 @@
   .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-warm-glows{transition:none!important}
   .rpg-fullscreen .map-canvas .nightfall-star,
   .rpg-fullscreen .map-canvas .nightfall-water-glint,
+  .rpg-fullscreen .map-canvas .nightfall-current-group,
   .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family{animation:none!important}
   .rpg-fullscreen .map-canvas .nightfall-star{opacity:.65}
-  .rpg-fullscreen .map-canvas .nightfall-water-glint{opacity:.45}
+  .rpg-fullscreen .map-canvas .nightfall-water-glint{opacity:.48}
+  .rpg-fullscreen .map-canvas .nightfall-current-group{opacity:.32}
 }
 @media print{.rpg-fullscreen .map-canvas #nightfall-atmosphere{display:none!important}}

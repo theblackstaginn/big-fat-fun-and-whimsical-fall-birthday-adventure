@@ -137,22 +137,60 @@
     [295,912,58,11],
     [682,1145,78,21],[778,1175,93,21],[886,1180,83,19],[966,1169,76,18]
   ];
+  // Current ribbons drift inside the already aligned river mask.
+  // Shared animations keep this lightweight on mobile Safari.
+  const currents=document.createElementNS(ns,'g');
+  currents.id='nightfall-flowing-currents';
+  water.append(currents);
+  const groups={down:[],across:[]};
+  for(const direction of Object.keys(groups)){
+    for(let i=0;i<3;i++){
+      const group=document.createElementNS(ns,'g');
+      group.classList.add('nightfall-current-group','nightfall-current-'+direction+'-'+i);
+      currents.append(group);
+      groups[direction].push(group);
+    }
+  }
   bands.forEach(([x,y,spread,depth],bi)=>{
-    const count=bi>6?7:6;
+    const direction=bi>=6?'across':'down';
+    for(let i=0;i<3;i++){
+      const xx=x+(random()-.5)*spread*.9;
+      const yy=y+(random()-.5)*depth;
+      const len=22+random()*29;
+      const bow=(random()-.5)*5;
+      const ribbon=document.createElementNS(ns,'path');
+      ribbon.setAttribute('d','M'+(xx-len*.5).toFixed(1)+' '+yy.toFixed(1)+' Q'+(xx-len*.12).toFixed(1)+' '+(yy-3+bow).toFixed(1)+' '+xx.toFixed(1)+' '+(yy+1).toFixed(1)+' T'+(xx+len*.5).toFixed(1)+' '+(yy+bow).toFixed(1));
+      ribbon.setAttribute('fill','none');
+      ribbon.setAttribute('stroke',i===0?'#f3c47e':(i===1?'#d7e7ff':'#a1c4ea'));
+      ribbon.setAttribute('stroke-width',(0.95+random()*1.2).toFixed(2));
+      ribbon.setAttribute('stroke-opacity',(0.22+random()*.18).toFixed(2));
+      ribbon.setAttribute('stroke-linecap','round');
+      ribbon.classList.add('nightfall-water-current');
+      groups[direction][(bi+i)%3].append(ribbon);
+    }
+  });
+  // Glints remain within the existing river clipping paths.
+  bands.forEach(([x,y,spread,depth],bi)=>{
+    const count=bi>6?12:10;
     for(let i=0;i<count;i++){
       const glint=document.createElementNS(ns,'path');
       const dx=(random()-.5)*spread;
       const dy=(random()-.5)*depth;
-      const len=4+random()*18;
+      const len=6+random()*26;
       const yy=y+dy,xx=x+dx;
       glint.setAttribute('d',`M${(xx-len*.5).toFixed(1)} ${yy.toFixed(1)} Q${xx.toFixed(1)} ${(yy-1.3-random()*2).toFixed(1)} ${(xx+len*.5).toFixed(1)} ${yy.toFixed(1)}`);
       glint.setAttribute('fill','none');
       glint.setAttribute('stroke',i%3===0?'#edb75f':(i%2?'#d5dfff':'#a9c7f1'));
-      glint.setAttribute('stroke-width',(0.65+random()*1.4).toFixed(2));
+      glint.setAttribute('stroke-width',(0.8+random()*1.65).toFixed(2));
       glint.setAttribute('stroke-linecap','round');
       glint.classList.add('nightfall-water-glint');
       glint.style.setProperty('--flow-delay',(-random()*8).toFixed(2)+'s');
-      glint.style.setProperty('--flow-period',(3.4+random()*4.4).toFixed(2)+'s');
+      glint.style.setProperty('--flow-period',(4.2+random()*5.6).toFixed(2)+'s');
+      const across=bi>=6;
+      glint.style.setProperty('--flow-start-x',across?'-9px':'-3px');
+      glint.style.setProperty('--flow-start-y',across?'-2px':'-8px');
+      glint.style.setProperty('--flow-end-x',across?'13px':'5px');
+      glint.style.setProperty('--flow-end-y',across?'3px':'14px');
       water.append(glint);
     }
   });
