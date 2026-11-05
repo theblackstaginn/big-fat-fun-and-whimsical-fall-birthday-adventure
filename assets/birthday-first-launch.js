@@ -45,7 +45,7 @@ function typeLine(index){
  if(index>=script.length){later(explosion,700);return}
  const [message,level]=script[index];const line=document.createElement("div");line.className="birthday-boot-line "+level;log.append(line);
  const prefix="PS> ";let pos=0;
- function tick(){if(done)return;pos=Math.min(message.length,pos+Math.max(1,Math.ceil(Math.random()*3)));line.textContent=prefix+message.slice(0,pos)+(pos<message.length?"▌":"");log.scrollTop=log.scrollHeight;if(pos<message.length)later(tick,16+Math.random()*28);else{cursor++;let pct=index===4?99:index===5?12:Math.min(97,Math.round((index+1)*12));bar.style.width=pct+"%";percent.textContent=pct+"%";later(()=>typeLine(index+1),index===5?390:230)}}
+ function tick(){if(done)return;pos=Math.min(message.length,pos+1);line.textContent=prefix+message.slice(0,pos)+(pos<message.length?"▌":"");log.scrollTop=log.scrollHeight;if(pos<message.length)later(tick,48+Math.random()*38);else{cursor++;let pct=index===4?99:index===5?12:Math.min(97,Math.round((index+1)*12));bar.style.width=pct+"%";percent.textContent=pct+"%";later(()=>typeLine(index+1),index===5?390:230)}}
  tick();
 }
 later(()=>typeLine(0),420);
