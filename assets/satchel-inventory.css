@@ -1,0 +1,13 @@
+/* Treasure Haul: compact, independent upper-satchel inventory. Susan unchanged. */
+.rpg-sheet.is-satchel-susan .satchel-treasure-inventory{position:absolute;z-index:12;top:0;left:50%;transform:translateX(-50%);width:min(77vw,29dvh,290px);aspect-ratio:1199/1312;pointer-events:auto;filter:drop-shadow(0 6px 10px #180d18a6)}
+.rpg-sheet.is-satchel-susan .satchel-treasure-grid{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;z-index:2;pointer-events:none}
+.rpg-sheet.is-satchel-susan .satchel-treasure-slot{position:absolute;z-index:1;width:19.6%;height:17.1%;padding:0;border:0;background:#c69a63;overflow:hidden;cursor:pointer}
+.rpg-sheet.is-satchel-susan .satchel-treasure-slot img{display:block;width:100%;height:100%;object-fit:cover}
+.rpg-sheet.is-satchel-susan .satchel-treasure-slot:focus-visible{outline:2px solid #e6b5ff;outline-offset:2px;z-index:3}
+.rpg-sheet.is-satchel-susan .satchel-treasure-inventory .satchel-treasure-slot:nth-of-type(3n + 1){left:18.2%}
+.rpg-sheet.is-satchel-susan .satchel-treasure-inventory .satchel-treasure-slot:nth-of-type(3n + 2){left:41.3%}
+.rpg-sheet.is-satchel-susan .satchel-treasure-inventory .satchel-treasure-slot:nth-of-type(3n){left:64.3%}
+.rpg-sheet.is-satchel-susan .satchel-treasure-inventory .satchel-treasure-slot:nth-of-type(-n + 3){top:23.4%}
+.rpg-sheet.is-satchel-susan .satchel-treasure-inventory .satchel-treasure-slot:nth-of-type(n + 4):nth-of-type(-n + 6){top:43%}
+.rpg-sheet.is-satchel-susan .satchel-treasure-inventory .satchel-treasure-slot:nth-of-type(n + 7){top:62.6%}
+@media(max-height:710px){.rpg-sheet.is-satchel-susan .satchel-treasure-inventory{width:min(69vw,27dvh,245px)}}
