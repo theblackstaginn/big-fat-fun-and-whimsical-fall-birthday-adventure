@@ -1,0 +1,204 @@
+/* The Satchel's free-floating, portrait-first oddities carousel.
+   Only active while Satchel contents are in the existing panel. No popups. */
+.rpg-sheet.is-satchel-susan .rpg-sheet-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+.rpg-sheet.is-satchel-susan .rpg-satchel.satchel-immersive {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  background: transparent;
+}
+.rpg-sheet.is-satchel-susan .satchel-rotunda {
+  position: absolute;
+  bottom: max(4px, env(safe-area-inset-bottom, 0px));
+  left: 0;
+  width: 100%;
+  height: min(59dvh, 510px);
+  min-height: 290px;
+  isolation: isolate;
+  overflow: visible;
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.rpg-sheet.is-satchel-susan .satchel-model,
+.rpg-sheet.is-satchel-susan .satchel-platter-fallback {
+  position: absolute;
+  z-index: 1;
+  bottom: 7%;
+  left: -7%;
+  width: 114%;
+  height: 74%;
+  margin: 0;
+  pointer-events: none;
+  background: transparent;
+  --poster-color: transparent;
+}
+.rpg-sheet.is-satchel-susan .satchel-model { opacity: 0; transition: opacity .3s; }
+.rpg-sheet.is-satchel-susan .satchel-model.model-ready { opacity: 1; }
+.rpg-sheet.is-satchel-susan .satchel-platter-fallback {
+  object-fit: contain;
+  object-position: center bottom;
+  opacity: .98;
+}
+.rpg-sheet.is-satchel-susan .satchel-platter-fallback[hidden] { display:none !important; }
+.rpg-sheet.is-satchel-susan .satchel-jar-ring {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  pointer-events: none;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar {
+  position: absolute;
+  display: block;
+  box-sizing: border-box;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+  transform-origin: center center;
+  pointer-events: auto;
+  will-change: left,top,transform;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar:focus-visible {
+  outline: 2px solid #f8d4a5;
+  outline-offset: 2px;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar .satchel-window {
+  position: absolute;
+  z-index: 1;
+  top: 26%;
+  left: 14%;
+  width: 72%;
+  height: 58%;
+  overflow: hidden;
+  clip-path: polygon(14% 0%,86% 0%,100% 15%,100% 87%,86% 100%,14% 100%,0% 87%,0% 15%);
+  pointer-events: none;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar .satchel-window img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar .satchel-jar-overlay {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: auto;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar.is-front {
+  filter: drop-shadow(0 2px 7px #3c183c9e) drop-shadow(0 0 3px #fbd4b443);
+}
+.rpg-sheet.is-satchel-susan .satchel-nav {
+  position: absolute;
+  z-index: 40;
+  bottom: 0;
+  left: 50%;
+  width: min(96%, 410px);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  pointer-events: none;
+}
+.rpg-sheet.is-satchel-susan .satchel-nav > * { pointer-events: auto; }
+.rpg-sheet.is-satchel-susan .satchel-nav .satchel-arrow {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid #b88361b8;
+  border-radius: 50%;
+  background: #3e273be0;
+  box-shadow: 0 2px 8px #1f1020a6;
+  color: #f4d9af;
+  font: 700 1.75rem/1 Georgia,serif;
+}
+.rpg-sheet.is-satchel-susan .satchel-nav .satchel-arrow:focus-visible {
+  outline: 2px solid #f7ddb4;
+  outline-offset: 2px;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar-label {
+  min-width: 0;
+  max-width: 100%;
+  padding: 6px 10px;
+  border: 1px solid #b9947bc9;
+  border-radius: 24px;
+  background: #f6e7d6e8;
+  box-shadow: 0 2px 8px #24162686;
+  color: #4c3047;
+  text-align: center;
+  font: 700 clamp(.72rem,3.25vw,.93rem)/1.17 Georgia,serif;
+  text-shadow: 0 1px #fff7eb;
+}
+.rpg-sheet.is-satchel-susan .satchel-jar-label small {
+  display: block;
+  padding-top: 3px;
+  color: #6a5466;
+  font: 500 .64rem/1.1 Georgia,serif;
+}
+.rpg-sheet.is-satchel-susan .satchel-collection-note {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: calc(100% + 3px);
+  width: max-content;
+  max-width: 90vw;
+  transform: translateX(-50%);
+  padding: 4px 12px;
+  border: 1px solid #af826275;
+  border-radius: 18px;
+  background: #f9edddd1;
+  color: #4d3046;
+  text-align: center;
+  font: italic .72rem/1.18 Georgia,serif;
+}
+.rpg-sheet.is-satchel-susan .satchel-swipe-hint {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 3%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 80%;
+  padding: 2px 10px;
+  border-radius: 14px;
+  background: #4a304458;
+  color: #fff0d7;
+  font: italic .73rem Georgia,serif;
+  text-align: center;
+  text-shadow: 0 1px 3px #210e22;
+  pointer-events: none;
+}
+@media (max-height: 710px) {
+  .rpg-sheet.is-satchel-susan .satchel-rotunda { height: min(55dvh, 365px); min-height: 270px; }
+  .rpg-sheet.is-satchel-susan .satchel-model,
+  .rpg-sheet.is-satchel-susan .satchel-platter-fallback { height: 70%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rpg-sheet.is-satchel-susan .satchel-model { transition: none; }
+}
