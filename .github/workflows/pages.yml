@@ -95,6 +95,27 @@ jobs:
                   with z.open(matches[0]) as src, (output / f"approved-{label}-map.webp").open("wb") as dst:
                       shutil.copyfileobj(src, dst)
           PY
+      - name: Unpack Rogue Witch illustrated panel assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import shutil
+          archive = Path("assets/Jess_Witchy_Panel_Assets.zip")
+          if not archive.exists():
+              raise SystemExit("Missing Jess_Witchy_Panel_Assets.zip")
+          output = Path("dist/assets/witchy-panels")
+          output.mkdir(parents=True, exist_ok=True)
+          required = {"field-journal.webp","arcane-transmission.webp","adventure-grimoire.webp","field-title.webp","arcane-title.webp","settings-title.webp","brass-button-photo.webp","brass-button-journal.webp","brass-button-map.webp","brass-button-preview.webp","brass-button-restart.webp","brass-button-blessing.webp"}
+          with ZipFile(archive) as z:
+              files = {Path(n).name:n for n in z.namelist() if n.endswith(".webp")}
+              missing = required - files.keys()
+              if missing:
+                  raise SystemExit(f"Missing illustrated assets: {sorted(missing)}")
+              for name, member in files.items():
+                  with z.open(member) as src, (output/name).open("wb") as dst:
+                      shutil.copyfileobj(src,dst)
+          PY
       - name: Unpack Treasure Haul inventory artwork
         run: |
           if [ -f assets/Jess_Treasure_Haul_Inventory_Assets.zip ]; then
