@@ -6,7 +6,7 @@ if(!sheet||!body)return;
 const root="assets/satchel/inventory/";
 function mount(){
  const stage=body.querySelector(".satchel-rotunda");
- if(!stage||stage.querySelector(".satchel-treasure-inventory"))return;
+ if(!stage||stage.parentElement.querySelector(":scope > .satchel-treasure-inventory"))return;
  const panel=document.createElement("section");panel.className="satchel-treasure-inventory";
  panel.setAttribute("aria-label","Treasure Haul inventory, nine empty slots");
  for(let i=0;i<9;i++){
