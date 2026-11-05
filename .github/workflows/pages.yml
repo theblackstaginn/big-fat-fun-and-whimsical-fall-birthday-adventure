@@ -54,9 +54,9 @@ jobs:
             mkdir -p dist/assets/satchel
             unzip -j -o assets/Jess_Satchel_3D_Spinning_Lazy_Susan.zip oddities_lazy_susan_static.glb oddities_lazy_susan_spinning.glb lazy_susan_isolated.webp -d dist/assets/satchel
           fi
-          if [ -f assets/Jess_Satchel_3D_Apothecary_Jars.zip ]; then
+          if [ -d assets/satchel/jars ]; then
             mkdir -p dist/assets/satchel/jars
-            unzip -j -o assets/Jess_Satchel_3D_Apothecary_Jars.zip 'jar_*.glb' -d dist/assets/satchel/jars
+            cp assets/satchel/jars/*.glb dist/assets/satchel/jars/
           fi
       - name: Render synthetic vegetation from 2023 USDA NAIP
         run: |
