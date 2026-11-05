@@ -214,3 +214,27 @@
 /* Preserve original leather rail size; enlarge only the five icon images. */
 .rpg-fullscreen .rpg-toolbar button > span{width:45px!important;height:45px!important}
 @media(max-width:365px){.rpg-fullscreen .rpg-toolbar button > span{width:40px!important;height:40px!important}}
+
+/* Actual Overworld / Nearby view switch lives in .hero-art, not the HUD rail.
+   Keep the existing two-button layout and handlers; replace only its artwork. */
+.rpg-fullscreen .hero-art > .map-mode-switch > button:is(#mode-overview,#mode-nearby){
+  background-color:transparent!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:52px 52px!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  text-shadow:none!important;
+  min-height:60px;
+  filter:drop-shadow(0 2px 4px #170b17c0);
+}
+.rpg-fullscreen .hero-art > .map-mode-switch > #mode-overview{background-image:url("ui-icons/map-view-compass.webp")!important}
+.rpg-fullscreen .hero-art > .map-mode-switch > #mode-nearby{background-image:url("ui-icons/village-streets-star.webp")!important}
+.rpg-fullscreen .hero-art > .map-mode-switch > button:is(#mode-overview,#mode-nearby).is-active{
+  filter:drop-shadow(0 0 7px #eabf7a) drop-shadow(0 2px 4px #170b17c0);
+}
+.rpg-fullscreen .hero-art > .map-mode-switch > button:is(#mode-overview,#mode-nearby):focus-visible{
+  outline:2px solid #ffe4b5;outline-offset:1px;border-radius:12px;
+}
