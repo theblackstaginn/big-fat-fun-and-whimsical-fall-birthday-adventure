@@ -943,10 +943,10 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
    const streetsButton=mapRail.querySelector("#mode-nearby");
    atlasButton.setAttribute("aria-label","Show enchanted overworld");
    atlasButton.title="Enchanted Atlas";
-   atlasButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/map-view-compass.webp" alt="" aria-hidden="true" draggable="false">';
+   atlasButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/approved-overworld-map.webp" alt="" aria-hidden="true" draggable="false">';
    streetsButton.setAttribute("aria-label","Show nearby village streets");
    streetsButton.title="Village Streets";
-   streetsButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/village-streets-medallion.svg" alt="" aria-hidden="true" draggable="false">';
+   streetsButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/approved-nearby-map.webp" alt="" aria-hidden="true" draggable="false">';
    const addButton=(id,label,icon)=>{
     const button=document.createElement("button");
     button.type="button";button.id=id;button.className="map-rail-button";
