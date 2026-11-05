@@ -125,3 +125,88 @@
     width:34px;height:34px;
   }
 }
+
+
+/* Stitched plum-leather backplates, not UI button cards.
+   Both source artworks are transparent WebPs. Keep the existing live buttons
+   and their handlers, GPS/quest state, and accessible labels unchanged. */
+.rpg-fullscreen .map-mode-switch {
+  box-sizing:border-box;
+  width:52px;
+  padding:6px;
+  gap:3px;
+  border:0!important;
+  border-radius:15px;
+  background:transparent url("ui-icons/leather-nav-vertical.webp") center/100% 100% no-repeat!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 3px 5px #160b17a8);
+}
+.rpg-fullscreen .map-mode-switch > button {
+  background-color:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  border-radius:50%;
+}
+.rpg-fullscreen .map-mode-switch > button:hover {
+  background-color:transparent!important;
+  border-color:transparent!important;
+}
+.rpg-fullscreen .rpg-bottom {
+  width:min(calc(100vw - 24px),342px);
+}
+.rpg-fullscreen .rpg-toolbar {
+  box-sizing:border-box;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  align-items:center;
+  gap:0;
+  min-height:86px;
+  padding:9px 15px 11px;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent url("ui-icons/leather-controls-horizontal.webp") center/100% 100% no-repeat!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 4px 6px #150a17aa);
+}
+.rpg-fullscreen .rpg-toolbar button {
+  box-sizing:border-box;
+  min-width:0;
+  min-height:64px;
+  padding:2px 0!important;
+  gap:2px;
+  border:0!important;
+  border-radius:0;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.rpg-fullscreen .rpg-toolbar button:hover,
+.rpg-fullscreen .rpg-toolbar button:focus-visible {
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+}
+.rpg-fullscreen .rpg-toolbar button:focus-visible {
+  outline:2px solid #f8d29a;
+  outline-offset:-2px;
+  border-radius:10px;
+}
+.rpg-fullscreen .rpg-toolbar button > span {
+  width:38px!important;
+  height:38px!important;
+  margin:0 auto!important;
+}
+.rpg-fullscreen .rpg-toolbar button > small {
+  color:#f7dfc6;
+  font-size:.59rem;
+  line-height:1.1;
+  text-shadow:0 1px 2px #130a14;
+}
+.rpg-fullscreen .rpg-toolbar button:active > span {
+  transform:translateY(1px);
+}
+@media(max-width:365px) {
+  .rpg-fullscreen .rpg-bottom {width:min(calc(100vw - 14px),326px)}
+  .rpg-fullscreen .rpg-toolbar {min-height:82px;padding:8px 12px 10px}
+  .rpg-fullscreen .rpg-toolbar button {min-height:62px}
+  .rpg-fullscreen .rpg-toolbar button > span {width:34px!important;height:34px!important}
+  .rpg-fullscreen .rpg-toolbar button > small {font-size:.54rem}
+}
