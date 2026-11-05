@@ -75,6 +75,26 @@ jobs:
             mkdir -p dist/assets/satchel/jars
             unzip -j -o assets/Jess_Oddities_Jars_Transparent_Fixed.zip '*.webp' -d dist/assets/satchel/jars
           fi
+      - name: Install approved Overworld and Nearby map icons
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import shutil
+          archive = Path("assets/Jess_Map_Mode_Icons.zip")
+          if not archive.exists():
+              raise SystemExit("Approved map icons ZIP missing")
+          output = Path("dist/assets/ui-icons")
+          output.mkdir(parents=True, exist_ok=True)
+          with ZipFile(archive) as z:
+              files = [name for name in z.namelist() if name.lower().endswith(".webp") and not name.endswith("/")]
+              for label, terms in (("overworld", ("overworld", "atlas", "parchment")), ("nearby", ("nearby", "village", "street"))):
+                  matches = [name for name in files if any(term in Path(name).stem.lower() for term in terms)]
+                  if len(matches) != 1:
+                      raise SystemExit(f"Expected one {label} icon, found {matches}; archive: {files}")
+                  with z.open(matches[0]) as src, (output / f"approved-{label}-map.webp").open("wb") as dst:
+                      shutil.copyfileobj(src, dst)
+          PY
       - name: Unpack Treasure Haul inventory artwork
         run: |
           if [ -f assets/Jess_Treasure_Haul_Inventory_Assets.zip ]; then
