@@ -1,0 +1,106 @@
+/* Approved illustrated assets, layered behind live controls and content.
+   Keep the map, satchel, progress, upload and scroll behavior untouched. */
+.rpg-fullscreen .rpg-sheet:is(.is-witchy-curios,.is-witchy-settings,.is-ai-intro){
+  --witchy-assets:url("witchy-panels/autumn-magic.webp");
+  overflow:hidden;
+  border-color:#a87343;
+  background:#281b2c;
+}
+.rpg-fullscreen .rpg-sheet:is(.is-witchy-curios,.is-witchy-settings,.is-ai-intro) .rpg-sheet-head{
+  min-height:76px;
+  box-sizing:border-box;
+  padding:15px 58px 15px 45px;
+  background-color:#291c2c;
+  background-position:center;
+  background-repeat:no-repeat;
+  background-size:100% 100%;
+  border-bottom:0;
+  color:transparent!important;
+  text-shadow:none!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-head{background-image:url("witchy-panels/field-title.webp")}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-sheet-head{background-image:url("witchy-panels/settings-title.webp")}
+.rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-head{background-image:url("witchy-panels/arcane-title.webp")}
+.rpg-fullscreen .rpg-sheet:is(.is-witchy-curios,.is-witchy-settings,.is-ai-intro) .rpg-sheet-head::before{content:none!important}
+.rpg-fullscreen .rpg-sheet:is(.is-witchy-curios,.is-witchy-settings,.is-ai-intro) .rpg-sheet-head button{
+  z-index:3;right:7px;top:50%;width:38px;height:38px;
+  background:#3c2739!important;color:#f9dfc3!important;
+  border:2px solid #d3a66b!important;
+  transform:translateY(-50%)!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body,
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-sheet-body{
+  background-color:#ddc19a!important;
+  background-repeat:no-repeat!important;
+  background-position:top center!important;
+  background-size:100% auto!important;
+  color:#3c2a2b;
+  padding:clamp(14px,4vw,23px);
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body{background-image:url("witchy-panels/field-journal.webp")!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-sheet-body{background-image:url("witchy-panels/adventure-grimoire.webp")!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body > *,
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-sheet-body > *{position:relative;z-index:1}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body{
+  padding-top:clamp(55px,16vw,90px);
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body :is(h2,h3,p,span,label),
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-sheet-body :is(h2,h3,p,span,label){color:#39262b}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body :is(.curios-memory-card,.quest-memory-card){
+  background:#f3dfbcdb!important;color:#38272a!important;
+  border:1px solid #a7774c!important;
+  box-shadow:0 4px 13px #3b241b40!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .curios-memory-card::before{
+  content:"";display:block;height:48px;margin-bottom:10px;
+  background:url("witchy-panels/field-collection-ribbon.webp") center/contain no-repeat;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios input[type=file]{
+  max-width:100%;color:#f5e3c9!important;background:#352537!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings{
+  margin-top:clamp(35px,11vw,70px);
+  background:#f1dcbaea!important;color:#38272a!important;
+  border:1px solid #9e7349!important;
+  box-shadow:0 5px 20px #38201944!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings::before{
+  content:"";display:block;height:42px;margin:0 0 14px;
+  background:url("witchy-panels/gold-leaf-flourish.webp") center/contain no-repeat;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings button,
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body button{
+  position:relative;display:block;width:100%;
+  min-height:55px;padding:9px 18px;
+  background-color:#482b3e!important;background-position:center!important;
+  background-size:100% 100%!important;background-repeat:no-repeat!important;
+  border:0!important;box-shadow:none!important;
+  color:transparent!important;text-shadow:none!important;
+  font-size:0!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios button[id*="photo"]{background-image:url("witchy-panels/brass-button-photo.webp")!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios button[id*="journal"]{background-image:url("witchy-panels/brass-button-journal.webp")!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings #rpg-print{background-image:url("witchy-panels/brass-button-map.webp")!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings #rpg-reset{background-image:url("witchy-panels/brass-button-restart.webp")!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings #rpg-finale{background-image:url("witchy-panels/brass-button-blessing.webp")!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings #rpg-stop-location{font-size:1rem!important;color:#f9e5cb!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings button:focus-visible,
+.rpg-fullscreen .rpg-sheet.is-witchy-curios button:focus-visible{outline:3px solid #6b3b8e;outline-offset:2px}
+.rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-body{
+  background:#24172d url("witchy-panels/arcane-transmission.webp") top center/100% auto no-repeat!important;
+  padding:clamp(35px,10vw,60px) 12px 16px;
+}
+.rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-ai-intro{
+  background:#24162bc9!important;
+  border:1px solid #d6a86b!important;
+  box-shadow:inset 0 0 0 2px #d5a16c35!important;
+  color:#f6dfc9!important;
+}
+@media(max-width:380px){
+ .rpg-fullscreen .rpg-sheet:is(.is-witchy-curios,.is-witchy-settings,.is-ai-intro) .rpg-sheet-head{min-height:65px}
+ .rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body{padding-top:48px}
+}
+@media(prefers-reduced-motion:no-preference){
+ .rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-body{animation:witchy-transmission-bloom 850ms ease-out both}
+}
+@keyframes witchy-transmission-bloom{from{filter:brightness(.65)}to{filter:brightness(1)}}
