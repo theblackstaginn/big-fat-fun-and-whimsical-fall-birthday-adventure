@@ -48,6 +48,16 @@ jobs:
             mkdir -p dist/assets/parchment
             unzip -j -o assets/Jess_Journal_Parchment_Cards.zip parchment_small_card.webp parchment_top.webp parchment_middle.webp parchment_bottom.webp -d dist/assets/parchment
           fi
+      - name: Unpack Satchel turntable and oddities jars
+        run: |
+          if [ -f assets/Jess_Satchel_3D_Spinning_Lazy_Susan.zip ]; then
+            mkdir -p dist/assets/satchel
+            unzip -j -o assets/Jess_Satchel_3D_Spinning_Lazy_Susan.zip oddities_lazy_susan_static.glb oddities_lazy_susan_spinning.glb lazy_susan_isolated.webp -d dist/assets/satchel
+          fi
+          if [ -f assets/Jess_Satchel_Nine_Separate_Jars.zip ]; then
+            mkdir -p dist/assets/satchel/jars
+            unzip -j -o assets/Jess_Satchel_Nine_Separate_Jars.zip 'overlays/*.webp' -d dist/assets/satchel/jars
+          fi
       - name: Render synthetic vegetation from 2023 USDA NAIP
         run: |
           python -m pip install Pillow==11.3.0
