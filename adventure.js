@@ -926,6 +926,8 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
     if(!target)return;
     body.replaceChildren(target);
     sheet.classList.toggle("is-ai-intro",name==="story");
+    sheet.classList.toggle("is-witchy-curios",name==="notes");
+    sheet.classList.toggle("is-witchy-settings",name==="settings");
     title.textContent=({quest:"The Rogue Witch’s Journal",notes:"Field Notes & Curios",story:"INCOMING TRANSMISSION",finale:"The Birthday Blessing",satchel:"The Adventurer’s Satchel",settings:"Adventure Settings"})[name]||"Adventure";
     shade.hidden=false;sheet.hidden=false;sheet.classList.add("is-open");
     body.scrollTop=0;sheet.querySelector("#rpg-close").focus();
