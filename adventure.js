@@ -946,7 +946,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
    atlasButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/map-view-compass.webp" alt="" aria-hidden="true" draggable="false">';
    streetsButton.setAttribute("aria-label","Show nearby village streets");
    streetsButton.title="Village Streets";
-   streetsButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/village-streets-star.webp" alt="" aria-hidden="true" draggable="false">';
+   streetsButton.innerHTML='<img class="map-rail-art" src="assets/ui-icons/village-streets-medallion.svg" alt="" aria-hidden="true" draggable="false">';
    const addButton=(id,label,icon)=>{
     const button=document.createElement("button");
     button.type="button";button.id=id;button.className="map-rail-button";
