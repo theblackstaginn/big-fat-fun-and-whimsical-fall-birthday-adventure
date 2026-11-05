@@ -137,3 +137,6 @@
     scroll-behavior: auto;
   }
 }
+
+/* The illustrated Treasure Haul replaces the redundant Satchel title plaque. */
+.rpg-sheet.is-satchel-susan #rpg-sheet-title{display:none!important}
