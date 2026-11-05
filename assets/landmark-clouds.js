@@ -14,16 +14,25 @@
   for(const [key,val] of Object.entries(attrs))el.setAttribute(key,String(val));
   return el;
  }
- /* Each bank covers an unrevealed illustration landmark, not empty scenery.
-  * Bangkok Haus is an off-map detour and needs no cloud footprint. */
+ /* Hand-fitted to the approved 1024x1536 painting. Only distinctive
+  * unrevealed storefronts/signs are veiled, never the open night sky.
+  * Separate lobes conceal Wonderland's tower and both park landmarks,
+  * without the huge oval previously covering the waxing Moon.
+  * Bangkok Haus is off-map and needs no cloud footprint. */
  const lockedLandmarks=[
-  {id:"wonderland",cx:185,cy:1076,rx:258,ry:183},
-  {id:"candle",cx:662,cy:1075,rx:225,ry:162},
-  {id:"glass",cx:709,cy:514,rx:214,ry:138},
-  {id:"zuzu",cx:668,cy:351,rx:225,ry:137},
-  {id:"river",cx:352,cy:791,rx:216,ry:132},
-  {id:"sweet",cx:319,cy:374,rx:242,ry:171},
-  {id:"park",cx:865,cy:169,rx:235,ry:159}
+  {id:"wonderland",parts:[
+   {cx:218,cy:1117,rx:181,ry:122},  // Shop, Alice display, and sign
+   {cx:231,cy:984,rx:82,ry:76}    // The clock tower above the shop
+  ]},
+  {id:"candle",parts:[{cx:660,cy:1090,rx:139,ry:131}]},
+  {id:"glass",parts:[{cx:706,cy:512,rx:163,ry:111}]},
+  {id:"zuzu",parts:[{cx:676,cy:353,rx:146,ry:101}]},
+  {id:"river",parts:[{cx:341,cy:794,rx:126,ry:81}]},
+  {id:"sweet",parts:[{cx:317,cy:375,rx:149,ry:133}]},
+  {id:"park",parts:[
+   {cx:743,cy:194,rx:98,ry:65},  // Park sign below the night sky
+   {cx:895,cy:184,rx:109,ry:93} // Gazebo without covering the Moon
+  ]}
  ];
  const svg=node("svg",{viewBox:"0 0 1024 1536",preserveAspectRatio:"xMidYMid slice","aria-hidden":"true"});
  const defs=node("defs");
@@ -197,11 +206,8 @@
   }
   const index=lockedLandmarks.indexOf(site);
   const group=node("g",{"data-locked-destination":site.id,opacity:1});
-  /* Rounded crown and smaller natural billows form one solid, cloud-shaped bank. */
-  group.append(node("ellipse",{
-   cx:site.cx,cy:site.cy+site.ry*.04,
-   rx:site.rx*.77,ry:site.ry*.67,fill:"#ffffff"
-  }));
+  /* The whole location is one reveal, even when it has two separate
+   * fitted lobes. All lobes still share the original seamless union mask. */
   const billows=[
    [-.64,-.08,.33,.52],[-.49,-.38,.31,.46],
    [-.17,-.53,.35,.45],[.21,-.50,.37,.48],
@@ -209,16 +215,22 @@
    [.53,.33,.36,.40],[.13,.43,.47,.38],
    [-.30,.42,.41,.38],[-.62,.22,.35,.40]
   ];
-  for(let i=0;i<billows.length;i++){
-   const [x,y,w,h]=billows[i];
-   const variation=Math.sin((index+1)*9.73+i*2.47);
+  for(const [partIndex,part] of site.parts.entries()){
    group.append(node("ellipse",{
-    cx:site.cx+(x+variation*.028)*site.rx,
-    cy:site.cy+(y+variation*.040)*site.ry,
-    rx:site.rx*w*(1+variation*.07),
-    ry:site.ry*h*(1-variation*.055),
-    fill:"#ffffff"
+    cx:part.cx,cy:part.cy+part.ry*.04,
+    rx:part.rx*.77,ry:part.ry*.67,fill:"#ffffff"
    }));
+   for(let i=0;i<billows.length;i++){
+    const [x,y,w,h]=billows[i];
+    const variation=Math.sin((index+1)*9.73+(partIndex+1)*1.13+i*2.47);
+    group.append(node("ellipse",{
+     cx:part.cx+(x+variation*.028)*part.rx,
+     cy:part.cy+(y+variation*.040)*part.ry,
+     rx:part.rx*w*(1+variation*.07),
+     ry:part.ry*h*(1-variation*.055),
+     fill:"#ffffff"
+    }));
+   }
   }
   // Gently drift each bank independently, only a handful of map pixels.
   group.style.animationDuration=(25+(index*7)%16)+"s";
