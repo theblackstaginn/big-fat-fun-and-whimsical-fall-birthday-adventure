@@ -57,7 +57,7 @@
 }
 .rpg-sheet.is-illustrated-journal .rpg-sheet-body {
   position: absolute; z-index: 3;
-  top: 22%; bottom: 7.5%; left: 9%; right: 19%;
+  top: 22%; bottom: 15%; left: 9%; right: 19%;
   box-sizing: border-box; padding: 0 0 1rem;
   overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch; scrollbar-width: none;
