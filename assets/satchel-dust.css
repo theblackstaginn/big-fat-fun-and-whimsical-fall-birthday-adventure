@@ -1,0 +1,3 @@
+/* Subtle gold dust drifting through the enchanted Satchel. */
+.rpg-sheet.is-satchel-susan .satchel-immersive>.satchel-dust{position:absolute;inset:0;width:100%;height:100%;z-index:11;pointer-events:none;user-select:none;opacity:.88}
+@media(prefers-reduced-motion:reduce){.rpg-sheet.is-satchel-susan .satchel-immersive>.satchel-dust{display:none}}
