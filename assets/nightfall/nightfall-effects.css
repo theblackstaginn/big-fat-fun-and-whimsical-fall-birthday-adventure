@@ -1,4 +1,4 @@
-/* Three graded nighttime passes over the exact approved original 1024x1536 artwork. The daytime sky and original map are never changed or clouded. All visual layers are pointer-transparent. */
+/* Three graded nighttime passes over the approved 1024x1536 artwork, plus subtle river shimmer in daylight. Daytime sky and map artwork stay unchanged. All visual layers are pointer-transparent. */
 .rpg-fullscreen .map-canvas .nightfall-painted-layer {
   position:absolute;inset:0;
   width:100%;height:100%;max-width:none;
@@ -46,7 +46,11 @@
 }
 .rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-sky{opacity:.55}
 .rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-sky{opacity:1}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-river{opacity:.74}
+/* The Chattahoochee flows throughout the adventure. Sunlight shimmers
+   gently over daylight water, and reflections strengthen after dark. */
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .nightfall-river{opacity:.78}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-river{opacity:.86}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-river{opacity:.92}
 .rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-river{opacity:1}
 .rpg-fullscreen .map-canvas .nightfall-star {
   opacity:.32;animation:nightfall-star-twinkle var(--star-period,5s) ease-in-out var(--star-delay,0s) infinite alternate;
@@ -65,7 +69,7 @@
   100%{opacity:0;transform:translate(var(--flow-end-x,5px),var(--flow-end-y,14px))}
 }
 /* Six lightweight current groups, rather than distorting the entire image.
-   The original water group retains its required -174px alignment. */
+   They share the corrected 1024x1536 water mask with the moving glints. */
 .rpg-fullscreen .map-canvas .nightfall-current-group {
   opacity:.55;
   transform-box:fill-box;
@@ -93,13 +97,10 @@
   82%{opacity:.25}
   100%{opacity:0;transform:translate(15px,3px)}
 }
-/* Pause offscreen and daytime water motion to save battery. */
+/* Keep the river alive in every chapter; pause only in Nearby Streets.
+   Respect reduced-motion preferences separately below. */
 .rpg-fullscreen .map-canvas:not(.portrait-loaded) .nightfall-water-glint,
-.rpg-fullscreen .map-canvas:not(.portrait-loaded) .nightfall-current-group,
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .nightfall-water-glint,
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-water-glint,
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .nightfall-current-group,
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-current-group{
+.rpg-fullscreen .map-canvas:not(.portrait-loaded) .nightfall-current-group{
   animation-play-state:paused!important;
 }
 @media(prefers-reduced-motion:reduce){
