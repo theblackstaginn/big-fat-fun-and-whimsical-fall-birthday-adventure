@@ -58,6 +58,11 @@ jobs:
             mkdir -p dist/assets/satchel/jars
             cp assets/satchel/jars/*.glb dist/assets/satchel/jars/
           fi
+      - name: Unpack realistic satchel jar sprites
+        run: |
+          if [ -f assets/Jess_Satchel_Realistic_Jar_Sprites.zip ]; then
+            unzip -o assets/Jess_Satchel_Realistic_Jar_Sprites.zip 'assets/satchel/jars/*_site.webp' -d dist/
+          fi
       - name: Bake Ruby Mae original scene into 3D cork jar
         run: |
           python -m pip install numpy pillow trimesh
