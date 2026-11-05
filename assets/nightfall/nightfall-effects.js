@@ -127,9 +127,9 @@
   // River glints follow the actual water channels on the original canvas,
   // with the extra sky offset removed. They never cover roads or shops.
   const water=overlay.querySelector('#nightfall-water-shimmer');
-  overlay.querySelectorAll('#nightfall-water-only path').forEach(path=>{
-    path.setAttribute('transform','translate(0 -174)');
-  });
+  // The clip paths and shimmer share the water group's local coordinates.
+  // Shift the GROUP once to match the original 1024x1536 painting.
+  // Shifting clip paths too offset the mask twice, hiding water effects.
   water.setAttribute('transform','translate(0 -174)');
   const bands=[
     [178,372,64,18],[145,456,75,17],[126,536,86,16],
