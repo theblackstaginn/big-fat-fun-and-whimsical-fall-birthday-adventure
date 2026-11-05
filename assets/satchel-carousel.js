@@ -121,8 +121,8 @@ function paint(){
   const scale=focal/(10-(seatY*cosP+zz*sinP));
   const b=buttons[i];if(!b)return;
   b.style.left=(cx+xx*1.28*scale).toFixed(1)+"px";
-  b.style.top=(cy-(seatY*sinP-zz*cosP)*scale+scale*.32).toFixed(1)+"px";
-  b.style.width=clamp(scale*1.88,84,180).toFixed(1)+"px";
+  b.style.top=(cy-(seatY*sinP-zz*cosP)*scale+scale*.43).toFixed(1)+"px";
+  b.style.width=clamp(scale*1.99,89,190).toFixed(1)+"px";
   b.style.zIndex=String(Math.round((zz+3)*100));
   b.classList.toggle("is-front",i===selected);
   b.setAttribute("aria-pressed",String(i===selected));
