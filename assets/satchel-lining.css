@@ -1,0 +1,139 @@
+/* Inside Jess's enchanted satchel: the original, ivory-purple Victorian
+   silk lining. Scoped to the Satchel ONLY; does not alter Journal, map, quests
+   or progress storage. The wooden lazy Susan will float in the lower space. */
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) {
+  position: fixed;
+  z-index: 91;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  box-sizing: border-box;
+  padding: 0;
+  transform: none;
+  border: 0;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: none;
+  background-color: #352333;
+  background-image: url("satchel/ivory_paisley_lining.webp");
+  background-position: center top;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: #39283b;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) .rpg-sheet-head {
+  position: relative;
+  z-index: 3;
+  flex: 0 0 auto;
+  height: clamp(154px, 22dvh, 205px);
+  min-height: 154px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  box-sizing: border-box;
+  gap: 0;
+  padding: 15px 63px 12px;
+  border: 0;
+  background: linear-gradient(180deg, #1b0c1e47, transparent 73%);
+  box-shadow: none;
+  text-align: center;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) .rpg-sheet-head::before {
+  display: none;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) #rpg-sheet-title {
+  display: block;
+  max-width: 100%;
+  padding: 8px 13px;
+  border: 1px solid #9f7a6770;
+  border-radius: 13px;
+  background: #f7e7d4cb;
+  box-shadow: 0 2px 8px #2817283b;
+  color: #493043;
+  font: 700 clamp(1.05rem, 4.5vw, 1.45rem)/1.15 Georgia, serif;
+  text-shadow: 0 1px #fff5e7;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) #rpg-close {
+  position: absolute;
+  top: max(13px, env(safe-area-inset-top, 0px));
+  right: 15px;
+  z-index: 5;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 1px solid #e3b18d;
+  border-radius: 50%;
+  background: #4a2c43ed;
+  box-shadow: 0 3px 9px #160a17ab;
+  color: #fff0dc;
+  font: 1.25rem/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) .rpg-sheet-body {
+  position: relative;
+  z-index: 2;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding: 4px 18px max(20px, env(safe-area-inset-bottom, 0px));
+  background: transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) .rpg-satchel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 540px;
+  min-height: 0;
+  margin: 0 auto;
+  padding: 0;
+  color: #39283b;
+  text-align: center;
+  font: .91rem/1.4 Georgia,serif;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) .rpg-satchel > p {
+  box-sizing: border-box;
+  max-width: 94%;
+  margin: 0;
+  padding: 7px 12px;
+  border-radius: 12px;
+  border: 1px solid #97755d70;
+  background: #faecdfd9;
+  color: #493249;
+  box-shadow: 0 2px 8px #23152226;
+  text-shadow: 0 1px #fff3e3;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) .rpg-satchel .rpg-satchel-count {
+  font: 700 .82rem/1.25 Georgia,serif;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) .rpg-satchel-chapters {
+  align-self: center;
+  box-sizing: border-box;
+  width: min(94%, 390px);
+  margin: 3px auto 0;
+  padding: 13px 26px;
+  border: 1px solid #94765f88;
+  border-radius: 12px;
+  background: #faeee4d9;
+  color: #493249;
+  text-align: left;
+  box-shadow: 0 3px 10px #21142342;
+}
+.rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) .rpg-satchel-chapters li {
+  padding: 3px 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .rpg-sheet:has(> .rpg-sheet-body > .rpg-satchel) * {
+    scroll-behavior: auto;
+  }
+}
