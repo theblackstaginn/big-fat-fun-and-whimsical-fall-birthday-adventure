@@ -13,7 +13,7 @@ from trimesh.visual.material import PBRMaterial
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "assets/scenes/ruby.webp"
-TARGET = ROOT / "assets/satchel/jars/jar_01_ruby_cork.glb"
+TARGET = ROOT / "assets/satchel/jars/jar_01_ruby_showcase.glb"
 
 def mat(name, color=(255,255,255,255), texture=None, rough=0.65, metal=0, blend=False):
     return PBRMaterial(name=name, baseColorFactor=list(color), baseColorTexture=texture,
@@ -82,14 +82,14 @@ add(cork,"Real_cork_stopper",mat("Porous wine cork",texture=cork_img,rough=.98),
 art=Image.open(SOURCE).convert("RGBA")
 paper=Image.new("RGBA",(680,800),(42,32,38,255))
 d=ImageDraw.Draw(paper);d.rounded_rectangle((13,12,667,788),radius=23,fill=(166,132,92,255))
-fit=ImageOps.contain(art,(626,740),Image.Resampling.LANCZOS)
+fit=ImageOps.fit(art,(626,740),method=Image.Resampling.LANCZOS,centering=(.5,.56))
 paper.alpha_composite(fit,((680-fit.width)//2,(800-fit.height)//2))
 d=ImageDraw.Draw(paper);d.rounded_rectangle((13,12,667,788),radius=23,outline=(217,173,105),width=9)
 verts=[];uv=[];faces=[];segments=32
-for row,y in enumerate((.325,1.255)):
+for row,y in enumerate((.34,1.29)):
     for k in range(segments+1):
-        t=(k/segments-.5)*1.67
-        verts.append((.53*math.sin(t),y,-.26+.15*(1-math.cos(t))))
+        t=(k/segments-.5)*2.10
+        verts.append((.52*math.sin(t),y,-.19+.10*(1-math.cos(t))))
         uv.append((k/segments,1-row))
 for k in range(segments):
     a=k;b=k+segments+1;faces.extend(((a,b,a+1),(a+1,b,b+1)))
@@ -105,7 +105,7 @@ greens=[mat("Living moss %d"%i,c,rough=1) for i,c in enumerate(((74,88,47,255),(
 petal=mat("Ruby colored preserved rose",(151,52,63,255),rough=.83)
 twig=mat("Aged copper and stem",(144,92,56,255),rough=.85,metal=.12)
 stone=mat("Little pebbles",(133,119,99,255),rough=.93)
-blob("Real_earth_floor",(0,.22,0),(.49,.08,.43),soil)
+blob("Real_earth_floor",(0,.22,.14),(.49,.08,.30),soil)
 for j in range(32):
     a=r.uniform(0,2*math.pi);radius=r.uniform(.14,.42)
     blob("Moss_%02d"%j,(radius*math.cos(a),r.uniform(.255,.30),radius*math.sin(a)),
@@ -115,10 +115,10 @@ for j in range(8):
     a=r.uniform(0,2*math.pi);radius=r.uniform(.17,.40)
     blob("Pebble_%02d"%j,(radius*math.cos(a),.27,radius*math.sin(a)),(.034,.026,.041),stone,1)
 for j in range(3):
-    x=-.24+.23*j; z=.32
+    x=-.24+.23*j; z=.34
     stem("Rose_stem_%d"%j,(x,.30,z),(x,.51+j*.048,z),.018,twig)
     blob("Three_dimensional_rose_%d"%j,(x,.53+j*.048,z),
-         (.081,.070,.081),petal)
+         (.067,.062,.067),petal)
 scene.metadata.update({"title":"Ruby Mae's original artwork cork curiosity jar",
                        "source":"assets/scenes/ruby.webp",
                        "details":"Real 3D glass, cork, moss, stones, rosebuds, baked image texture"})
