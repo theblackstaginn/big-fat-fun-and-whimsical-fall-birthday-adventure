@@ -16,27 +16,30 @@
   pointer-events:none;isolation:isolate;
 }
 .rpg-fullscreen .map-canvas #nightfall-atmosphere[hidden]{display:none!important}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere svg,
-.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow{
+.rpg-fullscreen .map-canvas #nightfall-atmosphere svg{
   position:absolute;inset:0;width:100%;height:100%;
   display:block;pointer-events:none;
 }
-.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow{
-  object-fit:cover;object-position:center;
-  mix-blend-mode:screen;
+/* The glowing pixels stay on the original lamps and windows, not broad
+   floating blobs. Four gentle asynchronous groups mimic candle flutter. */
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-warm-glows{
   opacity:0;
-  transition:opacity 1.7s ease-in-out;
+  transition:opacity 1.8s ease-in-out;
+  mix-blend-mode:screen;
 }
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-windowglow{opacity:.34}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-windowglow{opacity:.64}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-windowglow{opacity:.94}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .nightfall-windowglow{animation:none!important}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow-a{animation:nightfall-lantern-breath-a 4.1s ease-in-out infinite alternate}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow-b{animation:nightfall-lantern-breath-b 6.3s ease-in-out -2.8s infinite alternate}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow-c{animation:nightfall-lantern-breath-c 7.7s ease-in-out -3.1s infinite alternate}
-@keyframes nightfall-lantern-breath-a{0%,100%{filter:brightness(.84)}33%{filter:brightness(1.14)}71%{filter:brightness(.94)}}
-@keyframes nightfall-lantern-breath-b{0%,100%{filter:brightness(1.10)}44%{filter:brightness(.85)}77%{filter:brightness(1.19)}}
-@keyframes nightfall-lantern-breath-c{0%,100%{filter:brightness(.9)}47%{filter:brightness(1.13)}79%{filter:brightness(.82)}}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-warm-glows{opacity:.28}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-warm-glows{opacity:.51}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-warm-glows{opacity:.70}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family-0{animation:nightfall-light-breathe 5.7s ease-in-out -1.1s infinite alternate}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family-1{animation:nightfall-light-breathe 6.8s ease-in-out -3.7s infinite alternate}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family-2{animation:nightfall-light-breathe 8.3s ease-in-out -1.9s infinite alternate}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family-3{animation:nightfall-light-breathe 7.4s ease-in-out -4.5s infinite alternate}
+@keyframes nightfall-light-breathe{
+  0%,100%{opacity:.48}
+  27%{opacity:.72}
+  54%{opacity:.55}
+  79%{opacity:.82}
+}
 .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-sky,
 .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-river {
   opacity:0;transition:opacity 2s ease-in-out;
@@ -62,10 +65,10 @@
 @media(prefers-reduced-motion:reduce){
   .rpg-fullscreen .map-canvas .nightfall-painted-layer,
   .rpg-fullscreen .map-canvas #nightfall-atmosphere svg,
-  .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow{transition:none!important}
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-warm-glows{transition:none!important}
   .rpg-fullscreen .map-canvas .nightfall-star,
   .rpg-fullscreen .map-canvas .nightfall-water-glint,
-  .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow{animation:none!important}
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family{animation:none!important}
   .rpg-fullscreen .map-canvas .nightfall-star{opacity:.65}
   .rpg-fullscreen .map-canvas .nightfall-water-glint{opacity:.45}
 }

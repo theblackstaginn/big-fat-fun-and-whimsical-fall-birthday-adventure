@@ -34,9 +34,21 @@
   overlay.id='nightfall-atmosphere';
   overlay.setAttribute('aria-hidden','true');
   overlay.innerHTML=`
-    <img class="nightfall-windowglow nightfall-windowglow-a" alt="" decoding="async" src="${PATH}windows-flicker-a.webp">
-    <img class="nightfall-windowglow nightfall-windowglow-b" alt="" decoding="async" src="${PATH}windows-flicker-b.webp">
-    <img class="nightfall-windowglow nightfall-windowglow-c" alt="" decoding="async" src="${PATH}windows-flicker-c.webp">
+    <svg class="nightfall-warm-glows" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" focusable="false">
+      <defs>
+        <radialGradient id="nightfall-lamp-glow">
+          <stop offset="0" stop-color="#fff3c0" stop-opacity=".72"></stop>
+          <stop offset=".28" stop-color="#ffc56e" stop-opacity=".24"></stop>
+          <stop offset="1" stop-color="#ffad55" stop-opacity="0"></stop>
+        </radialGradient>
+        <radialGradient id="nightfall-window-glow">
+          <stop offset="0" stop-color="#ffe7a0" stop-opacity=".32"></stop>
+          <stop offset=".42" stop-color="#f5aa53" stop-opacity=".13"></stop>
+          <stop offset="1" stop-color="#f5aa53" stop-opacity="0"></stop>
+        </radialGradient>
+      </defs>
+      <g id="nightfall-warm-light-points"></g>
+    </svg>
     <svg class="nightfall-sky" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" focusable="false">
       <g id="nightfall-twinkles"></g>
     </svg>
@@ -54,6 +66,49 @@
   let seed=16112026;
   const random=()=>{seed=(1664525*seed+1013904223)>>>0;return seed/4294967296};
   const ns='http://www.w3.org/2000/svg';
+  // The old glow WebPs were 512x855 (not the map's 2:3 aspect ratio)
+  // and were all stacked at nearly full opacity. Use aligned SVG hotspots
+  // exclusively on EXISTING lantern flames and illuminated windows.
+  // Coordinate system matches the unchanged 1024x1536 painted map.
+  const lightPoints=overlay.querySelector('#nightfall-warm-light-points');
+  const families=Array.from({length:4},(_,i)=>{
+    const group=document.createElementNS(ns,'g');
+    group.classList.add('nightfall-glow-family','nightfall-glow-family-'+i);
+    lightPoints.append(group);
+    return group;
+  });
+  const streetLanterns=[
+    [466,308],[460,350],[453,401],[443,446],[429,515],
+    [420,565],[414,615],[401,666],[395,749],[387,789],
+    [378,964],[371,1018],[380,1124],[372,1188],[354,1259],[342,1308],
+    [506,326],[514,369],[523,440],[531,509],[535,575],
+    [531,649],[541,668],[543,748],[558,800],[586,888],
+    [570,950],[525,1042],[518,1135],[494,1192],[493,1356],
+    [821,230],[987,210],[176,401],[201,915],[965,942]
+  ];
+  const windowLights=[
+    [262,347],[314,348],[270,448],[297,461],[338,455],[369,454],
+    [568,428],[608,430],[691,422],[784,422],
+    [624,526],[670,532],[707,532],
+    [710,671],[711,733],[868,733],
+    [690,790],[730,792],[772,791],[808,794],[854,790],
+    [729,869],[777,868],[811,869],
+    [171,857],[211,858],[250,857],
+    [237,1116],[241,1161],[560,1142],[603,1140],[658,1140],
+    [605,1374],[652,1376],[710,1378],[851,1377],[910,1378]
+  ];
+  const addLight=(points,type)=>{
+    points.forEach(([x,y],i)=>{
+      const circle=document.createElementNS(ns,'circle');
+      circle.setAttribute('cx',String(x));
+      circle.setAttribute('cy',String(y));
+      circle.setAttribute('r',String(type==='lamp'?12:16));
+      circle.setAttribute('fill',type==='lamp'?'url(#nightfall-lamp-glow)':'url(#nightfall-window-glow)');
+      families[(i+(type==='lamp'?0:2))%families.length].append(circle);
+    });
+  };
+  addLight(streetLanterns,'lamp');
+  addLight(windowLights,'window');
   const starGroup=overlay.querySelector('#nightfall-twinkles');
   for(let i=0;i<54;i++){
     const x=498+random()*305;
