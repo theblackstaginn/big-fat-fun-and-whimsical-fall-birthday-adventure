@@ -198,13 +198,13 @@
   emberSeed=(Math.imul(emberSeed,1664525)+1013904223)>>>0;
   return emberSeed/4294967296;
  };
- for(let i=0;i<29;i++){
+ for(let i=0;i<38;i++){
   const spark=document.createElement("i");
   const isVoid=i%4===0;
   spark.className="bangkok-ember "+(isVoid?"bangkok-ember-void":"bangkok-ember-violet");
   const drift=(emberRandom()-.5)*115;
-  const rise=85+emberRandom()*105;
-  const size=2.5+emberRandom()*4.5;
+  const rise=100+emberRandom()*125;
+  const size=4+emberRandom()*6.5;
   const startX=15+emberRandom()*70;
   const startY=53+emberRandom()*23;
   spark.style.setProperty("--ember-left",startX.toFixed(1)+"%");
@@ -218,7 +218,7 @@
   spark.style.setProperty("--ember-delay",(-emberRandom()*10).toFixed(1)+"s");
   emberField.append(spark);
  }
- for(let i=0;i<5;i++){
+ for(let i=0;i<6;i++){
   const wisp=document.createElement("i");
   wisp.className="bangkok-ember-wisp "+(i%2===0?"bangkok-ember-wisp-plum":"bangkok-ember-wisp-shadow");
   wisp.style.setProperty("--wisp-left",(18+i*15).toFixed(1)+"%");
