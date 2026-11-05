@@ -104,3 +104,41 @@
  .rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-body{animation:witchy-transmission-bloom 850ms ease-out both}
 }
 @keyframes witchy-transmission-bloom{from{filter:brightness(.65)}to{filter:brightness(1)}}
+
+/* Clean replacement: discard legacy card skins and retain readable real controls. */
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body :is(.curios-memory-card,.quest-memory-card),
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings{
+  background:transparent!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .curios-memory-card::before,
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings::before{content:none!important;display:none!important}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body :is(h2,h3){
+  color:#442b30!important;text-shadow:none!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body button,
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings button{
+  color:#f9e4c9!important;font-size:clamp(.88rem,3.7vw,1.1rem)!important;
+  text-shadow:0 1px 2px #211321!important;
+  background-color:#563047!important;
+  border:1px solid #d6ac79!important;
+  border-radius:9px!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios button[id*="journal"],
+.rpg-fullscreen .rpg-sheet.is-witchy-settings :is(#rpg-print,#rpg-reset,#rpg-finale){
+  color:transparent!important;font-size:0!important;text-shadow:none!important;
+  border:0!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings button:not(#rpg-print):not(#rpg-reset):not(#rpg-finale){
+  background-image:none!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body{
+  background-color:#e6cca5!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-sheet-body{
+  background-color:#e6cca5!important;
+}
+.rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-ai-intro{
+  background:#24162bdf!important;
+  margin:0!important;
+}
