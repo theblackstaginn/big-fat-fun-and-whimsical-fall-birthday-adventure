@@ -116,6 +116,12 @@ jobs:
                   with z.open(member) as src, (output/name).open("wb") as dst:
                       shutil.copyfileobj(src,dst)
           PY
+      - name: Unpack clean transparent witchy panel frames
+        run: |
+          if [ -f assets/witchy-panel-frames.zip ]; then
+            mkdir -p dist/assets/witchy-frames
+            unzip -j -o assets/witchy-panel-frames.zip 'field-notes-curios.png' 'incoming-transmission.png' 'adventure-settings.png' -d dist/assets/witchy-frames
+          fi
       - name: Unpack Treasure Haul inventory artwork
         run: |
           if [ -f assets/Jess_Treasure_Haul_Inventory_Assets.zip ]; then
