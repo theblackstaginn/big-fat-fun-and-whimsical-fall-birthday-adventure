@@ -11,7 +11,7 @@ const items=[
 ],T=Math.PI*2,STEP=T/9;
 let stage,viewer,fallback,ring,jarCanvas,buttons=[],angle=Math.PI,selected=0,active=false,modelReady=false;
 let animation=0,drag=null,moved=false,pending=false;
-const jarSprites={empty:"assets/satchel/jars/empty_site.webp",ruby:"assets/satchel/jars/ruby_site.webp"};
+const jarSprites={empty:"assets/satchel/jars/empty_site.webp",ruby:"assets/satchel/jars/01_ruby_maes.webp",wonderland:"assets/satchel/jars/02_wonderland.webp",candle:"assets/satchel/jars/03_crafty_mountain.webp",glass:"assets/satchel/jars/04_glassblowing.webp",zuzu:"assets/satchel/jars/05_zuzus_petals_no_glow.webp",river:"assets/satchel/jars/06_chattahoochee_river.webp",dinner:"assets/satchel/jars/07_bangkok_haus.webp",sweet:"assets/satchel/jars/08_hansel_gretel_no_glow.webp",park:"assets/satchel/jars/09_unicoi_hill_park_gazebo.webp"};
 let THREE=null,renderer3d=null,scene3d=null,camera3d=null,jarRoots=Array(9).fill(null);
 let artMeshes=Array(9).fill(null),artTextures=Array(9).fill(null),artLoading=Array(9).fill(false),threePromise=null;
 const jarScale=1.21;
@@ -54,7 +54,7 @@ function unlock(){
   const open=n>=threshold;
   b.setAttribute("aria-label",open?"Collected jar "+(i+1):"Undiscovered jar "+(i+1));
   const sprite=b.querySelector(".satchel-jar-sprite");
-  if(sprite){const src=open&&i===0?jarSprites.ruby:jarSprites.empty;if(sprite.getAttribute("src")!==src)sprite.setAttribute("src",src);}
+  if(sprite){const src=open?(jarSprites[id]||jarSprites.empty):jarSprites.empty;if(sprite.getAttribute("src")!==src)sprite.setAttribute("src",src);}
  });
 }
 async function init3D(){
@@ -121,7 +121,7 @@ function paint(){
   const scale=focal/(10-(seatY*cosP+zz*sinP));
   const b=buttons[i];if(!b)return;
   b.style.left=(cx+xx*1.28*scale).toFixed(1)+"px";
-  b.style.top=(cy-(seatY*sinP-zz*cosP)*scale+scale*.72).toFixed(1)+"px";
+  b.style.top=(cy-(seatY*sinP-zz*cosP)*scale+scale*1.10).toFixed(1)+"px";
   b.style.width=clamp(scale*1.99,89,190).toFixed(1)+"px";
   b.style.zIndex=String(Math.round((zz+3)*100));
   b.classList.toggle("is-front",i===selected);
