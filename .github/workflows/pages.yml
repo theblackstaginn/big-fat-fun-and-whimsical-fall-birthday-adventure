@@ -42,6 +42,12 @@ jobs:
             mkdir -p dist/assets/stamps
             unzip -j -o assets/Jess_Journal_Stamp_Buttons.zip moonreach.webp thornmere.webp starfen.webp emberfjord.webp -d dist/assets/stamps
           fi
+      - name: Unpack optional parchment cards
+        run: |
+          if [ -f assets/Jess_Journal_Parchment_Cards.zip ]; then
+            mkdir -p dist/assets/parchment
+            unzip -j -o assets/Jess_Journal_Parchment_Cards.zip parchment_small_card.webp parchment_top.webp parchment_middle.webp parchment_bottom.webp -d dist/assets/parchment
+          fi
       - name: Render synthetic vegetation from 2023 USDA NAIP
         run: |
           python -m pip install Pillow==11.3.0
