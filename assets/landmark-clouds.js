@@ -173,15 +173,9 @@
  ].join("\n");
  document.head.append(driftStyle);
  svg.append(cloudGroup);
- /* Draw the off-map dinner destination as a proper side-trip compass card.
-    It appears when the dinner chapter unlocks, and is not a false storefront. */
+ /* The dinner stop is a right-pointing wooden direction sign, not a false storefront. */
  const detour=node("g",{id:"quest-bangkok-side-trip",style:"display:none"});
- detour.append(node("rect",{x:729,y:861,width:283,height:99,rx:19,fill:"#584252","fill-opacity":".96",stroke:"#eac59b","stroke-width":"2"}));
- const heading=node("text",{x:870,y:899,"text-anchor":"middle",fill:"#fff0d7","font-family":"Georgia,serif","font-size":"27","font-weight":"bold"});
- heading.textContent="↗ Bangkok Haus";
- const foot=node("text",{x:870,y:928,"text-anchor":"middle",fill:"#f7d9bf","font-family":"Georgia,serif","font-size":"18"});
- foot.textContent="Edelweiss Strasse · detour";
- detour.append(heading,foot);
+ detour.append(node("image",{x:710,y:854,width:278,height:139,href:"assets/bangkok-haus-direction-sign.webp",preserveAspectRatio:"xMidYMid meet"}));
  svg.append(detour);
  mist.classList.add("landmark-clouds");
  mist.append(svg);
