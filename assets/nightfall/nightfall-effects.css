@@ -1,0 +1,72 @@
+/* Three graded nighttime passes over the exact approved original 1024x1536 artwork. The daytime sky and original map are never changed or clouded. All visual layers are pointer-transparent. */
+.rpg-fullscreen .map-canvas .nightfall-painted-layer {
+  position:absolute;inset:0;
+  width:100%;height:100%;max-width:none;
+  object-fit:cover;object-position:center;
+  display:block;pointer-events:none;
+  z-index:2;opacity:0;
+  transition:opacity 1.9s ease-in-out;
+  will-change:opacity;
+}
+.rpg-fullscreen .map-canvas .nightfall-painted-layer.nightfall-visible {opacity:1}
+.rpg-fullscreen .map-canvas:not(.portrait-loaded) .nightfall-painted-layer{display:none!important}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere {
+  position:absolute;inset:0;z-index:3;
+  width:100%;height:100%;overflow:hidden;
+  pointer-events:none;isolation:isolate;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[hidden]{display:none!important}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere svg,
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow{
+  position:absolute;inset:0;width:100%;height:100%;
+  display:block;pointer-events:none;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow{
+  object-fit:cover;object-position:center;
+  mix-blend-mode:screen;
+  opacity:0;
+  transition:opacity 1.7s ease-in-out;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-windowglow{opacity:.34}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-windowglow{opacity:.64}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-windowglow{opacity:.94}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .nightfall-windowglow{animation:none!important}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow-a{animation:nightfall-lantern-breath-a 4.1s ease-in-out infinite alternate}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow-b{animation:nightfall-lantern-breath-b 6.3s ease-in-out -2.8s infinite alternate}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow-c{animation:nightfall-lantern-breath-c 7.7s ease-in-out -3.1s infinite alternate}
+@keyframes nightfall-lantern-breath-a{0%,100%{filter:brightness(.84)}33%{filter:brightness(1.14)}71%{filter:brightness(.94)}}
+@keyframes nightfall-lantern-breath-b{0%,100%{filter:brightness(1.10)}44%{filter:brightness(.85)}77%{filter:brightness(1.19)}}
+@keyframes nightfall-lantern-breath-c{0%,100%{filter:brightness(.9)}47%{filter:brightness(1.13)}79%{filter:brightness(.82)}}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-sky,
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-river {
+  opacity:0;transition:opacity 2s ease-in-out;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-sky{opacity:.55}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-sky{opacity:1}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-river{opacity:.55}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-river{opacity:1}
+.rpg-fullscreen .map-canvas .nightfall-star {
+  opacity:.32;animation:nightfall-star-twinkle var(--star-period,5s) ease-in-out var(--star-delay,0s) infinite alternate;
+}
+@keyframes nightfall-star-twinkle{0%,100%{opacity:.18}30%{opacity:.7}65%{opacity:.36}88%{opacity:1}}
+.rpg-fullscreen .map-canvas .nightfall-water-glint {
+  opacity:.22;
+  animation:nightfall-river-flow var(--flow-period,5.5s) linear var(--flow-delay,0s) infinite;
+}
+@keyframes nightfall-river-flow {
+  0%{opacity:.05;transform:translate(-3px,-9px)}
+  32%{opacity:.55;transform:translate(0,0)}
+  69%{opacity:.37;transform:translate(3px,7px)}
+  100%{opacity:0;transform:translate(5px,14px)}
+}
+@media(prefers-reduced-motion:reduce){
+  .rpg-fullscreen .map-canvas .nightfall-painted-layer,
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere svg,
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow{transition:none!important}
+  .rpg-fullscreen .map-canvas .nightfall-star,
+  .rpg-fullscreen .map-canvas .nightfall-water-glint,
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-windowglow{animation:none!important}
+  .rpg-fullscreen .map-canvas .nightfall-star{opacity:.65}
+  .rpg-fullscreen .map-canvas .nightfall-water-glint{opacity:.45}
+}
+@media print{.rpg-fullscreen .map-canvas #nightfall-atmosphere{display:none!important}}
