@@ -36,6 +36,12 @@ jobs:
             mkdir -p dist/assets/journal
             unzip -j -o assets/Jess_Journal_Art_Pack.zip journal_page.webp bronze_scrollbar_track.webp amethyst_slider.webp -d dist/assets/journal
           fi
+      - name: Unpack optional kingdom stamp buttons
+        run: |
+          if [ -f assets/Jess_Journal_Stamp_Buttons.zip ]; then
+            mkdir -p dist/assets/stamps
+            unzip -j -o assets/Jess_Journal_Stamp_Buttons.zip moonreach.webp thornmere.webp starfen.webp emberfjord.webp -d dist/assets/stamps
+          fi
       - name: Render synthetic vegetation from 2023 USDA NAIP
         run: |
           python -m pip install Pillow==11.3.0
