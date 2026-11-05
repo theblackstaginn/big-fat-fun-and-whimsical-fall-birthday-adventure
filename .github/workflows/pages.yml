@@ -63,7 +63,7 @@ jobs:
           python -m pip install numpy pillow trimesh
           python tools/bake_ruby_cork_jar.py
           mkdir -p dist/assets/satchel/jars
-          cp assets/satchel/jars/jar_01_ruby_cork.glb dist/assets/satchel/jars/
+          cp assets/satchel/jars/jar_01_ruby_showcase.glb dist/assets/satchel/jars/
       - name: Render synthetic vegetation from 2023 USDA NAIP
         run: |
           python -m pip install Pillow==11.3.0
