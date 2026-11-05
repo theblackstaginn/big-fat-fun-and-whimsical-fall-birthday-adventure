@@ -11,6 +11,7 @@ const items=[
 ],T=Math.PI*2,STEP=T/9;
 let stage,viewer,fallback,ring,jarCanvas,buttons=[],angle=Math.PI,selected=0,active=false,modelReady=false;
 let animation=0,drag=null,moved=false,pending=false;
+const jarSprites={empty:"assets/satchel/jars/empty_site.webp",ruby:"assets/satchel/jars/ruby_site.webp"};
 let THREE=null,renderer3d=null,scene3d=null,camera3d=null,jarRoots=Array(9).fill(null);
 let artMeshes=Array(9).fill(null),artTextures=Array(9).fill(null),artLoading=Array(9).fill(false),threePromise=null;
 const jarScale=1.21;
@@ -52,8 +53,8 @@ function unlock(){
   const b=buttons[i];if(!b)return;
   const open=n>=threshold;
   b.setAttribute("aria-label",open?"Collected jar "+(i+1):"Undiscovered jar "+(i+1));
-  if(open){if(i!==0&&!artMeshes[i])showArt(i,id)}
-  else removeArt(i);
+  const sprite=b.querySelector(".satchel-jar-sprite");
+  if(sprite){const src=open&&i===0?jarSprites.ruby:jarSprites.empty;if(sprite.getAttribute("src")!==src)sprite.setAttribute("src",src);}
  });
 }
 async function init3D(){
@@ -116,12 +117,12 @@ function paint(){
   const a=-Math.PI/2+i*STEP,x=2.08*Math.cos(a),z=2.08*Math.sin(a);
   const xx=x*Math.cos(angle)-z*Math.sin(angle),zz=x*Math.sin(angle)+z*Math.cos(angle);
   const root=jarRoots[i];
-  if(root){root.scale.setScalar(jarScale);root.position.set(xx*1.28,seatY-.04*jarScale,zz);root.rotation.y=-angle}
+  // Jar images are camera-facing sprites. Their feet follow the original bronze ring centers.
   const scale=focal/(10-(seatY*cosP+zz*sinP));
   const b=buttons[i];if(!b)return;
   b.style.left=(cx+xx*1.28*scale).toFixed(1)+"px";
   b.style.top=(cy-(seatY*sinP-zz*cosP)*scale).toFixed(1)+"px";
-  b.style.width=clamp(scale*1.48,72,200).toFixed(1)+"px";
+  b.style.width=clamp(scale*2.05,91,196).toFixed(1)+"px";
   b.style.zIndex=String(Math.round((zz+3)*100));
   b.classList.toggle("is-front",i===selected);
   b.setAttribute("aria-pressed",String(i===selected));
@@ -165,6 +166,7 @@ function build(){
  items.forEach(([id],i)=>{
   const b=document.createElement("button");b.type="button";b.className="satchel-jar";
   b.setAttribute("aria-label","Jar "+(i+1));b.setAttribute("aria-pressed","false");
+  const sprite=document.createElement("img");sprite.className="satchel-jar-sprite";sprite.alt="";sprite.draggable=false;sprite.src=jarSprites.empty;b.append(sprite);
   b.addEventListener("click",()=>{if(!moved)choose(i)});
   buttons.push(b);ring.append(b);
  });
@@ -174,7 +176,7 @@ function build(){
   btn.textContent=symbol;btn.setAttribute("aria-label",label);
   btn.addEventListener("click",()=>turn(delta));nav.append(btn);
  }
- stage.append(fallback,viewer,jarCanvas,ring,nav);
+ stage.append(fallback,viewer,ring,nav);
  stage.addEventListener("pointerdown",e=>{
   if(e.button!==0||e.target.closest(".satchel-nav"))return;
   cancelAnimationFrame(animation);drag={id:e.pointerId,x:e.clientX,y:e.clientY,angle,moving:false};moved=false;
@@ -202,7 +204,7 @@ function build(){
   script.src="https://unpkg.com/@google/model-viewer@4.2.0/dist/model-viewer.min.js";
   script.dataset.satchelViewer="1";document.head.append(script);
  }
- init3D();
+ // The realistic jars are transparent 2D billboards; no GLB loading required.
 }
 function sync(){
  pending=false;
