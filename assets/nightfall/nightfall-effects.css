@@ -60,14 +60,14 @@
 .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-system {
   position:absolute;inset:0;
   pointer-events:none;
-  opacity:.56;
+  opacity:.64;
   mix-blend-mode:screen;
   transition:opacity 1.6s ease-in-out;
 }
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .river-whitewater-system{opacity:.56}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .river-whitewater-system{opacity:.68}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .river-whitewater-system{opacity:.82}
-.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .river-whitewater-system{opacity:.96}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .river-whitewater-system{opacity:.64}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .river-whitewater-system{opacity:.75}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .river-whitewater-system{opacity:.88}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .river-whitewater-system{opacity:.98}
 .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-layer {
   position:absolute;inset:0;
   display:block;
@@ -101,12 +101,12 @@
    precisely while its partner is invisibly resetting. */
 @keyframes river-foam-downstream {
   0%{opacity:0;transform:translate3d(0,-14px,0)}
-  50%{opacity:.66;transform:translate3d(0,0,0)}
+  50%{opacity:.70;transform:translate3d(0,0,0)}
   100%{opacity:0;transform:translate3d(0,14px,0)}
 }
 @keyframes river-foam-crossstream {
   0%{opacity:0;transform:translate3d(-16px,0,0)}
-  50%{opacity:.66;transform:translate3d(0,0,0)}
+  50%{opacity:.70;transform:translate3d(0,0,0)}
   100%{opacity:0;transform:translate3d(16px,0,0)}
 }
 /* Don't spend animation frames on an invisible Nearby Streets layer. */
@@ -122,7 +122,7 @@
   .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-layer,
   .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family{animation:none!important}
   .rpg-fullscreen .map-canvas .nightfall-star{opacity:.65}
-  .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-phase-a{opacity:.55!important;transform:none!important}
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-phase-a{opacity:.60!important;transform:none!important}
   .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-phase-b{opacity:0!important;transform:none!important}
 }
 @media print{.rpg-fullscreen .map-canvas #nightfall-atmosphere{display:none!important}}
