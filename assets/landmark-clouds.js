@@ -188,7 +188,46 @@
  signImage.alt="";
  signImage.draggable=false;
  signImage.decoding="async";
- detour.append(signImage);
+ // Decorative magical cinders bloom BEHIND the sign. A stable seed keeps
+ // their positions consistent across renders without per-frame JavaScript.
+ const emberField=document.createElement("span");
+ emberField.className="bangkok-ember-field";
+ emberField.setAttribute("aria-hidden","true");
+ let emberSeed=16112026;
+ const emberRandom=()=>{
+  emberSeed=(Math.imul(emberSeed,1664525)+1013904223)>>>0;
+  return emberSeed/4294967296;
+ };
+ for(let i=0;i<29;i++){
+  const spark=document.createElement("i");
+  const isVoid=i%4===0;
+  spark.className="bangkok-ember "+(isVoid?"bangkok-ember-void":"bangkok-ember-violet");
+  const drift=(emberRandom()-.5)*115;
+  const rise=85+emberRandom()*105;
+  const size=2.5+emberRandom()*4.5;
+  const startX=15+emberRandom()*70;
+  const startY=53+emberRandom()*23;
+  spark.style.setProperty("--ember-left",startX.toFixed(1)+"%");
+  spark.style.setProperty("--ember-top",startY.toFixed(1)+"%");
+  spark.style.setProperty("--ember-size",size.toFixed(1)+"px");
+  spark.style.setProperty("--ember-mid-x",(drift*.42).toFixed(1)+"px");
+  spark.style.setProperty("--ember-mid-y",(-rise*.48).toFixed(1)+"px");
+  spark.style.setProperty("--ember-end-x",drift.toFixed(1)+"px");
+  spark.style.setProperty("--ember-end-y",(-rise).toFixed(1)+"px");
+  spark.style.setProperty("--ember-duration",(4.8+emberRandom()*4.7).toFixed(1)+"s");
+  spark.style.setProperty("--ember-delay",(-emberRandom()*10).toFixed(1)+"s");
+  emberField.append(spark);
+ }
+ for(let i=0;i<5;i++){
+  const wisp=document.createElement("i");
+  wisp.className="bangkok-ember-wisp "+(i%2===0?"bangkok-ember-wisp-plum":"bangkok-ember-wisp-shadow");
+  wisp.style.setProperty("--wisp-left",(18+i*15).toFixed(1)+"%");
+  wisp.style.setProperty("--wisp-delay",(-(i*1.35)).toFixed(2)+"s");
+  wisp.style.setProperty("--wisp-duration",(6.4+(i%3)*1.35).toFixed(2)+"s");
+  wisp.style.setProperty("--wisp-drift",(i%2===0?18:-18)+"px");
+  emberField.append(wisp);
+ }
+ detour.append(emberField,signImage);
  const detourHost=mist.closest(".hero-art");
  detourHost?.append(detour);
  detour.addEventListener("click",()=>{
