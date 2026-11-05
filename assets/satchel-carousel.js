@@ -176,19 +176,9 @@ function build(){
   btn.textContent=symbol;btn.setAttribute("aria-label",label);
   btn.addEventListener("click",()=>turn(delta));nav.append(btn);
  }
- const preview=document.createElement("button");
- preview.type="button";preview.className="satchel-preview-all";
- preview.textContent="View Full Susan";preview.setAttribute("aria-pressed","false");
- preview.style.cssText="position:absolute;top:12px;right:12px;z-index:9999;padding:9px 13px;border:1px solid #b99158;border-radius:24px;background:#211927e8;color:#f6e4c6;font:600 12px system-ui;cursor:pointer;touch-action:manipulation";
- preview.addEventListener("click",e=>{
-  e.stopPropagation();previewAll=!previewAll;
-  preview.textContent=previewAll?"Show Collected Jars":"View Full Susan";
-  preview.setAttribute("aria-pressed",String(previewAll));
-  unlock();
- });
- stage.append(fallback,viewer,ring,nav,preview);
+ stage.append(fallback,viewer,ring,nav);
  stage.addEventListener("pointerdown",e=>{
-  if(e.button!==0||e.target.closest(".satchel-nav, .satchel-preview-all"))return;
+  if(e.button!==0||e.target.closest(".satchel-nav"))return;
   cancelAnimationFrame(animation);drag={id:e.pointerId,x:e.clientX,y:e.clientY,angle,moving:false};moved=false;
  });
  stage.addEventListener("pointermove",e=>{
