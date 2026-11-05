@@ -1,0 +1,173 @@
+/* Foreign-post stamp buttons for the Rogue Witch Journal.
+   Decorative treatments are deliberately limited to clickable controls.
+   Progress panels, locked-location cards, and quest details remain untouched.
+   Fixed kingdom assignments: no randomizer, shuffle, cycling, or rotation. */
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp {
+  --stamp-width: 188px;
+  --stamp-ratio: 1;
+  --stamp-image: none;
+  --stamp-font: Georgia,serif;
+  --stamp-ink: #50364b;
+  --stamp-letter-spacing: 0;
+  --stamp-pad-y: 25%;
+  --stamp-pad-x: 17%;
+  box-sizing: border-box;
+  position: relative;
+  isolation: isolate;
+  display: flex !important;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: .1rem;
+  width: min(100%, var(--stamp-width)) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: var(--stamp-ratio);
+  margin: .15rem auto .35rem !important;
+  padding: var(--stamp-pad-y) var(--stamp-pad-x) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  background-image: var(--stamp-image) !important;
+  background-size: 100% 100% !important;
+  background-repeat: no-repeat !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 3px 2px #46243f35);
+  transform: none !important;
+  color: var(--stamp-ink) !important;
+  font-family: var(--stamp-font) !important;
+  font-size: .77rem !important;
+  line-height: 1.18;
+  font-weight: 700;
+  letter-spacing: var(--stamp-letter-spacing);
+  text-align: center !important;
+  text-decoration: none !important;
+  text-shadow: 0 1px #f9e9c9c2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: filter .15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp:not(:disabled):active {
+  filter: brightness(.96) drop-shadow(0 1px 1px #46243f5c);
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp:focus-visible {
+  outline: 2px solid #73445b !important;
+  outline-offset: -3px;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp:disabled {
+  opacity: .85;
+  cursor: default;
+}
+/* The four territories have distinct native iPhone/Windows type treatments. */
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.stamp-moonreach {
+  --stamp-ratio: 520 / 507;
+  --stamp-image: url("stamps/moonreach.webp");
+  --stamp-font: Didot, "Bodoni MT", "Times New Roman", serif;
+  --stamp-ink: #563453;
+  --stamp-letter-spacing: -.01em;
+  --stamp-pad-y: 28%;
+  --stamp-pad-x: 20%;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.stamp-thornmere {
+  --stamp-ratio: 570 / 554;
+  --stamp-image: url("stamps/thornmere.webp");
+  --stamp-font: Baskerville, "Hoefler Text", "Palatino Linotype", Georgia, serif;
+  --stamp-ink: #483830;
+  --stamp-letter-spacing: -.008em;
+  --stamp-pad-y: 27%;
+  --stamp-pad-x: 19%;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.stamp-starfen {
+  --stamp-ratio: 660 / 357;
+  --stamp-image: url("stamps/starfen.webp");
+  --stamp-font: "American Typewriter", "Courier New", monospace;
+  --stamp-ink: #415a5b;
+  --stamp-letter-spacing: -.02em;
+  --stamp-pad-y: 13%;
+  --stamp-pad-x: 17%;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.stamp-emberfjord {
+  --stamp-ratio: 700 / 402;
+  --stamp-image: url("stamps/emberfjord.webp");
+  --stamp-font: Copperplate, "Copperplate Gothic Light", "Palatino Linotype", serif;
+  --stamp-ink: #68413b;
+  --stamp-letter-spacing: .003em;
+  --stamp-pad-y: 14%;
+  --stamp-pad-x: 18%;
+}
+/* The existing chapter buttons retain their original JS click handlers. */
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body .chapter-list > button.journal-stamp {
+  justify-self: center;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp > span:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: .13rem;
+  width: 100%;
+  min-width: 0;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp .chapter-number {
+  position: absolute;
+  top: 27%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: auto;
+  height: auto;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0;
+  color: var(--stamp-ink) !important;
+  opacity: .78;
+  font: 700 .55rem/1 var(--stamp-font) !important;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp .chapter-name {
+  display: block;
+  color: var(--stamp-ink) !important;
+  font: 700 .87rem/1.09 var(--stamp-font) !important;
+  letter-spacing: var(--stamp-letter-spacing);
+  overflow-wrap: anywhere;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp .chapter-subtitle {
+  display: block;
+  color: var(--stamp-ink) !important;
+  opacity: .82;
+  font: 500 .57rem/1.13 var(--stamp-font) !important;
+  letter-spacing: 0;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp .chapter-state {
+  display: none;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp:is(.stamp-starfen,.stamp-emberfjord) .chapter-name {
+  font-size: .75rem !important;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp:is(.stamp-starfen,.stamp-emberfjord) .chapter-subtitle {
+  font-size: .51rem !important;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp:is(.stamp-starfen,.stamp-emberfjord) .chapter-number {
+  top: 18%;
+  font-size: .51rem !important;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp[aria-current="true"] {
+  filter: drop-shadow(0 0 4px #7d4d76ab) drop-shadow(0 2px 2px #46243f4b);
+}
+/* Only the real action buttons receive stamps. Map links and locked cards do not. */
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body :is(.complete-button,.progress-card .text-button).journal-stamp {
+  font-size: .72rem !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+@media (max-width: 370px) {
+  .rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp .chapter-name {
+    font-size: .76rem !important;
+  }
+  .rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp .chapter-subtitle {
+    font-size: .51rem !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp { transition: none; }
+}
