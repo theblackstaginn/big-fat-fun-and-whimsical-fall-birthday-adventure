@@ -10,7 +10,7 @@ const items=[
  ["river",4],["dinner",5],["sweet",6],["park",7]
 ],T=Math.PI*2,STEP=T/9;
 let stage,viewer,fallback,ring,jarCanvas,buttons=[],angle=Math.PI,selected=0,active=false,modelReady=false;
-let animation=0,drag=null,moved=false,pending=false;
+let animation=0,drag=null,moved=false,pending=false,previewAll=false;
 const jarSprites={empty:"assets/satchel/jars/empty_site.webp",ruby:"assets/satchel/jars/01_ruby_maes.webp",wonderland:"assets/satchel/jars/02_wonderland.webp",candle:"assets/satchel/jars/03_crafty_mountain.webp",glass:"assets/satchel/jars/04_glassblowing.webp",zuzu:"assets/satchel/jars/05_zuzus_petals_no_glow.webp",river:"assets/satchel/jars/06_chattahoochee_river.webp",dinner:"assets/satchel/jars/07_bangkok_haus.webp",sweet:"assets/satchel/jars/08_hansel_gretel_no_glow.webp",park:"assets/satchel/jars/09_unicoi_hill_park_gazebo.webp"};
 let THREE=null,renderer3d=null,scene3d=null,camera3d=null,jarRoots=Array(9).fill(null);
 let artMeshes=Array(9).fill(null),artTextures=Array(9).fill(null),artLoading=Array(9).fill(false),threePromise=null;
@@ -54,7 +54,7 @@ function unlock(){
   const open=n>=threshold;
   b.setAttribute("aria-label",open?"Collected jar "+(i+1):"Undiscovered jar "+(i+1));
   const sprite=b.querySelector(".satchel-jar-sprite");
-  if(sprite){const src=open?(jarSprites[id]||jarSprites.empty):jarSprites.empty;if(sprite.getAttribute("src")!==src)sprite.setAttribute("src",src);}
+  if(sprite){const src=(previewAll||open)?(jarSprites[id]||jarSprites.empty):jarSprites.empty;if(sprite.getAttribute("src")!==src)sprite.setAttribute("src",src);}
  });
 }
 async function init3D(){
@@ -176,9 +176,19 @@ function build(){
   btn.textContent=symbol;btn.setAttribute("aria-label",label);
   btn.addEventListener("click",()=>turn(delta));nav.append(btn);
  }
- stage.append(fallback,viewer,ring,nav);
+ const preview=document.createElement("button");
+ preview.type="button";preview.className="satchel-preview-all";
+ preview.textContent="View Full Susan";preview.setAttribute("aria-pressed","false");
+ preview.style.cssText="position:absolute;top:12px;right:12px;z-index:9999;padding:9px 13px;border:1px solid #b99158;border-radius:24px;background:#211927e8;color:#f6e4c6;font:600 12px system-ui;cursor:pointer;touch-action:manipulation";
+ preview.addEventListener("click",e=>{
+  e.stopPropagation();previewAll=!previewAll;
+  preview.textContent=previewAll?"Show Collected Jars":"View Full Susan";
+  preview.setAttribute("aria-pressed",String(previewAll));
+  unlock();
+ });
+ stage.append(fallback,viewer,ring,nav,preview);
  stage.addEventListener("pointerdown",e=>{
-  if(e.button!==0||e.target.closest(".satchel-nav"))return;
+  if(e.button!==0||e.target.closest(".satchel-nav, .satchel-preview-all"))return;
   cancelAnimationFrame(animation);drag={id:e.pointerId,x:e.clientX,y:e.clientY,angle,moving:false};moved=false;
  });
  stage.addEventListener("pointermove",e=>{
