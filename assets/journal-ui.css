@@ -1,0 +1,102 @@
+/* Illustrated Rogue Witch journal: applies only to the existing Quest / Journal panel. */
+.rpg-sheet.is-illustrated-journal {
+  position: fixed; z-index: 91;
+  top: 50%; left: 50%; right: auto; bottom: auto;
+  width: min(100vw, 54.6dvh, 540px);
+  height: min(96dvh, 176vw, 950px);
+  max-height: none;
+  margin: 0; padding: 0; border: 0; border-radius: 0;
+  overflow: visible;
+  transform: translate(-50%, -50%);
+  background: transparent; box-shadow: none;
+  color: #493042;
+}
+.rpg-sheet.is-illustrated-journal .journal-illustration {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+}
+.rpg-sheet.is-illustrated-journal .journal-page-art {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+}
+.rpg-sheet.is-illustrated-journal .journal-track-art {
+  position: absolute; left: 87.63%; top: 11.33%;
+  display: block; width: 10.42%; height: 71.35%;
+}
+.rpg-sheet.is-illustrated-journal .journal-gem-art {
+  position: absolute; left: 88.43%; top: 17.19%;
+  display: block; width: 9.05%; height: 14.45%;
+  filter: drop-shadow(0 2px 3px #32162680);
+  will-change: top;
+}
+.rpg-sheet.is-illustrated-journal .journal-drag-rail {
+  position: absolute; z-index: 5;
+  left: 87.2%; top: 16%; width: 11.6%; height: 66%;
+  background: transparent; touch-action: none; cursor: grab;
+}
+.rpg-sheet.is-illustrated-journal .journal-drag-rail:active { cursor: grabbing; }
+.rpg-sheet.is-illustrated-journal .journal-drag-rail:focus-visible {
+  outline: 2px solid #753f73; outline-offset: -2px; border-radius: 12px;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-head {
+  position: absolute; inset: 0; z-index: 4; display: block;
+  margin: 0; padding: 0; border: 0;
+  background: transparent; box-shadow: none; pointer-events: none;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-head::before { display: none; }
+.rpg-sheet.is-illustrated-journal #rpg-sheet-title {
+  position: absolute; top: 17%; left: 9%; width: 73%;
+  color: #4c2944; font: 700 clamp(1rem, 4.1vw, 1.65rem)/1.15 Georgia,serif;
+  text-align: center; text-shadow: 0 1px #fbedc9;
+}
+.rpg-sheet.is-illustrated-journal #rpg-close {
+  position: absolute; top: 2.6%; right: 3.6%; z-index: 7;
+  width: 39px; height: 39px; padding: 0;
+  border: 1px solid #b47c53; border-radius: 50%;
+  background: #4a2943ee; box-shadow: 0 3px 8px #140a16b3;
+  color: #f8daaa; font: 1.25rem/1 system-ui,sans-serif;
+  pointer-events: auto; cursor: pointer;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body {
+  position: absolute; z-index: 3;
+  top: 22%; bottom: 7.5%; left: 9%; right: 19%;
+  box-sizing: border-box; padding: 0 0 1rem;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  background: transparent; color: #412f3a;
+  font: .88rem/1.5 Georgia,serif;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body::-webkit-scrollbar { display: none; }
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .quest-section { color: #412f3a; }
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .section-heading h2 {
+  color: #4c2944; font-size: clamp(1.15rem, 5vw, 1.75rem);
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body :is(.section-heading p, .map-note, .detail-description, .detail-meta, .progress-card p, .clue-box p) {
+  color: #563e47;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body :is(.progress-card, .chapter-detail) {
+  border: 1px solid #ac815b; border-radius: 9px;
+  background: #f8e8c6bb; box-shadow: 0 2px 6px #684e4930; color: #412f3a;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body :is(.chapter-button, .fog-slot) {
+  border: 1px solid #b99770; border-radius: 8px;
+  background: #f6e4c1dd; color: #402d39;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .chapter-button[aria-current=true] {
+  border-color: #75465b; background: #71475d; color: #fff4dd;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body :is(.eyebrow, .clue-label, .progress-title, .chapter-number) {
+  color: #73425a;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .clue-box {
+  border-left: 2px solid #91603d; border-radius: 0 7px 7px 0;
+  background: #ead0a5c9; color: #442e3c;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body :is(.complete-button, .direction-links a, .text-button) {
+  color: #fff3dc; background: #61364f; border-color: #9c7354;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body :is(button, a, input, textarea):focus-visible {
+  outline: 2px solid #71345d; outline-offset: 3px;
+}
+@media (prefers-reduced-motion:reduce) {
+  .rpg-sheet.is-illustrated-journal .journal-gem-art { will-change: auto; }
+}
+@media print { .rpg-sheet.is-illustrated-journal { display: none !important; } }
