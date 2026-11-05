@@ -211,16 +211,6 @@
   .rpg-fullscreen .rpg-toolbar button > small {font-size:.54rem}
 }
 
-/* Larger touch targets and artwork on the existing five-button bottom leather rail. */
-.rpg-fullscreen .rpg-bottom{width:min(calc(100vw - 12px),420px)}
-.rpg-fullscreen .rpg-toolbar{min-height:106px;padding:10px 13px 13px}
-.rpg-fullscreen .rpg-toolbar button{min-height:78px}
-.rpg-fullscreen .rpg-toolbar button > span{width:49px!important;height:49px!important}
-.rpg-fullscreen .rpg-toolbar button > small{font-size:.67rem}
-@media(max-width:365px){
- .rpg-fullscreen .rpg-bottom{width:min(calc(100vw - 8px),355px)}
- .rpg-fullscreen .rpg-toolbar{min-height:98px;padding:9px 10px 12px}
- .rpg-fullscreen .rpg-toolbar button{min-height:72px}
- .rpg-fullscreen .rpg-toolbar button > span{width:43px!important;height:43px!important}
- .rpg-fullscreen .rpg-toolbar button > small{font-size:.6rem}
-}
+/* Preserve original leather rail size; enlarge only the five icon images. */
+.rpg-fullscreen .rpg-toolbar button > span{width:45px!important;height:45px!important}
+@media(max-width:365px){.rpg-fullscreen .rpg-toolbar button > span{width:40px!important;height:40px!important}}
