@@ -266,3 +266,47 @@
     max-width:650px;margin:0 auto!important;
   }
 }
+
+/* Approved transparent replacement: Curios only, no baked words or buttons. */
+.rpg-fullscreen .rpg-sheet.is-witchy-curios{
+ background:transparent url("witchy-frames/field-notes-curios.png") center center/100% 100% no-repeat!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-head{
+ background:transparent!important;
+ border:0!important;
+ min-height:clamp(100px,22dvh,170px)!important;
+ padding:clamp(25px,7dvh,58px) 55px 0 21%!important;
+ box-sizing:border-box!important;
+ color:#f9d9a5!important;
+ text-shadow:0 2px 3px #220e20!important;
+ font-size:clamp(1.05rem,4.5vw,1.55rem)!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-head button{
+ top:clamp(35px,7dvh,65px)!important;
+ right:4%!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body{
+ background:transparent!important;
+ padding:clamp(20px,4dvh,40px) 8% calc(env(safe-area-inset-bottom,0px) + 45px) 23%!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body .field-notes,
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body :is(.curios-memory-card,.quest-memory-card){
+ background:transparent!important;
+ border:0!important;
+ box-shadow:none!important;
+ padding:0!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body :is(h2,h3,p,label){
+ color:#372329!important;
+ text-shadow:0 1px 1px #ffe4bb!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body button{
+ background-image:linear-gradient(145deg,#794260,#45213e)!important;
+ color:#f8dfb7!important;
+ font-size:clamp(.85rem,3.4vw,1rem)!important;
+ border:2px solid #d8ad6c!important;
+}
+@media(max-height:720px){
+ .rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-head{min-height:105px!important}
+ .rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body{padding-top:12px!important}
+}
