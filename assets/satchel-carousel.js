@@ -13,6 +13,7 @@ let stage,viewer,fallback,ring,jarCanvas,buttons=[],angle=Math.PI,selected=0,act
 let animation=0,drag=null,moved=false,pending=false;
 let THREE=null,renderer3d=null,scene3d=null,camera3d=null,jarRoots=Array(9).fill(null);
 let artMeshes=Array(9).fill(null),artTextures=Array(9).fill(null),artLoading=Array(9).fill(false),threePromise=null;
+const jarScale=1.21;
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v)),wrap=n=>(n%9+9)%9;
 const reduce=window.matchMedia("(prefers-reduced-motion: reduce)");
 function count(){
@@ -34,10 +35,12 @@ function showArt(i,id){
   texture.colorSpace=THREE.SRGBColorSpace;
   texture.wrapS=THREE.RepeatWrapping;
   texture.wrapT=THREE.ClampToEdgeWrapping;
-  const geometry=new THREE.CylinderGeometry(.43,.43,.62,48,1,true);
-  const material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,toneMapped:false});
+  const imageWidth=texture.image?.width||1,imageHeight=texture.image?.height||1;
+  const fit=Math.min(.42/imageWidth,.54/imageHeight);
+  const geometry=new THREE.PlaneGeometry(imageWidth*fit,imageHeight*fit);
+  const material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,toneMapped:false,transparent:true,depthWrite:false});
   const mesh=new THREE.Mesh(geometry,material);
-  mesh.position.y=.50;
+  mesh.position.set(0,.49,-.31);
   mesh.renderOrder=0;
   jarRoots[i].add(mesh);artMeshes[i]=mesh;artTextures[i]=texture;
   paint();
@@ -113,12 +116,12 @@ function paint(){
   const a=-Math.PI/2+i*STEP,x=2.08*Math.cos(a),z=2.08*Math.sin(a);
   const xx=x*Math.cos(angle)-z*Math.sin(angle),zz=x*Math.sin(angle)+z*Math.cos(angle);
   const root=jarRoots[i];
-  if(root){root.position.set(xx*1.28,seatY-.04,zz);root.rotation.y=-angle}
+  if(root){root.scale.setScalar(jarScale);root.position.set(xx*1.28,seatY-.04*jarScale,zz);root.rotation.y=-angle}
   const scale=focal/(10-(seatY*cosP+zz*sinP));
   const b=buttons[i];if(!b)return;
   b.style.left=(cx+xx*1.28*scale).toFixed(1)+"px";
   b.style.top=(cy-(seatY*sinP-zz*cosP)*scale).toFixed(1)+"px";
-  b.style.width=clamp(scale*1.30,64,190).toFixed(1)+"px";
+  b.style.width=clamp(scale*1.48,72,200).toFixed(1)+"px";
   b.style.zIndex=String(Math.round((zz+3)*100));
   b.classList.toggle("is-front",i===selected);
   b.setAttribute("aria-pressed",String(i===selected));
