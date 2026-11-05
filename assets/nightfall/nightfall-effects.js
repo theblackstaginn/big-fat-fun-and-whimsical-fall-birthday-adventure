@@ -53,10 +53,21 @@
       <g id="nightfall-twinkles"></g>
     </svg>
     <svg class="nightfall-river" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" focusable="false">
-      <defs><clipPath id="nightfall-water-only">
-        <path d="M178 347 C148 385 102 423 99 476 C87 534 98 606 148 678 C166 723 208 770 274 798 L310 788 C235 748 204 704 180 660 C144 595 137 551 160 490 C181 436 207 397 239 361 Z" />
-        <path d="M220 850 C250 878 300 902 333 927 L341 966 C291 947 256 926 214 890 Z" />
-        <path d="M625 1111 C665 1097 700 1115 750 1143 C795 1160 850 1170 913 1150 C962 1135 1001 1126 1024 1156 L1024 1217 C972 1200 939 1209 900 1228 C818 1250 751 1213 694 1191 C660 1182 635 1189 613 1182 Z" />
+      <defs><clipPath id="nightfall-water-only" clipPathUnits="userSpaceOnUse">
+        <!-- Fitted to visible river water on the ORIGINAL 1024x1536 painting. -->
+        <ellipse cx="162" cy="300" rx="38" ry="33"/>
+        <ellipse cx="151" cy="367" rx="41" ry="41"/>
+        <ellipse cx="143" cy="431" rx="42" ry="38"/>
+        <ellipse cx="152" cy="502" rx="43" ry="43"/>
+        <ellipse cx="156" cy="576" rx="43" ry="41"/>
+        <ellipse cx="144" cy="648" rx="46" ry="40"/>
+        <ellipse cx="157" cy="710" rx="50" ry="44"/>
+        <ellipse cx="188" cy="755" rx="42" ry="28"/>
+        <ellipse cx="171" cy="945" rx="40" ry="27"/>
+        <ellipse cx="660" cy="997" rx="37" ry="18"/>
+        <ellipse cx="721" cy="1012" rx="45" ry="22"/>
+        <ellipse cx="795" cy="1020" rx="48" ry="23"/>
+        <ellipse cx="835" cy="1037" rx="33" ry="22"/>
       </clipPath></defs>
       <g clip-path="url(#nightfall-water-only)" id="nightfall-water-shimmer"></g>
     </svg>`;
@@ -124,18 +135,15 @@
     circle.style.setProperty('--star-period',(3.2+random()*5.8).toFixed(2)+'s');
     starGroup.append(circle);
   }
-  // River glints follow the actual water channels on the original canvas,
-  // with the extra sky offset removed. They never cover roads or shops.
+  // Each band sits ON VISIBLE WATER on the approved 1024x1536 original.
+  // The previous sky-extension offset was obsolete. Keep clip, currents, and
+  // reflections in the same untransformed coordinate system.
   const water=overlay.querySelector('#nightfall-water-shimmer');
-  // The clip paths and shimmer share the water group's local coordinates.
-  // Shift the GROUP once to match the original 1024x1536 painting.
-  // Shifting clip paths too offset the mask twice, hiding water effects.
-  water.setAttribute('transform','translate(0 -174)');
   const bands=[
-    [178,372,64,18],[145,456,75,17],[126,536,86,16],
-    [158,625,95,16],[206,715,82,15],[268,791,74,17],
-    [295,912,58,11],
-    [682,1145,78,21],[778,1175,93,21],[886,1180,83,19],[966,1169,76,18]
+    [162,300,42,18],[151,367,45,17],[143,431,45,17],
+    [152,502,46,17],[156,576,47,19],[144,648,46,17],
+    [157,710,50,19],[188,755,43,16],[171,945,41,12],
+    [660,997,44,13],[721,1012,50,14],[795,1020,52,15],[835,1037,42,13]
   ];
   // Current ribbons drift inside the already aligned river mask.
   // Shared animations keep this lightweight on mobile Safari.
@@ -152,7 +160,7 @@
     }
   }
   bands.forEach(([x,y,spread,depth],bi)=>{
-    const direction=bi>=6?'across':'down';
+    const direction=bi>=9?'across':'down';
     for(let i=0;i<3;i++){
       const xx=x+(random()-.5)*spread*.9;
       const yy=y+(random()-.5)*depth;
@@ -171,7 +179,7 @@
   });
   // Glints remain within the existing river clipping paths.
   bands.forEach(([x,y,spread,depth],bi)=>{
-    const count=bi>6?12:10;
+    const count=bi>=9?12:10;
     for(let i=0;i<count;i++){
       const glint=document.createElementNS(ns,'path');
       const dx=(random()-.5)*spread;
@@ -186,7 +194,7 @@
       glint.classList.add('nightfall-water-glint');
       glint.style.setProperty('--flow-delay',(-random()*8).toFixed(2)+'s');
       glint.style.setProperty('--flow-period',(4.2+random()*5.6).toFixed(2)+'s');
-      const across=bi>=6;
+      const across=bi>=9;
       glint.style.setProperty('--flow-start-x',across?'-9px':'-3px');
       glint.style.setProperty('--flow-start-y',across?'-2px':'-8px');
       glint.style.setProperty('--flow-end-x',across?'13px':'5px');
