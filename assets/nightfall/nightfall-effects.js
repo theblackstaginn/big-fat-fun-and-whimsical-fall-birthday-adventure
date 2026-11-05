@@ -52,25 +52,8 @@
     <svg class="nightfall-sky" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" focusable="false">
       <g id="nightfall-twinkles"></g>
     </svg>
-    <svg class="nightfall-river" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid slice" focusable="false">
-      <defs><clipPath id="nightfall-water-only" clipPathUnits="userSpaceOnUse">
-        <!-- Fitted to visible river water on the ORIGINAL 1024x1536 painting. -->
-        <ellipse cx="162" cy="300" rx="38" ry="33"/>
-        <ellipse cx="151" cy="367" rx="41" ry="41"/>
-        <ellipse cx="143" cy="431" rx="42" ry="38"/>
-        <ellipse cx="152" cy="502" rx="43" ry="43"/>
-        <ellipse cx="156" cy="576" rx="43" ry="41"/>
-        <ellipse cx="144" cy="648" rx="46" ry="40"/>
-        <ellipse cx="157" cy="710" rx="50" ry="44"/>
-        <ellipse cx="188" cy="755" rx="42" ry="28"/>
-        <ellipse cx="171" cy="945" rx="40" ry="27"/>
-        <ellipse cx="660" cy="997" rx="37" ry="18"/>
-        <ellipse cx="721" cy="1012" rx="45" ry="22"/>
-        <ellipse cx="795" cy="1020" rx="48" ry="23"/>
-        <ellipse cx="835" cy="1037" rx="33" ry="22"/>
-      </clipPath></defs>
-      <g clip-path="url(#nightfall-water-only)" id="nightfall-water-shimmer"></g>
-    </svg>`;
+    <img class="river-whitewater-layer river-whitewater-left" alt="" aria-hidden="true" decoding="async" src="${PATH}river-foam-highlights.webp">
+    <img class="river-whitewater-layer river-whitewater-right" alt="" aria-hidden="true" decoding="async" src="${PATH}river-foam-highlights.webp">`;
   cursor.insertAdjacentElement('afterend',overlay);
 
   // Fixed-seed stars remain only in the reduced nighttime sky, never over the unchanged daytime art.
@@ -135,73 +118,8 @@
     circle.style.setProperty('--star-period',(3.2+random()*5.8).toFixed(2)+'s');
     starGroup.append(circle);
   }
-  // Each band sits ON VISIBLE WATER on the approved 1024x1536 original.
-  // The previous sky-extension offset was obsolete. Keep clip, currents, and
-  // reflections in the same untransformed coordinate system.
-  const water=overlay.querySelector('#nightfall-water-shimmer');
-  const bands=[
-    [162,300,42,18],[151,367,45,17],[143,431,45,17],
-    [152,502,46,17],[156,576,47,19],[144,648,46,17],
-    [157,710,50,19],[188,755,43,16],[171,945,41,12],
-    [660,997,44,13],[721,1012,50,14],[795,1020,52,15],[835,1037,42,13]
-  ];
-  // Current ribbons drift inside the already aligned river mask.
-  // Shared animations keep this lightweight on mobile Safari.
-  const currents=document.createElementNS(ns,'g');
-  currents.id='nightfall-flowing-currents';
-  water.append(currents);
-  const groups={down:[],across:[]};
-  for(const direction of Object.keys(groups)){
-    for(let i=0;i<3;i++){
-      const group=document.createElementNS(ns,'g');
-      group.classList.add('nightfall-current-group','nightfall-current-'+direction+'-'+i);
-      currents.append(group);
-      groups[direction].push(group);
-    }
-  }
-  bands.forEach(([x,y,spread,depth],bi)=>{
-    const direction=bi>=9?'across':'down';
-    for(let i=0;i<3;i++){
-      const xx=x+(random()-.5)*spread*.9;
-      const yy=y+(random()-.5)*depth;
-      const len=22+random()*29;
-      const bow=(random()-.5)*5;
-      const ribbon=document.createElementNS(ns,'path');
-      ribbon.setAttribute('d','M'+(xx-len*.5).toFixed(1)+' '+yy.toFixed(1)+' Q'+(xx-len*.12).toFixed(1)+' '+(yy-3+bow).toFixed(1)+' '+xx.toFixed(1)+' '+(yy+1).toFixed(1)+' T'+(xx+len*.5).toFixed(1)+' '+(yy+bow).toFixed(1));
-      ribbon.setAttribute('fill','none');
-      ribbon.setAttribute('stroke',i===0?'#f3c47e':(i===1?'#d7e7ff':'#a1c4ea'));
-      ribbon.setAttribute('stroke-width',(0.95+random()*1.2).toFixed(2));
-      ribbon.setAttribute('stroke-opacity',(0.22+random()*.18).toFixed(2));
-      ribbon.setAttribute('stroke-linecap','round');
-      ribbon.classList.add('nightfall-water-current');
-      groups[direction][(bi+i)%3].append(ribbon);
-    }
-  });
-  // Glints remain within the existing river clipping paths.
-  bands.forEach(([x,y,spread,depth],bi)=>{
-    const count=bi>=9?12:10;
-    for(let i=0;i<count;i++){
-      const glint=document.createElementNS(ns,'path');
-      const dx=(random()-.5)*spread;
-      const dy=(random()-.5)*depth;
-      const len=6+random()*26;
-      const yy=y+dy,xx=x+dx;
-      glint.setAttribute('d',`M${(xx-len*.5).toFixed(1)} ${yy.toFixed(1)} Q${xx.toFixed(1)} ${(yy-1.3-random()*2).toFixed(1)} ${(xx+len*.5).toFixed(1)} ${yy.toFixed(1)}`);
-      glint.setAttribute('fill','none');
-      glint.setAttribute('stroke',i%3===0?'#edb75f':(i%2?'#d5dfff':'#a9c7f1'));
-      glint.setAttribute('stroke-width',(0.8+random()*1.65).toFixed(2));
-      glint.setAttribute('stroke-linecap','round');
-      glint.classList.add('nightfall-water-glint');
-      glint.style.setProperty('--flow-delay',(-random()*8).toFixed(2)+'s');
-      glint.style.setProperty('--flow-period',(4.2+random()*5.6).toFixed(2)+'s');
-      const across=bi>=9;
-      glint.style.setProperty('--flow-start-x',across?'-9px':'-3px');
-      glint.style.setProperty('--flow-start-y',across?'-2px':'-8px');
-      glint.style.setProperty('--flow-end-x',across?'13px':'5px');
-      glint.style.setProperty('--flow-end-y',across?'3px':'14px');
-      water.append(glint);
-    }
-  });
+  // Natural whitewater extracted from the painted rapids stays aligned with
+  // rocks while separate slow foam layers animate with each river channel.
 
   const loaded=new Set();
   let currentStage=-1;
