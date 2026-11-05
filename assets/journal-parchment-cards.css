@@ -1,0 +1,222 @@
+/* 2026-11-05: modular parchment information cards in Jess's illustrated Journal.
+   UI only: never changes quest state, map, GPS, photos or saved memories.
+   Top/bottom caps use their native proportions; JS sizes the repeating mid
+   in whole tile increments to preserve the zero-seam source artwork. */
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-slot {
+  display: grid;
+  grid-template-columns: 30px minmax(0,1fr) 14px;
+  gap: .48rem;
+  align-items: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 0;
+  aspect-ratio: 1983/793;
+  padding: 9% 11%;
+  margin: 0 auto .15rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent url("parchment/parchment_small_card.webp") center / 100% 100% no-repeat;
+  box-shadow: none;
+  color: #573849;
+  opacity: .89;
+  font: normal .79rem/1.21 Georgia, serif;
+  text-shadow: 0 1px #ffeac1a6;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-lock {
+  display: grid;
+  place-items: center;
+  width: 28px; height: 28px;
+  border: 1px solid #a17a65;
+  border-radius: 50%;
+  color: #73565b;
+  background: #f9e1b84d;
+  font-size: .73rem;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-copy {
+  min-width: 0;
+  color: #563644;
+  font: 700 clamp(.72rem,3.1vw,.91rem)/1.12 Georgia,serif;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-caption {
+  display: block;
+  margin-top: .15rem;
+  font: normal clamp(.56rem,2.35vw,.7rem)/1.25 Georgia,serif;
+  color: #75565c;
+  letter-spacing: 0;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-slot>span:last-child {
+  font-size: .68rem;
+  letter-spacing: -.1em;
+  color: #886a6c;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-card {
+  position: relative !important;
+  isolation: isolate;
+  display: block !important;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-height: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #4b3542 !important;
+  filter: drop-shadow(0 3px 5px #38213a47);
+  overflow: visible;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  pointer-events: none;
+  z-index: -1;
+  background: transparent;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-top,
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-bottom {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  margin: 0;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-middle {
+  display: block;
+  flex: 0 0 auto;
+  width: 100%;
+  background: url("parchment/parchment_middle.webp") center top / 100% auto repeat-y;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-copy {
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 13% 10% 14%;
+  color: #4d3440;
+  font: normal clamp(.83rem,3.2vw,.98rem)/1.46 Georgia,"Times New Roman",serif;
+  overflow-wrap: anywhere;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .chapter-detail.parchment-stretch-card,
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-arrival-card.parchment-stretch-card,
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-memory-card.parchment-stretch-card {
+  margin: 8px auto 16px;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-arrival-card .parchment-stretch-copy {
+  display: grid;
+  gap: .54rem;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-memory-card .parchment-stretch-copy {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-card :is(h2,h3,strong,.detail-description,.detail-meta,.detail-meta strong,.detail-ornament,.eyebrow,.clue-label,p,small,label) {
+  color: #553948 !important;
+  text-shadow: none !important;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-card h3 {
+  font: 700 clamp(1.25rem,5.1vw,1.75rem)/1.15 Georgia,serif;
+  margin: .3rem 0 .7rem;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-card :is(p,small,.detail-description) {
+  font-size: .89rem;
+  line-height: 1.47;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-card .clue-box {
+  padding: .5rem .7rem;
+  border: 0;
+  border-left: 2px solid #ae805f;
+  border-radius: 0;
+  background: #e0b68146 !important;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-card .detail-meta {
+  font-size: .75rem;
+  line-height: 1.35;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-arrival-card .parchment-stretch-copy strong,
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-memory-card .parchment-stretch-copy > :is(label,strong) {
+  font: 700 1.06rem/1.25 Georgia,serif !important;
+  color: #643d50 !important;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-memory-card .parchment-stretch-copy :is(textarea,input[type="file"]) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  color: #4a3042;
+  background: #fbe8c6b8;
+  border: 1px solid #b98b6c;
+  border-radius: 6px;
+  padding: 10px;
+  font: 1rem/1.4 Georgia,serif;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-memory-card .parchment-stretch-copy :is(textarea,input)::placeholder {
+  color: #8c6a73;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-arrival-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 9px;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .direction-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .15rem .55rem;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-action-stamp,
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body label.parchment-action-stamp {
+  --action-asset: url("stamps/starfen.webp");
+  --action-ratio: 660 / 357;
+  --action-ink: #3f545a;
+  --action-font: "American Typewriter","Courier New",monospace;
+  --action-width: 148px;
+  display: flex !important;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-sizing: border-box;
+  width: min(100%,var(--action-width));
+  max-width: 100%;
+  min-height: 0;
+  height: auto;
+  aspect-ratio: var(--action-ratio);
+  padding: 14% 15%;
+  margin: 0 auto;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent var(--action-asset) center / 100% 100% no-repeat !important;
+  box-shadow: none !important;
+  color: var(--action-ink) !important;
+  font: 700 .69rem/1.14 var(--action-font) !important;
+  letter-spacing: -.01em;
+  text-decoration: none;
+  text-shadow: 0 1px #fbe4b7;
+  cursor: pointer;
+  transform: none;
+  filter: drop-shadow(0 2px 2px #4d314737);
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-action-stamp.stamp-emberfjord {
+  --action-asset: url("stamps/emberfjord.webp");
+  --action-ratio: 700 / 402;
+  --action-ink: #68413b;
+  --action-font: Copperplate,"Copperplate Gothic Light",Georgia,serif;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-action-stamp:focus-visible {
+  outline: 2px solid #68415e !important;
+  outline-offset: 1px !important;
+}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-action-stamp[hidden] { display: none !important; }
+@media (max-width:360px) {
+  .rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-copy { padding-left: 9%;padding-right: 9%; }
+  .rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-slot { grid-template-columns: 23px minmax(0,1fr) 10px; gap:.35rem; }
+  .rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-lock { width:23px; height:23px; }
+}
