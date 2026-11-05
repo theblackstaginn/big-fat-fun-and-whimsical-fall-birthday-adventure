@@ -1,4 +1,4 @@
-/* Portrait Satchel oddities carousel. Original scene images, nine separate jars.
+/* Portrait Satchel carousel. True 3D jars share a rotation state with the 3D turntable.
    Only the existing Satchel panel is modified. No jar labels or new modal. */
 (()=>{
 "use strict";
@@ -6,46 +6,124 @@ const sheet=document.querySelector(".rpg-sheet"),body=document.getElementById("r
 if(!sheet||!body||!title||sheet.dataset.susanInstalled)return;
 sheet.dataset.susanInstalled="1";
 const items=[
-["ruby",0],["wonderland",1],["candle",2],["glass",3],["zuzu",3],
-["river",4],["dinner",5],["sweet",6],["park",7]
+ ["ruby",0],["wonderland",1],["candle",2],["glass",3],["zuzu",3],
+ ["river",4],["dinner",5],["sweet",6],["park",7]
 ],T=Math.PI*2,STEP=T/9;
-let stage,viewer,fallback,ring,buttons=[],angle=Math.PI,selected=0,active=false,modelReady=false;
+let stage,viewer,fallback,ring,jarCanvas,buttons=[],angle=Math.PI,selected=0,active=false,modelReady=false;
 let animation=0,drag=null,moved=false,pending=false;
+let THREE=null,renderer3d=null,scene3d=null,camera3d=null,jarRoots=Array(9).fill(null);
+let artMeshes=Array(9).fill(null),artTextures=Array(9).fill(null),artLoading=Array(9).fill(false),threePromise=null;
 const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v)),wrap=n=>(n%9+9)%9;
 const reduce=window.matchMedia("(prefers-reduced-motion: reduce)");
 function count(){
  if(typeof completed!=="undefined"&&Array.isArray(completed))return completed.length;
  try{const x=JSON.parse(localStorage.getItem("jess-birthday-quest-progress-v3")||"[]");return Array.isArray(x)?x.length:0}catch{return 0}
 }
+function removeArt(i){
+ const mesh=artMeshes[i];
+ if(mesh&&jarRoots[i]){jarRoots[i].remove(mesh);mesh.geometry.dispose();mesh.material.dispose()}
+ artMeshes[i]=null;
+ if(artTextures[i]){artTextures[i].dispose();artTextures[i]=null}
+}
+function showArt(i,id){
+ if(!THREE||!jarRoots[i]||artMeshes[i]||artLoading[i])return;
+ artLoading[i]=true;
+ new THREE.TextureLoader().load("assets/scenes/"+id+".webp",texture=>{
+  artLoading[i]=false;
+  if(count()<items[i][1]){texture.dispose();return}
+  texture.colorSpace=THREE.SRGBColorSpace;
+  texture.wrapS=THREE.RepeatWrapping;
+  texture.wrapT=THREE.ClampToEdgeWrapping;
+  const geometry=new THREE.CylinderGeometry(.43,.43,.62,48,1,true);
+  const material=new THREE.MeshBasicMaterial({map:texture,side:THREE.DoubleSide,toneMapped:false});
+  const mesh=new THREE.Mesh(geometry,material);
+  mesh.position.y=.50;
+  mesh.renderOrder=0;
+  jarRoots[i].add(mesh);artMeshes[i]=mesh;artTextures[i]=texture;
+  paint();
+ },undefined,()=>{artLoading[i]=false});
+}
 function unlock(){
  const n=count();
  items.forEach(([id,threshold],i)=>{
   const b=buttons[i];if(!b)return;
-  const slot=b.querySelector(".satchel-window"),img=slot.querySelector("img");
-  if(n>=threshold&&!img){const pic=document.createElement("img");pic.src="assets/scenes/"+id+".webp";pic.alt="";pic.loading="lazy";slot.append(pic)}
-  if(n<threshold&&img)img.remove();
-  b.setAttribute("aria-label",n>=threshold?"Collected jar "+(i+1):"Undiscovered jar "+(i+1));
+  const open=n>=threshold;
+  b.setAttribute("aria-label",open?"Collected jar "+(i+1):"Undiscovered jar "+(i+1));
+  if(open){if(!artMeshes[i])showArt(i,id)}
+  else removeArt(i);
  });
+}
+async function init3D(){
+ if(threePromise)return threePromise;
+ threePromise=(async()=>{
+  try{
+   const [threeModule,{GLTFLoader}]=await Promise.all([
+    import("three"),
+    import("three/addons/loaders/GLTFLoader.js")
+   ]);
+   THREE=threeModule;
+   renderer3d=new THREE.WebGLRenderer({canvas:jarCanvas,alpha:true,antialias:true,powerPreference:"low-power"});
+   renderer3d.setClearColor(0x000000,0);
+   renderer3d.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+   renderer3d.outputColorSpace=THREE.SRGBColorSpace;
+   renderer3d.toneMapping=THREE.ACESFilmicToneMapping;
+   renderer3d.toneMappingExposure=1.2;
+   scene3d=new THREE.Scene();
+   const phi=62*Math.PI/180;
+   camera3d=new THREE.PerspectiveCamera(30,1,.1,100);
+   camera3d.position.set(0,.55+10*Math.cos(phi),10*Math.sin(phi));
+   camera3d.lookAt(0,.55,0);
+   scene3d.add(new THREE.HemisphereLight(0xffead3,0x2b1d32,2.0));
+   const key=new THREE.DirectionalLight(0xffe4c4,2.2);key.position.set(-3,7,6);scene3d.add(key);
+   const fill=new THREE.DirectionalLight(0xc8d6ff,1.0);fill.position.set(4,3,-5);scene3d.add(fill);
+   const loader=new GLTFLoader();
+   await Promise.all(items.map(([id],i)=>new Promise(resolve=>{
+    const file="assets/satchel/jars/jar_"+String(i+1).padStart(2,"0")+"_"+id+".glb";
+    loader.load(file,gltf=>{
+     const root=new THREE.Group();root.add(gltf.scene);scene3d.add(root);jarRoots[i]=root;
+     gltf.scene.traverse(obj=>{
+      if(!obj.isMesh)return;
+      obj.castShadow=true;obj.receiveShadow=true;
+      if(Array.isArray(obj.material))obj.material.forEach(m=>{if(m.transparent)m.depthWrite=false});
+      else if(obj.material.transparent)obj.material.depthWrite=false;
+     });
+     resolve();
+    },undefined,error=>{console.error("Could not load Satchel jar model "+file,error);resolve()});
+   })));
+   resize3D();unlock();paint();
+  }catch(error){console.error("The 3D Satchel jars could not initialize.",error)}
+ })();
+ return threePromise;
+}
+function resize3D(){
+ if(!renderer3d||!camera3d||!jarCanvas)return;
+ const width=jarCanvas.clientWidth,height=jarCanvas.clientHeight;
+ if(!width||!height)return;
+ renderer3d.setSize(width,height,false);
+ camera3d.aspect=width/height;camera3d.updateProjectionMatrix();
 }
 function paint(){
  if(!stage||!active)return;
  const rect=stage.getBoundingClientRect();if(!rect.width||!rect.height)return;
- const h=rect.height,vh=h*.74,cy=h*.19+vh/2+h*.04,cx=rect.width/2,focal=vh/(2*Math.tan(Math.PI/12));
+ const h=rect.height,vh=h*.74,cy=h*.19+vh/2+h*.07,cx=rect.width/2,focal=vh/(2*Math.tan(Math.PI/12));
  const norm=(angle%T+T)%T;
  if(modelReady){try{viewer.currentTime=12*norm/T}catch{}}
+ const sinP=Math.sin(62*Math.PI/180),cosP=Math.cos(62*Math.PI/180),seatY=.615;
  items.forEach(([id],i)=>{
   const a=-Math.PI/2+i*STEP,x=2.08*Math.cos(a),z=2.08*Math.sin(a);
   const xx=x*Math.cos(angle)-z*Math.sin(angle),zz=x*Math.sin(angle)+z*Math.cos(angle);
-  const sinP=Math.sin(62*Math.PI/180),cosP=Math.cos(62*Math.PI/180),yy=.065; // jar-seat Y = 0.615m; camera target Y = 0.55m
-  const scale=focal/(10-(yy*cosP+zz*sinP));
+  const root=jarRoots[i];
+  if(root){root.position.set(xx*1.28,seatY-.04,zz);root.rotation.y=-angle}
+  const scale=focal/(10-(seatY*cosP+zz*sinP));
   const b=buttons[i];if(!b)return;
-  b.style.left=(cx+xx*scale).toFixed(1)+"px";
-  b.style.top=(cy-(yy*sinP-zz*cosP)*scale).toFixed(1)+"px";
-  b.style.width=clamp(scale*1.62,50,164).toFixed(1)+"px";
+  b.style.left=(cx+xx*1.28*scale).toFixed(1)+"px";
+  b.style.top=(cy-(seatY*sinP-zz*cosP)*scale).toFixed(1)+"px";
+  b.style.width=clamp(scale*1.30,64,190).toFixed(1)+"px";
   b.style.zIndex=String(Math.round((zz+3)*100));
   b.classList.toggle("is-front",i===selected);
   b.setAttribute("aria-pressed",String(i===selected));
  });
+ if(renderer3d&&scene3d&&camera3d)renderer3d.render(scene3d,camera3d);
 }
 function settle(target){
  cancelAnimationFrame(animation);
@@ -71,6 +149,7 @@ function build(){
  fallback=document.createElement("img");fallback.className="satchel-platter-fallback";
  fallback.src="assets/satchel/lazy_susan_isolated.webp";fallback.alt="";fallback.draggable=false;
  viewer=document.createElement("model-viewer");viewer.className="satchel-model";
+ jarCanvas=document.createElement("canvas");jarCanvas.className="satchel-jar-canvas";jarCanvas.setAttribute("aria-hidden","true");
  const attrs={src:"assets/satchel/oddities_lazy_susan_spinning.glb",
   "animation-name":"One Gentle Full Turn - 12 Seconds",
   "camera-orbit":"0deg 62deg 10m","camera-target":"0m 0.55m 0m",
@@ -83,11 +162,7 @@ function build(){
  items.forEach(([id],i)=>{
   const b=document.createElement("button");b.type="button";b.className="satchel-jar";
   b.setAttribute("aria-label","Jar "+(i+1));b.setAttribute("aria-pressed","false");
-  const scene=document.createElement("span");scene.className="satchel-window";
-  const art=document.createElement("img");art.className="satchel-jar-overlay";
-  art.src="assets/satchel/jars/jar_"+String(i+1).padStart(2,"0")+"_"+id+".webp";
-  art.alt="";art.draggable=false;
-  b.append(scene,art);b.addEventListener("click",()=>{if(!moved)choose(i)});
+  b.addEventListener("click",()=>{if(!moved)choose(i)});
   buttons.push(b);ring.append(b);
  });
  const nav=document.createElement("div");nav.className="satchel-nav";
@@ -96,7 +171,7 @@ function build(){
   btn.textContent=symbol;btn.setAttribute("aria-label",label);
   btn.addEventListener("click",()=>turn(delta));nav.append(btn);
  }
- stage.append(fallback,viewer,ring,nav);
+ stage.append(fallback,viewer,jarCanvas,ring,nav);
  stage.addEventListener("pointerdown",e=>{
   if(e.button!==0||e.target.closest(".satchel-nav"))return;
   cancelAnimationFrame(animation);drag={id:e.pointerId,x:e.clientX,y:e.clientY,angle,moving:false};moved=false;
@@ -124,6 +199,7 @@ function build(){
   script.src="https://unpkg.com/@google/model-viewer@4.2.0/dist/model-viewer.min.js";
   script.dataset.satchelViewer="1";document.head.append(script);
  }
+ init3D();
 }
 function sync(){
  pending=false;
@@ -133,12 +209,12 @@ function sync(){
  if(!active){cancelAnimationFrame(animation);return}
  build();host.classList.add("satchel-immersive");
  if(host.firstElementChild!==stage||host.childElementCount!==1)host.replaceChildren(stage);
- unlock();requestAnimationFrame(paint);
+ unlock();requestAnimationFrame(()=>{resize3D();paint()});
 }
 function schedule(){if(!pending){pending=true;requestAnimationFrame(sync)}}
 new MutationObserver(schedule).observe(body,{childList:true});
 new MutationObserver(schedule).observe(title,{childList:true,subtree:true,characterData:true});
 new MutationObserver(schedule).observe(sheet,{attributes:true,attributeFilter:["hidden"]});
-window.addEventListener("resize",()=>{if(active)requestAnimationFrame(paint)},{passive:true});
+window.addEventListener("resize",()=>{if(active){resize3D();requestAnimationFrame(paint)}},{passive:true});
 schedule();
 })();
