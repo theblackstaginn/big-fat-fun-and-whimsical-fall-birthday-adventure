@@ -81,7 +81,7 @@ async function init3D(){
    const fill=new THREE.DirectionalLight(0xc8d6ff,1.0);fill.position.set(4,3,-5);scene3d.add(fill);
    const loader=new GLTFLoader();
    await Promise.all(items.map(([id],i)=>new Promise(resolve=>{
-    const file=i===0?"assets/satchel/jars/jar_01_ruby_cork.glb":"assets/satchel/jars/jar_"+String(i+1).padStart(2,"0")+"_"+id+".glb";
+    const file=i===0?"assets/satchel/jars/jar_01_ruby_showcase.glb":"assets/satchel/jars/jar_"+String(i+1).padStart(2,"0")+"_"+id+".glb";
     loader.load(file,gltf=>{
      const root=new THREE.Group();root.add(gltf.scene);scene3d.add(root);jarRoots[i]=root;
      gltf.scene.traverse(obj=>{
