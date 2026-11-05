@@ -75,7 +75,7 @@
   flex-direction: column;
   width: 100%;
   pointer-events: none;
-  z-index: -1;
+  z-index: 0;
   background: transparent;
 }
 .rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .parchment-stretch-top,
