@@ -175,6 +175,19 @@
     }
   });
 
+  // Keep native form controls legible within the illustrated Settings panel.
+  const noteStyles = document.createElement("style");
+  noteStyles.textContent = `
+    #cloud-notes { margin-top: 18px; padding: 12px 8px; box-sizing: border-box; min-width: 0; }
+    #cloud-notes h3 { margin: 0 0 14px; line-height: 1.25; }
+    #cloud-notes label { display: block !important; width: 100%; margin: 12px 0 6px !important; font: 600 0.95rem/1.4 Georgia,serif; }
+    #cloud-notes select, #cloud-notes textarea { display: block !important; width: 100% !important; max-width: 100%; min-width: 0; box-sizing: border-box; margin: 0 0 12px !important; padding: 12px !important; border-radius: 9px; border: 1px solid #a7794f; font: 1rem/1.5 system-ui,sans-serif; background: #fff5e2; color: #34232a; }
+    #cloud-notes textarea { min-height: 118px; resize: vertical; }
+    #cloud-notes button { width: 100%; }
+    #cloud-notes #cloud-note-status { overflow-wrap: anywhere; }
+  `;
+  document.head.append(noteStyles);
+
   // Private notes are keyed by authenticated account and stop. No local save is modified.
   function availableStops() {
     return typeof chapters !== "undefined" && Array.isArray(chapters) ? chapters : [];
