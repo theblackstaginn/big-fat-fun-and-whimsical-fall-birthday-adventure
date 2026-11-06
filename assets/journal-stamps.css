@@ -171,3 +171,26 @@
 @media (prefers-reduced-motion: reduce) {
   .rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body button.journal-stamp { transition: none; }
 }
+
+/* Mobile journal regression: chapter buttons must not retain the original
+   three-column button grid after receiving their illustrated stamp skins. */
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body .chapter-list > button.journal-stamp {
+  display:flex !important;
+  grid-template-columns:none !important;
+  min-width:0;
+  flex-shrink:0;
+  overflow-wrap:normal !important;
+  word-break:normal !important;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body .chapter-list > button.journal-stamp > span:nth-child(2) {
+  flex:0 1 auto;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+}
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body .chapter-list > button.journal-stamp .chapter-name,
+.rpg-sheet.is-illustrated-journal.has-kingdom-stamps .rpg-sheet-body .chapter-list > button.journal-stamp .chapter-subtitle {
+  overflow-wrap:normal !important;
+  word-break:normal !important;
+  white-space:normal;
+}
