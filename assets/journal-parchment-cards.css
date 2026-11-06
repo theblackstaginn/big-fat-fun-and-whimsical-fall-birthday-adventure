@@ -220,3 +220,22 @@
   .rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-slot { grid-template-columns: 23px minmax(0,1fr) 10px; gap:.35rem; }
   .rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .fog-lock { width:23px; height:23px; }
 }
+
+/* All quest stops share one compact, intrinsic-height journal layout. */
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .adventure-layout,
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .chapter-list {
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  grid-auto-rows:max-content;
+  align-content:start;
+  align-items:start;
+  min-width:0;
+}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .adventure-layout {gap:.55rem}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .chapter-list {gap:.45rem}
+.rpg-sheet.is-illustrated-journal .rpg-sheet-body .progress-card {margin-bottom:.6rem}
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .chapter-detail.parchment-stretch-card,
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-arrival-card.parchment-stretch-card,
+.rpg-sheet.is-illustrated-journal.has-parchment-cards .rpg-sheet-body .quest-memory-card.parchment-stretch-card {
+  margin:.35rem auto .65rem;
+}
