@@ -1,0 +1,237 @@
+
+/* Approved seven Rogue Witch icons, displayed from original transparent WebP art.
+   All existing button actions, accessibility labels, and GPS state remain native. */
+.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#map-quest,#map-player,#rpg-locate){
+  background-color:transparent!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:40px 40px!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  text-shadow:none!important;
+  filter:drop-shadow(0 2px 3px #160a12af);
+}
+
+.rpg-fullscreen .map-mode-switch > #map-quest{background-image:url("ui-icons/quest-log-scroll.webp")!important}
+.rpg-fullscreen .map-mode-switch > #map-player{background-image:url("ui-icons/character-witch-hat.webp")!important}
+.rpg-fullscreen .map-mode-switch > #rpg-locate{background-image:url("ui-icons/gps-eye-of-sauron.webp")!important}
+/* Retain the SVG and text nodes in the DOM; only the visual is replaced. */
+.rpg-fullscreen .map-mode-switch > #mode-overview > svg,
+.rpg-fullscreen .map-mode-switch > #map-quest > span,
+.rpg-fullscreen .map-mode-switch > #map-player > span{visibility:hidden}
+.rpg-fullscreen .map-mode-switch > #mode-overview.is-active,
+.rpg-fullscreen .map-mode-switch > #rpg-locate[aria-pressed="true"]{
+  filter:drop-shadow(0 0 6px #f4c480) drop-shadow(0 2px 3px #160a12b0);
+}
+.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#map-quest,#map-player,#rpg-locate):focus-visible{
+  outline:2px solid #ffe7ba;outline-offset:1px;border-radius:50%;
+}
+/* Five item tabs: Journal, Curios, Letter, Satchel, Settings. */
+.rpg-fullscreen .rpg-bottom{width:min(calc(100vw - 20px),358px)}
+.rpg-fullscreen .rpg-toolbar{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+.rpg-fullscreen .rpg-toolbar button{min-height:54px;padding:3px 1px 2px}
+.rpg-fullscreen .rpg-toolbar button:is([data-panel="quest"],[data-panel="satchel"],[data-panel="settings"]) > span{
+  display:block;width:37px;height:37px;margin:auto;
+  background-repeat:no-repeat;background-position:center;background-size:contain;
+  font-size:0!important;line-height:0!important;color:transparent!important;
+  filter:drop-shadow(0 1px 2px #100a12b0);
+}
+.rpg-fullscreen .rpg-toolbar button[data-panel="quest"] > span{background-image:url("ui-icons/journal-grimoire.webp")}
+.rpg-fullscreen .rpg-toolbar button[data-panel="satchel"] > span{background-image:url("ui-icons/satchel-witchy-backpack.webp")}
+.rpg-fullscreen .rpg-toolbar button[data-panel="settings"] > span{background-image:url("ui-icons/settings-bronze-gear.webp")}
+.rpg-fullscreen .rpg-toolbar button > small{font-size:.58rem}
+.rpg-satchel{display:grid;gap:12px;color:#f4dfc6;font:.86rem/1.45 Georgia,serif}
+.rpg-satchel p{margin:0}
+.rpg-satchel-count{font-weight:700;color:#f4cb94}
+.rpg-satchel-chapters{margin:0;padding-left:23px}
+.rpg-satchel-chapters li{padding:3px 0}
+@media(max-width:365px){
+  .rpg-fullscreen .rpg-toolbar{gap:3px;padding:3px}
+  .rpg-fullscreen .rpg-toolbar button{min-height:50px}
+  .rpg-fullscreen .rpg-toolbar button > small{font-size:.53rem}
+  .rpg-fullscreen .rpg-toolbar button:is([data-panel="quest"],[data-panel="satchel"],[data-panel="settings"]) > span{
+    width:34px;height:34px;
+  }
+}
+@media print{
+  .rpg-fullscreen .rpg-toolbar button{background-image:none!important}
+}
+
+/* Second set of lightweight WebP medallions: same original bronze-and-leather art style.
+   Keep original HTML buttons and all click handlers; only paint their graphics. */
+.rpg-fullscreen .map-mode-switch > button:is(#mode-nearby,#map-zoom-in,#map-zoom-out,#map-home){
+  background-color:transparent!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:40px 40px!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  text-shadow:none!important;
+  filter:drop-shadow(0 2px 3px #160a12af);
+}
+
+.rpg-fullscreen .map-mode-switch > #map-zoom-in{background-image:url("ui-icons/zoom-in-bronze-plus.webp")!important}
+.rpg-fullscreen .map-mode-switch > #map-zoom-out{background-image:url("ui-icons/zoom-out-bronze-minus.webp")!important}
+.rpg-fullscreen .map-mode-switch > #map-home{background-image:url("ui-icons/home-cottage.webp")!important}
+.rpg-fullscreen .map-mode-switch > button:is(#mode-nearby,#map-zoom-in,#map-zoom-out,#map-home) > :is(svg,span){
+  visibility:hidden!important;
+}
+.rpg-fullscreen .map-mode-switch > #mode-nearby.is-active{
+  filter:drop-shadow(0 0 6px #f4c480) drop-shadow(0 2px 3px #160a12b0);
+}
+.rpg-fullscreen .map-mode-switch > button:is(#mode-nearby,#map-zoom-in,#map-zoom-out,#map-home):focus-visible{
+  outline:2px solid #ffe7ba;outline-offset:1px;border-radius:50%;
+}
+/* Curios and Letter now match the original Journal, Satchel and Settings tabs. */
+.rpg-fullscreen .rpg-toolbar button:is([data-panel="notes"],[data-panel="story"]) > span{
+  display:block;width:37px;height:37px;margin:auto;
+  background-repeat:no-repeat;background-position:center;background-size:contain;
+  font-size:0!important;line-height:0!important;color:transparent!important;
+  filter:drop-shadow(0 1px 2px #100a12b0);
+}
+.rpg-fullscreen .rpg-toolbar button[data-panel="notes"] > span{
+  background-image:url("ui-icons/curios-magic-potion.webp");
+}
+.rpg-fullscreen .rpg-toolbar button[data-panel="story"] > span{
+  background-image:url("ui-icons/letter-wax-seal.webp");
+}
+/* Decorative title moon and tappable top-right letter are matching bronze medallions. */
+.rpg-fullscreen .rpg-sigil{
+  background:url("ui-icons/header-moon.webp") center/contain no-repeat!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  transform:none!important;
+  filter:drop-shadow(0 2px 3px #160a12af);
+}
+.rpg-fullscreen .rpg-top-actions button.rpg-icon[data-panel="story"]{
+  background:url("ui-icons/header-heart.webp") center/contain no-repeat!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  filter:drop-shadow(0 2px 3px #160a12af);
+}
+.rpg-fullscreen .rpg-top-actions button.rpg-icon[data-panel="story"]:focus-visible{
+  outline:2px solid #ffe7ba;outline-offset:2px;border-radius:50%;
+}
+@media(max-width:365px){
+  .rpg-fullscreen .rpg-toolbar button:is([data-panel="notes"],[data-panel="story"]) > span{
+    width:34px;height:34px;
+  }
+}
+
+
+/* Stitched plum-leather backplates, not UI button cards.
+   Both source artworks are transparent WebPs. Keep the existing live buttons
+   and their handlers, GPS/quest state, and accessible labels unchanged. */
+.rpg-fullscreen .map-mode-switch {
+  box-sizing:border-box;
+  width:52px;
+  padding:6px;
+  gap:3px;
+  border:0!important;
+  border-radius:15px;
+  background:transparent url("ui-icons/leather-nav-vertical.webp") center/100% 100% no-repeat!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 3px 5px #160b17a8);
+}
+.rpg-fullscreen .map-mode-switch > button {
+  background-color:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+  border-radius:50%;
+}
+.rpg-fullscreen .map-mode-switch > button:hover {
+  background-color:transparent!important;
+  border-color:transparent!important;
+}
+.rpg-fullscreen .rpg-bottom {
+  width:min(calc(100vw - 24px),342px);
+}
+.rpg-fullscreen .rpg-toolbar {
+  box-sizing:border-box;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  align-items:center;
+  gap:0;
+  min-height:86px;
+  padding:9px 15px 11px;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent url("ui-icons/leather-controls-horizontal.webp") center/100% 100% no-repeat!important;
+  box-shadow:none!important;
+  filter:drop-shadow(0 4px 6px #150a17aa);
+}
+.rpg-fullscreen .rpg-toolbar button {
+  box-sizing:border-box;
+  min-width:0;
+  min-height:64px;
+  padding:2px 0!important;
+  gap:2px;
+  border:0!important;
+  border-radius:0;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.rpg-fullscreen .rpg-toolbar button:hover,
+.rpg-fullscreen .rpg-toolbar button:focus-visible {
+  background:transparent!important;
+  border-color:transparent!important;
+  box-shadow:none!important;
+}
+.rpg-fullscreen .rpg-toolbar button:focus-visible {
+  outline:2px solid #f8d29a;
+  outline-offset:-2px;
+  border-radius:10px;
+}
+.rpg-fullscreen .rpg-toolbar button > span {
+  width:38px!important;
+  height:38px!important;
+  margin:0 auto!important;
+}
+.rpg-fullscreen .rpg-toolbar button > small {
+  color:#f7dfc6;
+  font-size:.59rem;
+  line-height:1.1;
+  text-shadow:0 1px 2px #130a14;
+}
+.rpg-fullscreen .rpg-toolbar button:active > span {
+  transform:translateY(1px);
+}
+@media(max-width:365px) {
+  .rpg-fullscreen .rpg-bottom {width:min(calc(100vw - 14px),326px)}
+  .rpg-fullscreen .rpg-toolbar {min-height:82px;padding:8px 12px 10px}
+  .rpg-fullscreen .rpg-toolbar button {min-height:62px}
+  .rpg-fullscreen .rpg-toolbar button > span {width:34px!important;height:34px!important}
+  .rpg-fullscreen .rpg-toolbar button > small {font-size:.54rem}
+}
+
+/* Preserve original leather rail size; enlarge only the five icon images. */
+.rpg-fullscreen .rpg-toolbar button > span{width:45px!important;height:45px!important}
+@media(max-width:365px){.rpg-fullscreen .rpg-toolbar button > span{width:40px!important;height:40px!important}}
+
+/* The two approved map images REPLACE their old medallions; no stacked backgrounds.
+   Match the 40px artwork used by the other sidebar controls. */
+.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#mode-nearby){
+  background-image:none!important;
+  background-color:transparent!important;
+  background-size:0!important;
+  min-height:40px!important;
+  height:40px!important;
+  padding:0!important;
+}
+.rpg-fullscreen .map-mode-switch > button:is(#mode-overview,#mode-nearby) > img.map-rail-art{
+  display:block!important;
+  visibility:visible!important;
+  width:40px!important;
+  height:40px!important;
+  max-width:none!important;
+  object-fit:contain!important;
+  margin:0!important;
+  pointer-events:none;
+}

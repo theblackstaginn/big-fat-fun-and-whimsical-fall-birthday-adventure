@@ -1,0 +1,122 @@
+
+/* The Rogue Witch's Insane A.I.: original, funny birthday-system broadcast.
+   The finale's illustrated handfasting letter remains separately gated. */
+.rpg-fullscreen .rpg-sheet.is-ai-intro {
+  box-sizing:border-box;
+  position:fixed;top:50%;left:50%;right:auto;bottom:auto;
+  transform:translate(-50%,-50%);
+  width:min(calc(100vw - 22px),490px);
+  max-height:calc(100dvh - 30px);
+  padding:5px;
+  border:1px solid #d4a378;
+  border-radius:16px;
+  background:linear-gradient(155deg,#633d52,#2b2033 76%);
+  box-shadow:inset 0 0 0 2px #e8b98722,0 18px 50px #0b0711d9;
+}
+.rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-head {
+  flex:0 0 auto;gap:7px;
+  padding:8px 10px 9px 15px;
+  border-bottom:1px solid #c18a6b8c;
+  background:transparent;
+  color:#f5d3a5;
+  font:700 clamp(.9rem,4vw,1.08rem)/1.2 Georgia,serif;
+}
+.rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-head::before {
+  content:"◈";color:#f1b66e;margin-right:0;font-size:1.15rem;
+}
+.rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-head button {
+  flex:0 0 40px;width:40px;height:40px;
+  border:1px solid #d7a47c;border-radius:50%;
+  background:#452e43;color:#f8dfc0;
+}
+.rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-body {
+  min-height:0;overflow-y:auto;overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:9px 8px 10px;
+}
+.rpg-ai-intro {
+  position:relative;isolation:isolate;box-sizing:border-box;
+  padding:clamp(15px,4.5vw,23px);
+  border:1px solid #ae805e;
+  border-radius:10px;
+  background:
+    radial-gradient(ellipse at 12% 0%,#844d6875,transparent 48%),
+    radial-gradient(ellipse at 88% 100%,#7a4b5070,transparent 40%),
+    linear-gradient(135deg,#372339,#241c30 80%);
+  box-shadow:inset 0 0 0 3px #e3aa7921,0 3px 12px #11091696;
+  color:#f3dec4;
+}
+.rpg-ai-intro .rpg-ai-status {
+  color:#d6ac80;font:700 .62rem/1.4 system-ui,sans-serif;
+  letter-spacing:.11em;text-align:center;margin:0 0 10px;
+}
+.rpg-ai-intro .rpg-ai-status span {color:#ffd19e;font-size:1rem}
+.rpg-ai-intro .rpg-ai-alert {
+  margin:0 0 8px;text-align:center;
+  color:#f7bd7d;font:800 clamp(.65rem,2.6vw,.8rem)/1.4 system-ui,sans-serif;
+  letter-spacing:.12em;
+}
+.rpg-ai-intro h3 {
+  color:#ffe4ac;
+  margin:0 0 13px;
+  font:700 clamp(1.32rem,5.4vw,1.82rem)/1.1 Georgia,serif;
+  text-align:center;
+  text-shadow:0 2px 4px #100719;
+}
+.rpg-ai-intro > p:not(.rpg-ai-status):not(.rpg-ai-alert) {
+  margin:0 0 13px;
+  font:clamp(.89rem,3.6vw,.99rem)/1.45 Georgia,serif;
+  overflow-wrap:break-word;
+}
+.rpg-ai-intro strong{color:#ffdbac}
+.rpg-ai-intro em{color:#e6b8a3}
+.rpg-ai-stats {
+  display:grid;gap:5px;margin:15px 0;
+  padding:11px 12px;
+  background:#181520c9;
+  border:1px solid #b78969;
+  border-radius:7px;
+  font:700 .63rem/1.3 system-ui,sans-serif;
+  letter-spacing:.035em;
+}
+.rpg-ai-stats span {display:flex;justify-content:space-between;gap:14px;color:#d6b59c}
+.rpg-ai-stats strong {color:#ffdb9c;text-align:right}
+.rpg-ai-achievement {
+  margin:15px 0 13px;padding:12px 13px;
+  border:1px solid #dab07c;border-radius:8px;
+  background:linear-gradient(135deg,#6d4c39a6,#39283fa8);
+  text-align:center;
+  box-shadow:inset 0 0 0 2px #ffddab14;
+}
+.rpg-ai-achievement .rpg-ai-achievement-label {
+  display:block;margin:0 0 4px;
+  font:800 .69rem/1.4 system-ui,sans-serif;
+  letter-spacing:.1em;color:#ffcd79;
+}
+.rpg-ai-achievement > strong {
+  display:block;font:700 1.2rem/1.2 Georgia,serif;
+  letter-spacing:.045em;color:#fff0c9;
+}
+.rpg-ai-achievement > p {
+  margin:7px 0 0;font:.84rem/1.4 Georgia,serif;color:#f0dac8;
+}
+.rpg-ai-intro .rpg-ai-farewell{color:#e6d3c0;font-style:italic!important}
+.rpg-ai-intro .rpg-ai-begin {
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;min-height:48px;padding:11px 12px;
+  border:1px solid #ffdfa8;border-radius:9px;
+  background:linear-gradient(135deg,#e6b881,#b87d69);
+  box-shadow:0 3px 10px #12091b9e,inset 0 1px 0 #fff2cc9a;
+  color:#332331;font:800 .86rem/1.2 Georgia,serif;
+  letter-spacing:.04em;
+  cursor:pointer;pointer-events:auto;
+}
+.rpg-ai-intro .rpg-ai-begin:focus-visible {
+  outline:3px solid #ffdda0;outline-offset:3px;
+}
+@media(max-height:650px) {
+  .rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-head{padding:5px 10px}
+  .rpg-fullscreen .rpg-sheet.is-ai-intro .rpg-sheet-body{padding:6px}
+  .rpg-ai-intro{padding:13px}
+}
+@media print{.rpg-fullscreen .rpg-sheet.is-ai-intro{display:none!important}}

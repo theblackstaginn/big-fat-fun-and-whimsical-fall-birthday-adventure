@@ -1,0 +1,152 @@
+name: Deploy static site to GitHub Pages
+# Fresh push starts a clean Pages artifact run after a duplicate-artifact retry.
+
+on:
+  push:
+    branches: [main, feat/helens-quest-map-v1]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Assemble public site
+        run: |
+          mkdir dist
+          cp index.html styles.css adventure.js dist/
+          cp -R assets dist/assets
+      - name: Unpack optional illustrated Journal artwork
+        run: |
+          if [ -f assets/Jess_Journal_Art_Pack.zip ]; then
+            mkdir -p dist/assets/journal
+            unzip -j -o assets/Jess_Journal_Art_Pack.zip journal_page.webp bronze_scrollbar_track.webp amethyst_slider.webp -d dist/assets/journal
+          fi
+      - name: Unpack optional kingdom stamp buttons
+        run: |
+          if [ -f assets/Jess_Journal_Stamp_Buttons.zip ]; then
+            mkdir -p dist/assets/stamps
+            unzip -j -o assets/Jess_Journal_Stamp_Buttons.zip moonreach.webp thornmere.webp starfen.webp emberfjord.webp -d dist/assets/stamps
+          fi
+      - name: Unpack optional parchment cards
+        run: |
+          if [ -f assets/Jess_Journal_Parchment_Cards.zip ]; then
+            mkdir -p dist/assets/parchment
+            unzip -j -o assets/Jess_Journal_Parchment_Cards.zip parchment_small_card.webp parchment_top.webp parchment_middle.webp parchment_bottom.webp -d dist/assets/parchment
+          fi
+      - name: Unpack Satchel turntable and oddities jars
+        run: |
+          if [ -f assets/Jess_Satchel_3D_Spinning_Lazy_Susan.zip ]; then
+            mkdir -p dist/assets/satchel
+            unzip -j -o assets/Jess_Satchel_3D_Spinning_Lazy_Susan.zip oddities_lazy_susan_static.glb oddities_lazy_susan_spinning.glb lazy_susan_isolated.webp -d dist/assets/satchel
+          fi
+          if [ -d assets/satchel/jars ]; then
+            mkdir -p dist/assets/satchel/jars
+            cp assets/satchel/jars/*.glb dist/assets/satchel/jars/
+          fi
+      - name: Unpack realistic satchel jar sprites
+        run: |
+          if [ -f assets/Jess_Satchel_Realistic_Jar_Sprites.zip ]; then
+            unzip -o assets/Jess_Satchel_Realistic_Jar_Sprites.zip 'assets/satchel/jars/*_site.webp' -d dist/
+          fi
+      - name: Unpack approved nine oddities jars
+        run: |
+          if [ -f assets/Jess_Approved_Oddities_Jars_Under25MB.zip ]; then
+            mkdir -p dist/assets/satchel/jars
+            unzip -j -o assets/Jess_Approved_Oddities_Jars_Under25MB.zip '*.webp' -d dist/assets/satchel/jars
+          fi
+      - name: Overlay corrected transparent oddities jars
+        run: |
+          if [ -f assets/Jess_Oddities_Jars_Transparent_Fixed.zip ]; then
+            mkdir -p dist/assets/satchel/jars
+            unzip -j -o assets/Jess_Oddities_Jars_Transparent_Fixed.zip '*.webp' -d dist/assets/satchel/jars
+          fi
+      - name: Install approved Overworld and Nearby map icons
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import shutil
+          archive = Path("assets/Jess_Map_Mode_Icons.zip")
+          if not archive.exists():
+              raise SystemExit("Approved map icons ZIP missing")
+          output = Path("dist/assets/ui-icons")
+          output.mkdir(parents=True, exist_ok=True)
+          with ZipFile(archive) as z:
+              files = [name for name in z.namelist() if name.lower().endswith(".webp") and not name.endswith("/")]
+              for label, terms in (("overworld", ("overworld", "atlas", "parchment")), ("nearby", ("nearby", "village", "street"))):
+                  matches = [name for name in files if any(term in Path(name).stem.lower() for term in terms)]
+                  if len(matches) != 1:
+                      raise SystemExit(f"Expected one {label} icon, found {matches}; archive: {files}")
+                  with z.open(matches[0]) as src, (output / f"approved-{label}-map.webp").open("wb") as dst:
+                      shutil.copyfileobj(src, dst)
+          PY
+      - name: Unpack Rogue Witch illustrated panel assets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          import shutil
+          archive = Path("assets/Jess_Witchy_Panel_Assets.zip")
+          if not archive.exists():
+              raise SystemExit("Missing Jess_Witchy_Panel_Assets.zip")
+          output = Path("dist/assets/witchy-panels")
+          output.mkdir(parents=True, exist_ok=True)
+          required = {"field-journal.webp","arcane-transmission.webp","adventure-grimoire.webp","field-title.webp","arcane-title.webp","settings-title.webp","brass-button-photo.webp","brass-button-journal.webp","brass-button-map.webp","brass-button-preview.webp","brass-button-restart.webp","brass-button-blessing.webp"}
+          with ZipFile(archive) as z:
+              files = {Path(n).name:n for n in z.namelist() if n.endswith(".webp")}
+              missing = required - files.keys()
+              if missing:
+                  raise SystemExit(f"Missing illustrated assets: {sorted(missing)}")
+              for name, member in files.items():
+                  with z.open(member) as src, (output/name).open("wb") as dst:
+                      shutil.copyfileobj(src,dst)
+          PY
+      - name: Unpack clean transparent witchy panel frames
+        run: |
+          if [ -f assets/witchy-panel-frames.zip ]; then
+            mkdir -p dist/assets/witchy-frames
+            unzip -j -o assets/witchy-panel-frames.zip 'field-notes-curios.png' 'incoming-transmission.png' 'adventure-settings.png' -d dist/assets/witchy-frames
+          fi
+      - name: Unpack Treasure Haul inventory artwork
+        run: |
+          if [ -f assets/Jess_Treasure_Haul_Inventory_Assets.zip ]; then
+            mkdir -p dist/assets/satchel/inventory
+            unzip -j -o assets/Jess_Treasure_Haul_Inventory_Assets.zip treasure_haul_inventory_grid.png treasure_haul_empty_slot.png -d dist/assets/satchel/inventory
+          fi
+      - name: Bake Ruby Mae original scene into 3D cork jar
+        run: |
+          python -m pip install numpy pillow trimesh
+          python tools/bake_ruby_cork_jar.py
+          mkdir -p dist/assets/satchel/jars
+          cp assets/satchel/jars/jar_01_ruby_showcase.glb dist/assets/satchel/jars/
+      - name: Render synthetic vegetation from 2023 USDA NAIP
+        run: |
+          python -m pip install Pillow==11.3.0
+          python tools/build-vegetation.py
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+      - name: Deploy to Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          timeout: 1200000
+          error_count: 20
+          reporting_interval: 10000
