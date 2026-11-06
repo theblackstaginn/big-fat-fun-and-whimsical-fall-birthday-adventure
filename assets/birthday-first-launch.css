@@ -20,3 +20,12 @@ html.birthday-boot-active{overflow:hidden}
 @keyframes birthday-blink{50%{opacity:.2}}
 @keyframes birthday-boom-in{from{opacity:0;transform:scale(.2) rotate(-8deg)}to{opacity:1;transform:scale(1) rotate(0)}}
 @media(prefers-reduced-motion:reduce){.birthday-boot *{animation:none!important;transition:none!important}}
+
+/* Brief interrupted-transmission effect just before the confetti cannon fires. */
+.birthday-boot.signal-lost .birthday-boot-terminal{animation:birthday-signal-fail .95s steps(1,end) forwards}
+.birthday-boot.signal-lost .birthday-boot-log{animation:birthday-signal-text .16s steps(2,end) infinite}
+.birthday-boot.signal-lost:before{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;opacity:.65;background:repeating-linear-gradient(0deg,transparent 0 3px,#d5b5f41f 4px 5px);animation:birthday-signal-scan .11s linear infinite}
+@keyframes birthday-signal-fail{0%,17%{opacity:1;transform:translate(0)}18%,22%{opacity:.3;transform:translate(12px,-3px) skewX(6deg)}23%,39%{opacity:1;transform:translate(-5px,2px)}40%,52%{opacity:.08;transform:translate(15px)}53%,65%{opacity:1;transform:translate(-9px,-2px)}66%,80%{opacity:.2;transform:translate(6px) skewX(-8deg)}81%,100%{opacity:0;transform:scaleY(.02)}}
+@keyframes birthday-signal-text{0%{filter:none}50%{filter:blur(2px) contrast(3);transform:translateX(7px)}}
+@keyframes birthday-signal-scan{to{background-position:0 12px}}
+@media(prefers-reduced-motion:reduce){.birthday-boot.signal-lost:before{display:none}}
