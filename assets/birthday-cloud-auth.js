@@ -53,6 +53,41 @@
     </section>
   `;
 
+  // Keep cloud note controls readable inside the ornate mobile Settings sheet.
+  const cloudStyle = document.createElement("style");
+  cloudStyle.textContent = `
+    #birthday-cloud-auth, #birthday-cloud-auth * { box-sizing: border-box; }
+    #birthday-cloud-auth { width: 100%; min-width: 0; }
+    #birthday-cloud-auth #cloud-panel { width: 100%; min-width: 0; }
+    #birthday-cloud-auth #cloud-notes { width: 100%; min-width: 0; margin-top: 16px; }
+    #birthday-cloud-auth #cloud-notes h3 { margin: 0 0 14px; line-height: 1.3; }
+    #birthday-cloud-auth #cloud-notes label {
+      display: block !important; position: static !important;
+      width: 100% !important; float: none !important;
+      margin: 14px 0 6px !important; padding: 0 !important;
+      line-height: 1.4 !important; text-align: left !important;
+      font-size: 0.95rem !important; font-weight: 700 !important;
+      color: #382331 !important;
+    }
+    #birthday-cloud-auth #cloud-notes select,
+    #birthday-cloud-auth #cloud-notes textarea {
+      display: block !important; position: static !important;
+      width: 100% !important; max-width: 100% !important;
+      min-width: 0 !important; float: none !important;
+      margin: 0 0 12px !important; padding: 12px !important;
+      border: 1px solid #916a54 !important; border-radius: 9px !important;
+      background: #f5e8ce !important; color: #33252a !important;
+      font: 16px/1.45 system-ui, sans-serif !important;
+      box-shadow: inset 0 1px 4px #51352226 !important;
+    }
+    #birthday-cloud-auth #cloud-notes textarea {
+      min-height: 112px !important; resize: vertical !important;
+    }
+    #birthday-cloud-auth #cloud-notes #cloud-note-save { width: 100%; margin-top: 4px; }
+    #birthday-cloud-auth #cloud-notes #cloud-note-status { overflow-wrap: anywhere; }
+  `;
+  document.head.append(cloudStyle);
+
   // The adventure creates Settings later during DOMContentLoaded.
   // Wait for that panel, including when it is not yet attached to the page.
   function mountInSettings() {
