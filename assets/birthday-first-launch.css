@@ -29,3 +29,8 @@ html.birthday-boot-active{overflow:hidden}
 @keyframes birthday-signal-text{0%{filter:none}50%{filter:blur(2px) contrast(3);transform:translateX(7px)}}
 @keyframes birthday-signal-scan{to{background-position:0 12px}}
 @media(prefers-reduced-motion:reduce){.birthday-boot.signal-lost:before{display:none}}
+
+/* Cinematic blackout: cover the final particles, then reveal the overworld cleanly. */
+.birthday-boot:after{content:"";position:absolute;inset:0;z-index:5;background:#000;opacity:0;pointer-events:none;transition:opacity 1.2s ease-in}
+.birthday-boot.is-fading-to-black:after{opacity:1}
+@media(prefers-reduced-motion:reduce){.birthday-boot:after{transition-duration:.35s}}
