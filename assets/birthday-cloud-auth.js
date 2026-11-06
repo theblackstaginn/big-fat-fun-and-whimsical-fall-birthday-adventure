@@ -64,8 +64,16 @@
   const status = panel.querySelector("#cloud-status");
   const signout = panel.querySelector("#cloud-signout");
 
+  // Some adventure styles override the browser's default [hidden] display.
+  // Control visibility explicitly so the sign-in form opens on iOS Safari.
+  section.style.display = "none";
+  toggle.setAttribute("aria-expanded", "false");
+  toggle.setAttribute("aria-controls", "cloud-panel");
   toggle.addEventListener("click", () => {
-    section.hidden = !section.hidden;
+    const opening = section.style.display === "none";
+    section.hidden = !opening;
+    section.style.display = opening ? "block" : "none";
+    toggle.setAttribute("aria-expanded", String(opening));
   });
 
   if (!window.supabase?.createClient) {
