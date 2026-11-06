@@ -40,6 +40,15 @@
       </button>
       <button type="button" id="cloud-backup" hidden>☁ Back Up Quest Progress</button>
       <p id="cloud-backup-status" role="status"></p>
+      <div id="cloud-notes" hidden>
+        <h3>Private Adventure Notes</h3>
+        <label for="cloud-note-stop">Location</label>
+        <select id="cloud-note-stop"></select>
+        <label for="cloud-note-text">Your memory</label>
+        <textarea id="cloud-note-text" rows="4" maxlength="10000" placeholder="Write a memory from this stop…"></textarea>
+        <button type="button" id="cloud-note-save">✧ Save Private Note</button>
+        <p id="cloud-note-status" role="status"></p>
+      </div>
       <p id="cloud-status" role="status"></p>
     </section>
   `;
@@ -68,6 +77,11 @@
   const backup = panel.querySelector("#cloud-backup");
   const backupStatus = panel.querySelector("#cloud-backup-status");
   const progressKey = "jess-birthday-quest-progress-v3";
+  const notesPanel = panel.querySelector("#cloud-notes");
+  const noteStop = panel.querySelector("#cloud-note-stop");
+  const noteText = panel.querySelector("#cloud-note-text");
+  const noteSave = panel.querySelector("#cloud-note-save");
+  const noteStatus = panel.querySelector("#cloud-note-status");
 
   // Some adventure styles override the browser's default [hidden] display.
   // Control visibility explicitly so the sign-in form opens on iOS Safari.
@@ -115,6 +129,8 @@
     form.hidden = Boolean(account);
     signout.hidden = !account;
     backup.hidden = !account;
+    notesPanel.hidden = !account;
+    notesPanel.style.display = account ? "block" : "none";
 
     toggle.textContent = account
       ? "☁ Quest Board Connected"
@@ -158,6 +174,58 @@
         "Sign-in failed: " + error.message;
     }
   });
+
+  // Private notes are keyed by authenticated account and stop. No local save is modified.
+  function availableStops() {
+    return typeof chapters !== "undefined" && Array.isArray(chapters) ? chapters : [];
+  }
+  const stops = availableStops();
+  for (const chapter of stops) {
+    const option = document.createElement("option");
+    option.value = chapter.id;
+    option.textContent = chapter.title;
+    noteStop.append(option);
+  }
+  async function loadPrivateNote() {
+    const user = window.birthdayCloud.user;
+    if (!user || !noteStop.value) return;
+    noteStatus.textContent = "Loading private note…";
+    noteText.disabled = true;
+    try {
+      const { data, error } = await client.from("birthday_adventure_keepsakes")
+        .select("note").eq("user_id", user.id).eq("stop_id", noteStop.value).maybeSingle();
+      if (error) throw error;
+      noteText.value = data?.note || "";
+      noteStatus.textContent = data ? "Private note loaded." : "No note saved for this stop yet.";
+    } catch (error) {
+      noteStatus.textContent = "Could not load note: " + error.message;
+    } finally { noteText.disabled = false; }
+  }
+  noteStop.addEventListener("change", loadPrivateNote);
+  noteSave.addEventListener("click", async () => {
+    const user = window.birthdayCloud.user;
+    if (!user || !noteStop.value || noteText.disabled) return;
+    noteSave.disabled = true;
+    noteStatus.textContent = "Saving private note…";
+    try {
+      const { error } = await client.from("birthday_adventure_keepsakes").upsert({
+        user_id: user.id, stop_id: noteStop.value, note: noteText.value,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "user_id,stop_id" });
+      if (error) throw error;
+      noteStatus.textContent = "Private note saved to your account.";
+    } catch (error) {
+      noteStatus.textContent = "Note save failed: " + error.message;
+    } finally { noteSave.disabled = false; }
+  });
+  client.auth.onAuthStateChange((_event, session) => {
+    if (session?.user && !session.user.is_anonymous) {
+      setTimeout(loadPrivateNote, 0);
+    } else {
+      noteText.value = "";
+    }
+  });
+  client.auth.getUser().then(({data}) => { if (data?.user && !data.user.is_anonymous) loadPrivateNote(); });
 
   // Explicit, non-destructive backup: never download over local progress or overwrite an existing cloud record.
   backup.addEventListener("click", async () => {
