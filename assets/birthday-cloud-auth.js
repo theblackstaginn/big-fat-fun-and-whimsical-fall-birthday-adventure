@@ -195,6 +195,36 @@
     }
   });
 
+  // Small non-blocking confirmation above the adventure controls.
+  const saveToast = document.createElement("div");
+  saveToast.id = "birthday-cloud-save-toast";
+  saveToast.setAttribute("role", "status");
+  saveToast.setAttribute("aria-live", "polite");
+  saveToast.textContent = "☁ Quest saved";
+  Object.assign(saveToast.style, {
+    position: "fixed", bottom: "calc(6.5rem + env(safe-area-inset-bottom, 0px))",
+    left: "50%", transform: "translateX(-50%) translateY(8px)",
+    zIndex: "2147483640", padding: "0.6rem 1.15rem",
+    background: "linear-gradient(145deg, #4b263f, #2c172c)",
+    color: "#f6e6c1", border: "1px solid #c69a58",
+    borderRadius: "999px", boxShadow: "0 4px 18px #0009",
+    fontFamily: "Georgia, serif", fontSize: "0.95rem",
+    pointerEvents: "none", opacity: "0", transition: "opacity 220ms, transform 220ms",
+    whiteSpace: "nowrap"
+  });
+  document.body.append(saveToast);
+  let saveToastTimer;
+  function showSaveToast(message) {
+    clearTimeout(saveToastTimer);
+    saveToast.textContent = message;
+    saveToast.style.opacity = "1";
+    saveToast.style.transform = "translateX(-50%) translateY(0)";
+    saveToastTimer = setTimeout(() => {
+      saveToast.style.opacity = "0";
+      saveToast.style.transform = "translateX(-50%) translateY(8px)";
+    }, 2600);
+  }
+
   // Automatic backup only after a quest is completed, never during login or reset.
   // Cloud writes are serialized and do not replace local progress.
   let backupQueue = Promise.resolve();
@@ -218,6 +248,7 @@
       if (cloudIds.length > chapterIds.length ||
           cloudIds.some((id, index) => chapterIds[index] !== id)) {
         backupStatus.textContent = "Cloud save differs from local progress. No changes made.";
+        showSaveToast("☁ Cloud save needs review");
         return;
       }
       const { error } = await client.from("birthday_adventure_progress").upsert({
@@ -228,8 +259,10 @@
       }, { onConflict: "user_id" });
       if (error) throw error;
       backupStatus.textContent = "☁ Quest progress synced to your account.";
+      showSaveToast("☁ Quest saved");
     }).catch(error => {
       backupStatus.textContent = "Automatic backup failed: " + error.message;
+      showSaveToast("☁ Backup failed");
     });
   });
 
