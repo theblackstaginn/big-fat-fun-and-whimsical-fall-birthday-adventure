@@ -42,7 +42,14 @@
     </section>
   `;
 
-  document.body.append(panel);
+  // Adventure Settings is built by adventure.js before this deferred script runs.
+  // Mount inside its existing scrollable content, not below the page footer.
+  const settings = document.querySelector(".rpg-settings");
+  if (settings) {
+    settings.append(panel);
+  } else {
+    document.body.append(panel);
+  }
 
   const toggle = panel.querySelector("#cloud-toggle");
   const section = panel.querySelector("#cloud-panel");
