@@ -10,7 +10,7 @@ const chapters = [
 ];
 const list=document.querySelector("#chapter-list"),storeKey="jess-birthday-quest-progress-v3";
 function readProgress(){try{const saved=JSON.parse(localStorage.getItem(storeKey)||"[]");if(!Array.isArray(saved))return[];const prefix=[];for(const chapter of chapters){if(!saved.includes(chapter.id))break;prefix.push(chapter.id)}return prefix}catch{return[]}}
-function saveProgress(){try{localStorage.setItem(storeKey,JSON.stringify(completed))}catch{/* progress still works for this open page */}}
+function saveProgress(){try{localStorage.setItem(storeKey,JSON.stringify(completed));window.dispatchEvent(new CustomEvent("birthday:progress-saved",{detail:{completed:[...completed]}}))}catch{/* progress still works for this open page */}}
 let completed=readProgress(),currentIndex=Math.min(completed.length,chapters.length-1),selected=chapters[currentIndex];
 
 /* Each scene opens only when the FIRST quest within it is revealed.
