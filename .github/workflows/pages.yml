@@ -1,4 +1,5 @@
 name: Deploy static site to GitHub Pages
+# Fresh push starts a clean Pages artifact run after a duplicate-artifact retry.
 
 on:
   push:
