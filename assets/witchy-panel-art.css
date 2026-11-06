@@ -334,3 +334,70 @@
   mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);
 }
 .rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body::-webkit-scrollbar{display:none}
+
+/* Adventure Settings: preserve the illustrated grimoire and use its approved
+   three labeled button assets, without duplicate modern button chrome. */
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-sheet-body{
+  background-size:100% 100%!important;
+  background-position:center!important;
+  padding:clamp(12px,3vw,20px)!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings{
+  display:flex!important;
+  flex-direction:column;
+  gap:clamp(12px,2.2dvh,22px)!important;
+  width:100%;
+  margin:clamp(24px,6dvh,65px) auto 0!important;
+  padding:clamp(8px,2vw,15px)!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings > p{
+  margin:0 0 clamp(4px,1dvh,10px)!important;
+  padding:8px 12px!important;
+  border-radius:8px;
+  background:#f1ddbbd9!important;
+  color:#38252c!important;
+  font:600 clamp(.86rem,3.5vw,1.02rem)/1.35 Georgia,serif!important;
+  text-align:center;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings :is(#rpg-print,#rpg-reset,#rpg-finale){
+  display:block!important;
+  width:100%!important;
+  min-height:0!important;
+  height:auto!important;
+  aspect-ratio: 6 / 1;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background-color:transparent!important;
+  background-position:center!important;
+  background-repeat:no-repeat!important;
+  background-size:100% 100%!important;
+  box-shadow:none!important;
+  color:transparent!important;
+  font-size:0!important;
+  text-shadow:none!important;
+  filter:drop-shadow(0 3px 4px #25152177);
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings #rpg-print{
+  background-image:url("witchy-panels/brass-button-map.webp")!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings #rpg-reset{
+  background-image:url("witchy-panels/brass-button-restart.webp")!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings #rpg-finale{
+  background-image:url("witchy-panels/brass-button-blessing.webp")!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings :is(#rpg-print,#rpg-reset,#rpg-finale)::before,
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings :is(#rpg-print,#rpg-reset,#rpg-finale)::after{
+  content:none!important;
+  display:none!important;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings :is(#rpg-print,#rpg-reset,#rpg-finale):focus-visible{
+  outline:3px solid #f2d29c!important;
+  outline-offset:2px;
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-settings .rpg-settings button[hidden]{display:none!important}
