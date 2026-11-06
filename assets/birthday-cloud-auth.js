@@ -38,6 +38,8 @@
       <button type="button" id="cloud-signout" hidden>
         Sign Out
       </button>
+      <button type="button" id="cloud-backup" hidden>☁ Back Up Quest Progress</button>
+      <p id="cloud-backup-status" role="status"></p>
       <p id="cloud-status" role="status"></p>
     </section>
   `;
@@ -63,6 +65,9 @@
   const form = panel.querySelector("#cloud-form");
   const status = panel.querySelector("#cloud-status");
   const signout = panel.querySelector("#cloud-signout");
+  const backup = panel.querySelector("#cloud-backup");
+  const backupStatus = panel.querySelector("#cloud-backup-status");
+  const progressKey = "jess-birthday-quest-progress-v3";
 
   // Some adventure styles override the browser's default [hidden] display.
   // Control visibility explicitly so the sign-in form opens on iOS Safari.
@@ -109,6 +114,7 @@
 
     form.hidden = Boolean(account);
     signout.hidden = !account;
+    backup.hidden = !account;
 
     toggle.textContent = account
       ? "☁ Quest Board Connected"
@@ -116,7 +122,7 @@
 
     status.textContent = account
       ? "Signed in as " + account.email +
-        ". Cloud synchronization is not enabled yet."
+        ". Manual progress backup is available below."
       : "Sign in with your Quest Board account.";
   }
 
@@ -150,6 +156,42 @@
     } catch (error) {
       status.textContent =
         "Sign-in failed: " + error.message;
+    }
+  });
+
+  // Explicit, non-destructive backup: never download over local progress or overwrite an existing cloud record.
+  backup.addEventListener("click", async () => {
+    const user = window.birthdayCloud.user;
+    if (!user || user.is_anonymous) return;
+    backup.disabled = true;
+    backupStatus.textContent = "Checking your cloud backup…";
+    try {
+      const raw = localStorage.getItem(progressKey);
+      const chapters = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(chapters) || !chapters.every(id => typeof id === "string")) {
+        throw new Error("Local quest progress is not in the expected format.");
+      }
+      const { data: existing, error: lookupError } = await client
+        .from("birthday_adventure_progress")
+        .select("user_id, completed_chapters")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (lookupError) throw lookupError;
+      if (existing) {
+        backupStatus.textContent = "A cloud backup already exists. Nothing was overwritten.";
+        return;
+      }
+      const { error } = await client.from("birthday_adventure_progress").insert({
+        user_id: user.id,
+        completed_chapters: chapters,
+        current_chapter: null
+      });
+      if (error) throw error;
+      backupStatus.textContent = "Quest progress backed up safely. Your local save is unchanged.";
+    } catch (error) {
+      backupStatus.textContent = "Backup failed: " + error.message;
+    } finally {
+      backup.disabled = false;
     }
   });
 
