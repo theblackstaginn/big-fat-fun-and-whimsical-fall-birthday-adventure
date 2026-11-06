@@ -42,13 +42,20 @@
     </section>
   `;
 
-  // Adventure Settings is built by adventure.js before this deferred script runs.
-  // Mount inside its existing scrollable content, not below the page footer.
-  const settings = document.querySelector(".rpg-settings");
-  if (settings) {
-    settings.append(panel);
-  } else {
-    document.body.append(panel);
+  // The adventure creates Settings later during DOMContentLoaded.
+  // Wait for that panel, including when it is not yet attached to the page.
+  function mountInSettings() {
+    const settings = document.querySelector(".rpg-settings");
+    if (!settings) return false;
+    if (panel.parentElement !== settings) settings.append(panel);
+    return true;
+  }
+  document.body.append(panel);
+  if (!mountInSettings()) {
+    const observer = new MutationObserver(() => {
+      if (mountInSettings()) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   const toggle = panel.querySelector("#cloud-toggle");
