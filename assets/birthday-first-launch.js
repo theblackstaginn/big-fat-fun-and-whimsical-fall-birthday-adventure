@@ -8,7 +8,7 @@ let seen=false;try{seen=localStorage.getItem(key)==="done"}catch{}
 if((!standalone&&!test)||(seen&&!test))return;
 const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const overlay=document.createElement("div");overlay.className="birthday-boot";overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.setAttribute("aria-label","Birthday system initialization");
-overlay.innerHTML='<canvas class="birthday-boot-canvas" aria-hidden="true"></canvas><div class="birthday-boot-terminal"><div class="birthday-boot-head"><span>PS C:\\ROGUE_WITCH\\BIRTHDAY&gt; ./initialize.ps1</span><span class="birthday-boot-led">●</span></div><div class="birthday-boot-log" role="log" aria-live="off"></div><div class="birthday-boot-progress"><div></div></div><div class="birthday-boot-percent">0%</div><button type="button" class="birthday-boot-skip">Skip intro</button></div><div class="birthday-boot-finale" hidden><div class="birthday-boot-boom">HAPPY BIRTHDAY, JESS!</div><p>MAGIC CONTAINMENT: COMPLETELY DESTROYED</p></div>';
+overlay.innerHTML='<canvas class="birthday-boot-canvas" aria-hidden="true"></canvas><div class="birthday-boot-terminal"><div class="birthday-boot-head"><span>PS C:\\ROGUE_WITCH\\BIRTHDAY&gt; ./initialize.ps1</span><span class="birthday-boot-led">●</span></div><div class="birthday-boot-log" role="log" aria-live="off"></div><div class="birthday-boot-progress"><div></div></div><div class="birthday-boot-percent">0%</div><button type="button" class="birthday-boot-skip">Skip intro</button></div><div class="birthday-boot-finale" hidden><div class="birthday-boot-boom">HAPPY BIRTHDAY, SWEET CHEEKS!</div><p>MAGIC CONTAINMENT: COMPLETELY DESTROYED</p></div>';
 document.body.append(overlay);document.documentElement.classList.add("birthday-boot-active");
 const canvas=overlay.querySelector("canvas"),ctx=canvas.getContext("2d"),log=overlay.querySelector(".birthday-boot-log"),bar=overlay.querySelector(".birthday-boot-progress div"),percent=overlay.querySelector(".birthday-boot-percent"),terminal=overlay.querySelector(".birthday-boot-terminal"),finale=overlay.querySelector(".birthday-boot-finale");
 const script=[
@@ -41,7 +41,7 @@ function emit(){
  raf=requestAnimationFrame(frame);
 }
 function explosion(){terminal.hidden=true;finale.hidden=false;overlay.classList.add("is-exploding");emit();later(finish,reduced?1900:7200)}
-if(reduced){log.textContent="SYSTEM ERROR: THE HUSBAND IS A WIZARD. HAPPY BIRTHDAY, JESS!";later(explosion,650);return}
+if(reduced){log.textContent="SYSTEM ERROR: THE HUSBAND IS A WIZARD. HAPPY BIRTHDAY, SWEET CHEEKS!";later(explosion,650);return}
 let cursor=0;
 function typeLine(index){
  if(done)return;
