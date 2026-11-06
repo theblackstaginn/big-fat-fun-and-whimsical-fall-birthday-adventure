@@ -310,3 +310,27 @@
  .rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-head{min-height:105px!important}
  .rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body{padding-top:12px!important}
 }
+
+/* Field Notes: keep all live scroll content inside the illustrated parchment
+   writing area. The frame, upper foliage and lower raven/crystals stay fixed. */
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body{
+  position:absolute!important;
+  top:29%!important;
+  bottom:23%!important;
+  left:23%!important;
+  right:8%!important;
+  width:auto!important;
+  height:auto!important;
+  flex:none!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+  padding:0 2px 8px 0!important;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);
+  mask-image:linear-gradient(to bottom,transparent 0,#000 14px,#000 calc(100% - 18px),transparent 100%);
+}
+.rpg-fullscreen .rpg-sheet.is-witchy-curios .rpg-sheet-body::-webkit-scrollbar{display:none}
