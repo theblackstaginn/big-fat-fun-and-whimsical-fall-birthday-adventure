@@ -195,6 +195,44 @@
     }
   });
 
+  // Automatic backup only after a quest is completed, never during login or reset.
+  // Cloud writes are serialized and do not replace local progress.
+  let backupQueue = Promise.resolve();
+  window.addEventListener("birthday:progress-saved", event => {
+    const user = window.birthdayCloud.user;
+    if (!user || user.is_anonymous) return;
+    const chapterIds = event.detail?.completed;
+    if (!Array.isArray(chapterIds) || chapterIds.length === 0) return;
+    backupQueue = backupQueue.catch(() => {}).then(async () => {
+      const active = window.birthdayCloud.user;
+      if (!active || active.id !== user.id) return;
+      const { data: existing, error: readError } = await client
+        .from("birthday_adventure_progress")
+        .select("completed_chapters")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (readError) throw readError;
+      const cloudIds = Array.isArray(existing?.completed_chapters)
+        ? existing.completed_chapters : [];
+      // Never regress an existing cloud save or import progress from a different path.
+      if (cloudIds.length > chapterIds.length ||
+          cloudIds.some((id, index) => chapterIds[index] !== id)) {
+        backupStatus.textContent = "Cloud save differs from local progress. No changes made.";
+        return;
+      }
+      const { error } = await client.from("birthday_adventure_progress").upsert({
+        user_id: user.id,
+        completed_chapters: chapterIds,
+        current_chapter: null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: "user_id" });
+      if (error) throw error;
+      backupStatus.textContent = "☁ Quest progress synced to your account.";
+    }).catch(error => {
+      backupStatus.textContent = "Automatic backup failed: " + error.message;
+    });
+  });
+
   signout.addEventListener("click", async () => {
     const { error } = await client.auth.signOut();
 
