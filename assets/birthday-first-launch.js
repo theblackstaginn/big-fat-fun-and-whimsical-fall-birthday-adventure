@@ -20,7 +20,8 @@ const script=[
 ["ERROR 418: THE HUSBAND IS A WIZARD.","error"],
 ["OH, FOR THE LOVE OF... WHO GAVE HIM ACCESS TO THE PARTICLE CANNONS?!","error"],
 ["CRITICAL FAILURE. BRACE YOURSELF, MEATBAG.","error"],
-["...well, shit.","error"]
+["....Well shit...","error"],
+["emergency power diverted to particle cannons.","error"]
 ];
 let timers=[],raf=0,done=false,particles=[],start=0;
 function later(fn,ms){const id=setTimeout(fn,ms);timers.push(id)}
