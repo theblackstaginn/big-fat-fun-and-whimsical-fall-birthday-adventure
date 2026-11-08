@@ -48,7 +48,7 @@
  '.quest-preview-active .quest-memory-card #witch-memory-save,.quest-preview-active .quest-memory-card #curios-photo-input{opacity:.45;pointer-events:none}'
  ].join("\n");
  document.head.append(style);
- let preview=false,snapshot=null,oldNoteDisabled=false,oldPhotoDisabled=false;
+ let preview=false,snapshot=null,oldNoteDisabled=false,oldPhotoDisabled=false,previewFinaleTimer=null;
  const name=bar.querySelector("#preview-quest-title");
  const count=bar.querySelector("#preview-quest-count");
  const achieve=bar.querySelector("#preview-achieve");
@@ -156,6 +156,8 @@
  }
  function finish(){
   if(!preview)return;
+  if(previewFinaleTimer!==null){clearTimeout(previewFinaleTimer);previewFinaleTimer=null}
+  reveal.disabled=false;
   stopPress();
   preview=false;
   window.__birthdayPreview=false;
@@ -193,13 +195,24 @@
   event.stopImmediatePropagation();
   if(completed.length>=chapters.length){finish();return}
   const finalGift=completed.length===chapters.length-1&&chapters[completed.length]?.id==="park";
+  const finaleDuration=finalGift?(window.playMoonlitFizzle?.(reveal)??980):0;
+  if(finalGift)achievement.classList.add("is-revealing");
   completed.push(chapters[completed.length].id);
   selected=chapters[Math.min(completed.length,chapters.length-1)];
-  achievement.hidden=true;
+  if(!finalGift)achievement.hidden=true;
   renderProgress();
   paint();
-  /* The isolated tour opens the same gift without altering real progress. */
-  if(finalGift)window.openMoonlitLetter?.();
+  /* Preserve the real letter reveal but wait until the Preview Mode bloom
+     completes. This simulated progress is never written to storage. */
+  if(finalGift){
+   previewFinaleTimer=window.setTimeout(()=>{
+    previewFinaleTimer=null;
+    achievement.hidden=true;
+    achievement.classList.remove("is-revealing");
+    reveal.disabled=false;
+    if(preview)window.openMoonlitLetter?.();
+   },finaleDuration+60);
+  }
  },true);
  /* Jump directly to Bangkok Haus in PREVIEW ONLY. Earlier stops are simulated
   * in memory, with no writes. Exit Preview restores the real snapshot. */
