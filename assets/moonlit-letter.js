@@ -51,7 +51,7 @@
  /* Defensive link to Claim, preserving the existing completion gating. */
  document.addEventListener("click",event=>{
   const trigger=event.target?.closest?.("#achievement-reveal");
-  if(!trigger||!modal.hidden)return;
+  if(!trigger||!modal.hidden||window.__birthdayPreview)return; // Preview owns its letter timing after the fizzle.
   const finalScreen=trigger.closest(".quest-achievement.is-finale");
   const finalChapter=typeof selected!=="undefined"&&selected?.id==="park";
   const finalProgress=typeof completed!=="undefined"&&Array.isArray(chapters)&&completed.length===chapters.length-1;
