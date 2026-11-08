@@ -2,14 +2,30 @@ const chapters = [
   {id:"ruby",title:"Ruby Mae’s",subtitle:"The Gathering of Friends",address:"8160 S Main St, Unit A-4, Helen, GA 30545",streetQuery:"8160 S Main St, Unit A-4, Helen, GA 30545",hours:"Opening stop · confirm your meet-up time with friends",duration:"Begin the adventure with your friends and Jess’s special keepsake.",description:"The Rogue Witch’s excursion begins at Ruby Mae’s on South Main Street. Reunite with friends, visit the enchanting shop and collect the birthday keepsake waiting here. When the gathering winds down, continue north to Wonderland and the other curious places of Helen. No rushing and no bookings necessary for this first chapter.",clue:"Where old friends and mountain magic meet, the first page of the birthday adventure appears.",google:"https://www.google.com/maps/search/?api=1&query=8160+S+Main+St+Unit+A-4%2C+Helen%2C+GA+30545",apple:"https://maps.apple.com/?q=Ruby+Mae%27s+Appalachian+Alchemy%2C+8160+S+Main+St+Unit+A-4%2C+Helen%2C+GA+30545"},
   {id:"wonderland",title:"Wonderland Antiques & Curiosities",subtitle:"The Cabinet of Curious Things",address:"8251 S Main St, Helen, GA 30545",streetQuery:"8251 S Main St, Helen, GA 30545",hours:"Monday hours unconfirmed · call ahead",duration:"Explore the South Main curiosities if open; the outdoor clue still works if closed.",description:"Continue north along South Main to Wonderland’s antique treasures. Opening times on Monday have not been reliably confirmed, so check with the shop before counting on a visit inside. If the door is closed, solve the outside clue, then continue along the village route toward the candle shop.",clue:"Seek a curious detail upon the doorway, whether the cabinet is open or sleeping.",google:"https://www.google.com/maps/search/?api=1&query=Wonderland+Antiques+%26+Curiosities%2C+8251+S+Main+St%2C+Helen%2C+GA+30545",apple:"https://maps.apple.com/?q=Wonderland+Antiques+%26+Curiosities%2C+8251+S+Main+St%2C+Helen%2C+GA+30545"},
   {id:"candle",title:"Crafty Mountain Candle Co.",subtitle:"The Candlekeeper’s Cabinet",address:"705 Brucken Strasse, Building 101, Helen, GA 30545",streetQuery:"Crafty Mountain Candle Co., 705 Brucken Strasse, Building 101, Helen, GA 30545",hours:"Monday 11:30 a.m.–3 p.m. · ready-made candle shopping · no workshop booking",duration:"Drop in for candle shopping while the shop is open; no candle-making appointment needed.",description:"The next stop on the northbound adventure is Crafty Mountain Candle Co. on Brucken Strasse. Browse its ready-made soy candles, wax melts and warm mountain fragrances, and let Jess choose a candle to take home. This is shopping, not candle-making: no booked class, pouring, cooling or collection deadline. The shop posts Monday hours until 3 p.m., so visit before closing or keep moving if time is tight.",clue:"Among little jars of captured fragrance, find the scent that feels like a birthday wish.",google:"https://www.google.com/maps/search/?api=1&query=Crafty+Mountain+Candle+Co%2C+Helen%2C+GA",apple:"https://maps.apple.com/?q=Crafty+Mountain+Candle+Co%2C+Helen%2C+GA"},
-  {id:"town",title:"The Curiosity Walk",subtitle:"Glass, Crystals & Village Treasures",address:"Glassblowing Shop: 8600 N Main St · ZuZu’s Petals: 8660 N Main St",streetQuery:"The Glassblowing Shop, 8600 N Main St, Helen, GA 30545",hours:"Alpine Festival lists Monday 10 a.m.–6 p.m.; verify other shop hours",duration:"Allow an unrushed hour or two; browse only what’s open and inviting.",description:"Continue toward downtown’s charming Bavarian shops and enjoy the curious storefronts along Main Street: handmade glass at The Glassblowing Shop, crystals at ZuZu’s Petals and whatever unexpected treasures catch Jess’s eye. The adventure keeps moving generally north toward the river, dinner and park-side ending.",clue:"Seek a little color caught in glass, a stone with a story, and a shop you didn’t plan to find.",google:"https://www.google.com/maps/search/?api=1&query=Glassblowing+Shop%2C+8600+N+Main+St%2C+Helen%2C+GA+30545",apple:"https://maps.apple.com/?q=Glassblowing+Shop%2C+8600+N+Main+St%2C+Helen%2C+GA+30545"},
+  {id:"glass",title:"The Glassblowing Shop",subtitle:"Fire & Colored Glass",address:"8600 N Main St, Unit 1, Helen, GA 30545",streetQuery:"The Glassblowing Shop, 8600 N Main St, Helen, GA 30545",hours:"Monday hours need confirmation",duration:"Browse handmade glass at your own pace; no purchase required.",description:"Enter the colorful world of handmade glass in Helen. Spot delicate ornaments, glowing glass animals and impossible colors caught in crystal-clear shapes. This is its own destination, with its own memory, photograph and quest reward. When the treasures have been admired, continue to ZuZu’s rock shop.",clue:"Find one surprising color captured in glass and remember it for the next adventure.",google:"https://www.google.com/maps/search/?api=1&query=Glassblowing+Shop%2C+8600+N+Main+St%2C+Helen%2C+GA+30545",apple:"https://maps.apple.com/?q=Glassblowing+Shop%2C+8600+N+Main+St%2C+Helen%2C+GA+30545"},
+  {id:"zuzu",title:"ZuZu’s Petals Rock Shop",subtitle:"The Cabinet of Curious Stones",address:"White Horse Square · 8660 N Main St, Helen, GA 30545",streetQuery:"ZuZu’s Petals Rock Shop, 8660 N Main St, Helen, GA 30545",hours:"Monday hours need confirmation",duration:"Enjoy geodes, minerals and jewelry; no purchase required.",description:"Find the tucked-away rock shop at White Horse Square and explore glimmering geodes, crystals and stones with stories. This is a second, separate quest after The Glassblowing Shop: give it its own Journal memory, Curios photograph and achievement before the Chattahoochee chapter unlocks.",clue:"Choose a stone whose color or shape carries a memory of this beautiful day.",google:"https://www.google.com/maps/search/?api=1&query=ZuZus+Petals+Rock+Shop+Helen+GA",apple:"https://maps.apple.com/?q=ZuZus+Petals+Rock+Shop+Helen+GA"},
   {id:"river",title:"The Chattahoochee Pause",subtitle:"A Moment by the Water",address:"Fussen Platz / River Street, downtown Helen",streetQuery:"Chattahoochee River at Helen, GA",hours:"Short public river paths before dusk · sunset ~5:29 p.m. on November 16",duration:"A short daylight riverside pause; avoid unlit trails.",description:"Enjoy a short public riverside pause near downtown’s bridge and River Street before the evening. Listen to the Chattahoochee while there’s light, then return to the main village route for dinner and the final north-end chapters. No unlit trail walking is required.",clue:"Listen to the river carry the autumn leaves and choose one small wish to take with you.",google:"https://www.google.com/maps/search/?api=1&query=Chattahoochee+River+downtown+Helen+GA",apple:"https://maps.apple.com/?q=Chattahoochee+River+downtown+Helen+GA"},
   {id:"dinner",title:"Birthday Dinner at Bangkok Haus",subtitle:"The Lanternlit Thai Feast",address:"Bangkok Haus · 689 Edelweiss Strasse, Helen, GA 30545",streetQuery:"Bangkok Haus Restaurant, 689 Edelweiss Strasse, Helen, GA 30545",hours:"Monday 11:30 a.m.–9 p.m. listed · confirm seating",duration:"Enjoy a cozy birthday dinner of Thai food and sushi; confirm hours before visiting.",description:"Jess chose Bangkok Haus for her birthday feast! After the Chattahoochee pause, take a short detour along Edelweiss Strasse to the restaurant with its distinctive central thatched entrance and flanking staircases. Enjoy Thai dishes, sushi, candle-warm conversation, then continue north for chocolates and the park-side finale. This is a side-street detour, not another shop on North Main.",clue:"Beneath the Bangkok Haus sign, follow the aromas of basil, ginger and spice toward the birthday feast.",google:"https://www.google.com/maps/search/?api=1&query=Bangkok+Haus%2C+689+Edelweiss+Strasse%2C+Helen%2C+GA+30545",apple:"https://maps.apple.com/?q=Bangkok+Haus%2C+689+Edelweiss+Strasse%2C+Helen%2C+GA+30545"},
   {id:"sweet",title:"The Sweet Interlude",subtitle:"A Chocolate Treasure",address:"Hansel & Gretel Candy Kitchen · 8651 N Main St, Helen, GA 30545",streetQuery:"Hansel & Gretel Candy Kitchen, 8651 N Main St, Helen, GA 30545",hours:"Monday hours vary by season · check with the shop",duration:"A short North Main sweets stop before the final park-side chapter.",description:"Find a little chocolate, fudge, or something sweet near the North Main dining area, if the shop is still open. This is not the last page. The Moonlit Finale waits a little farther along, near Unicoi Hill Park.",clue:"Find a sweet treasure to carry into the evening’s final chapter.",google:"https://www.google.com/maps/search/?api=1&query=Hansel+%26+Gretel+Candy+Kitchen%2C+Helen%2C+GA",apple:"https://maps.apple.com/?q=Hansel+%26+Gretel+Candy+Kitchen%2C+Helen%2C+GA"},
   {id:"park",title:"The Moonlit Finale",subtitle:"A Wish Beneath the Copper Moon",address:"Unicoi Hill Park area · N Main St / Pete’s Park Rd, Helen, GA 30545",streetQuery:"Unicoi Hill Park, Helen, GA 30545",hours:"Nighttime park access not confirmed · public Main Street is the fallback",duration:"An unhurried birthday ending near the park and northern village lights.",description:"The final quest ends around Unicoi Hill Park on the northern edge of downtown. If the park and gazebo are open to visitors, share a quiet birthday moment there. If park access is restricted after dark, finish safely on public Main Street nearby instead. No unlit paths or trails are required. The real treasure has been beside you all day.",clue:"Where the village grows quiet beneath the copper moon, whisper a wish for the year to come.",google:"https://www.google.com/maps/search/?api=1&query=Unicoi+Hill+Park%2C+Helen%2C+GA",apple:"https://maps.apple.com/?q=Unicoi+Hill+Park%2C+Helen%2C+GA"},
 ];
 const list=document.querySelector("#chapter-list"),storeKey="jess-birthday-quest-progress-v3";
-function readProgress(){try{const saved=JSON.parse(localStorage.getItem(storeKey)||"[]");if(!Array.isArray(saved))return[];const prefix=[];for(const chapter of chapters){if(!saved.includes(chapter.id))break;prefix.push(chapter.id)}return prefix}catch{return[]}}
+/* Treat the old combined Curiosity Walk as both discoveries when loading earlier saves.
+ * Do not rewrite localStorage or signal a cloud save just by opening the adventure. */
+function readProgress(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(storeKey)||"[]");
+  if(!Array.isArray(saved))return[];
+  const seen=new Set();
+  for(const id of saved){
+   if(id==="town"){seen.add("glass");seen.add("zuzu")}
+   else if(typeof id==="string")seen.add(id);
+  }
+  const prefix=[];
+  for(const chapter of chapters){if(!seen.has(chapter.id))break;prefix.push(chapter.id)}
+  return prefix;
+ }catch{return[]}
+}
 function saveProgress(){try{localStorage.setItem(storeKey,JSON.stringify(completed));window.dispatchEvent(new CustomEvent("birthday:progress-saved",{detail:{completed:[...completed]}}))}catch{/* progress still works for this open page */}}
 let completed=readProgress(),currentIndex=Math.min(completed.length,chapters.length-1),selected=chapters[currentIndex];
 
@@ -20,7 +36,7 @@ const adventureScenes=Object.freeze([
  {id:"gathering",number:"I",title:"The Gathering",startChapter:0},
  {id:"little-flame",number:"II",title:"The Candlekeeper’s Cabinet",startChapter:2},
  {id:"curious-village",number:"III",title:"The Curious Village",startChapter:3},
- {id:"riverside-finale",number:"IV",title:"The Lanternlit North End",startChapter:4}
+ {id:"riverside-finale",number:"IV",title:"The Lanternlit North End",startChapter:5}
 ]);
 function sceneForChapter(chapter){
  const chapterNumber=Math.max(0,chapters.indexOf(chapter));
@@ -382,7 +398,6 @@ const questAnchors=Object.freeze({
  ruby:[34.700059,-83.721920],
  wonderland:[34.699500,-83.724000],
  candle:[34.698250,-83.718590],
- town:[34.701430,-83.730150], /* pre-split Curiosity Walk fallback */
  glass:[34.701430,-83.730150],
  zuzu:[34.701681,-83.731017],
  river:[34.700886,-83.729030],
@@ -413,19 +428,8 @@ function nearbyMainStreetBearing(point){
  }
  return bearing;
 }
-/* ZuZu's Petals is a separate visual pin at White Horse Square, 8660 N Main
- * St #9, beside Windmill Dutch Imports. No extra chapter or GPS requirement. */
-const zuzuWhiteHorseSquare=Object.freeze([34.701681,-83.731017]);
-function withZuZuNearbyMarker(features){
- const chapterIndex=chapters.findIndex(chapter=>chapter.id==="town");
- if(chapterIndex<0||completed.length<chapterIndex)return features;
- return [...features,{
-  chapter:chapters[chapterIndex],
-  point:zuzuWhiteHorseSquare,
-  name:"ZuZu’s Petals · White Horse Square",
-  sideStop:true
- }];
-}
+/* Both downtown stops are first-class chapters with independent map pins,
+ * progress, GPS arrival, Journal entries and achievements. */
 function coordinatesFor(chapter){const known=questAnchors[chapter.id];if(known)return Promise.resolve([...known]);const query=chapter.streetQuery||chapter.address;let cache={};try{cache=JSON.parse(localStorage.getItem(geocodeKey)||"{}")}catch{}if(cache[query])return Promise.resolve(cache[query]);if(geocodePending.has(query))return geocodePending.get(query);const task=geocodeChain.then(async()=>{const wait=Math.max(0,1150-(Date.now()-lastGeocodeAt));if(wait)await new Promise(resolve=>setTimeout(resolve,wait));lastGeocodeAt=Date.now();const url=`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=us&q=${encodeURIComponent(query)}`;const response=await fetch(url,{headers:{Accept:"application/json"}});if(!response.ok)throw new Error("Address lookup unavailable");const matches=await response.json();if(!matches.length)throw new Error("This address was not found on the street map");const point=[Number(matches[0].lat),Number(matches[0].lon)];cache[query]=point;try{localStorage.setItem(geocodeKey,JSON.stringify(cache))}catch{}return point});geocodeChain=task.catch(()=>{});geocodePending.set(query,task);task.then(()=>geocodePending.delete(query),()=>geocodePending.delete(query));return task}
 function createMapGrid(L){const Grid=L.GridLayer.extend({createTile(){const tile=document.createElement("canvas"),size=this.getTileSize();tile.width=size.x;tile.height=size.y;const ctx=tile.getContext("2d");ctx.strokeStyle="rgba(102,69,39,.16)";ctx.lineWidth=1;ctx.setLineDash([3,5]);for(let p=0;p<=size.x;p+=48){ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,size.y);ctx.stroke();ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(size.x,p);ctx.stroke()}return tile}});return new Grid({tileSize:256,interactive:false,opacity:.72})}
 
@@ -727,23 +731,17 @@ async function renderVillageAtlas(center,features){
  neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42,bearing:nearbyMainStreetBearing(center),offset:[0,cameraY]});
  for(const marker of neighborhoodPins)marker.remove();
  neighborhoodPins=[];
- for(const {chapter,point,name,sideStop} of withZuZuNearbyMarker(features)){
+ for(const {chapter,point,name} of features){
   const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id);
-  const isCurrent=!sideStop&&!visited&&chapter.id===chapters[completed.length]?.id;
+  const isCurrent=!visited&&chapter.id===chapters[completed.length]?.id;
   const node=document.createElement("button");node.type="button";
-  node.className="rpg-neighborhood-pin"+(sideStop?" is-zuzu":"")+(visited?" is-explored":"")+(isCurrent?" is-current":"");
-  node.textContent=sideStop?"Z":visited?"✓":String(index+1);
+  node.className="rpg-neighborhood-pin"+(chapter.id==="zuzu"?" is-zuzu":"")+(visited?" is-explored":"")+(isCurrent?" is-current":"");
+  node.textContent=visited?"✓":String(index+1);
   if(isCurrent)node.setAttribute("aria-current","location");
-  node.setAttribute("aria-label",sideStop?"ZuZu’s Petals in White Horse Square":chapter.title+(isCurrent?" current quest":visited?" explored":" revealed"));
+  node.setAttribute("aria-label",chapter.title+(isCurrent?" current quest":visited?" explored":" revealed"));
   node.title=name||chapter.title;
   node.addEventListener("click",event=>{
    event.stopPropagation();
-   if(sideStop){
-    new ml.Popup({offset:24}).setLngLat([point[1],point[0]])
-     .setText("ZuZu’s Petals Rock Shop · White Horse Square, beside Windmill Dutch Imports")
-     .addTo(neighborhoodMap);
-    return;
-   }
    selected=chapter;renderProgress();
    document.querySelector('[data-panel="quest"]')?.click();
   });
@@ -779,17 +777,18 @@ async function renderStreetMap(){
  liveStreetMarker=null;
  renderClevelandHomeSceneLeaflet(L);
  const activeId=chapters[completed.length]?.id;
- withZuZuNearbyMarker(points).forEach(({chapter,point,name,sideStop})=>{
+ points.forEach(({chapter,point,name})=>{
   const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id);
-  const isCurrent=!sideStop&&chapter.id===activeId;
-  const pinType=sideStop?" is-zuzu":visited?" visited":isCurrent?" current":"";
+  const isCurrent=chapter.id===activeId;
+  const pinType=(chapter.id==="zuzu"?" is-zuzu":"")+(visited?" visited":isCurrent?" current":"");
   const icon=L.divIcon({
    className:"quest-pin-icon",
-   html:`<span class="street-quest-pin${pinType}">${sideStop?"Z":visited?"✓":index+1}</span>`,
+   html:`<span class="street-quest-pin${pinType}">${visited?"✓":index+1}</span>`,
    iconSize:[40,46],iconAnchor:[20,42],popupAnchor:[0,-38]
   });
   L.marker(point,{icon,title:name||chapter.title,keyboard:true})
-   .bindPopup(sideStop?"<strong>ZuZu’s Petals</strong><br>White Horse Square · beside Windmill Dutch Imports":`<strong>${chapter.title}</strong><br>${chapter.subtitle}`)
+   .bindPopup(`<strong>${chapter.title}</strong><br>${chapter.subtitle}`)
+   .on("click",()=>{selected=chapter;renderProgress();document.querySelector('[data-panel="quest"]')?.click()})
    .addTo(streetPins);
  });
  const focused=points.find(item=>item.chapter.id===selected.id);
@@ -869,7 +868,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   document.body.classList.add("rpg-fullscreen");
   const hud=document.createElement("div");
   hud.className="rpg-hud";
-  hud.innerHTML='<div class="rpg-topbar"><div class="rpg-brand"><span class="rpg-sigil" aria-hidden="true">☾</span><span class="rpg-title">The Rogue Witch’s <em>Excursion</em></span></div><div class="rpg-top-actions"><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false" aria-label="Locate me" title="Locate me">⌖</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><button type="button" class="rpg-icon" data-panel="story" aria-label="Hear the birthday introduction" title="System transmission">♡</button></div></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite"><span aria-hidden="true">✦</span> <span id="rpg-count">Chapter 1 of 7</span> <span aria-hidden="true">✦</span></div><nav class="rpg-toolbar" aria-label="Adventure controls"><button type="button" data-panel="quest" aria-label="Open quest journal"><span aria-hidden="true">✧</span><small>Journal</small></button><button type="button" data-panel="notes" aria-label="Open curiosities and notes"><span aria-hidden="true">❦</span><small>Curios</small></button><button type="button" data-panel="story" aria-label="Open birthday introduction"><span aria-hidden="true">♡</span><small>Intro</small></button><button type="button" data-panel="satchel" aria-label="Open adventurer’s satchel"><span aria-hidden="true">✦</span><small>Satchel</small></button><button type="button" data-panel="settings" aria-label="Open adventure settings"><span aria-hidden="true">⚙</span><small>Settings</small></button></nav></div>';
+  hud.innerHTML='<div class="rpg-topbar"><div class="rpg-brand"><span class="rpg-sigil" aria-hidden="true">☾</span><span class="rpg-title">The Rogue Witch’s <em>Excursion</em></span></div><div class="rpg-top-actions"><div class="rpg-gps-row"><button type="button" id="rpg-locate" aria-pressed="false" aria-label="Locate me" title="Locate me">⌖</button><span id="rpg-gps-status" role="status" aria-live="polite">Location off</span></div><button type="button" class="rpg-icon" data-panel="story" aria-label="Hear the birthday introduction" title="System transmission">♡</button></div></div><div class="rpg-bottom"><div class="rpg-progress" aria-live="polite"><span aria-hidden="true">✦</span> <span id="rpg-count">Chapter 1 of 9</span> <span aria-hidden="true">✦</span></div><nav class="rpg-toolbar" aria-label="Adventure controls"><button type="button" data-panel="quest" aria-label="Open quest journal"><span aria-hidden="true">✧</span><small>Journal</small></button><button type="button" data-panel="notes" aria-label="Open curiosities and notes"><span aria-hidden="true">❦</span><small>Curios</small></button><button type="button" data-panel="story" aria-label="Open birthday introduction"><span aria-hidden="true">♡</span><small>Intro</small></button><button type="button" data-panel="satchel" aria-label="Open adventurer’s satchel"><span aria-hidden="true">✦</span><small>Satchel</small></button><button type="button" data-panel="settings" aria-label="Open adventure settings"><span aria-hidden="true">⚙</span><small>Settings</small></button></nav></div>';
   art.append(hud);
   const shade=document.createElement("div");shade.className="rpg-shade";shade.hidden=true;
   const sheet=document.createElement("section");sheet.className="rpg-sheet";sheet.hidden=true;sheet.setAttribute("role","dialog");sheet.setAttribute("aria-modal","true");sheet.setAttribute("aria-label","Adventure journal");
@@ -887,6 +886,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
     '<p>Well, well, well. The birthday girl has entered the adventure. Your husband, <strong>Farmer</strong>, apparently looked at a perfectly normal birthday and declared, <em>“No. I need to turn an entire mountain town into a quest.”</em></p>',
     '<p>He built this for you. A real map. Hidden chapters. Curious little shops. Completely irresponsible levels of devotion. I suggested a nice card. <strong>THE MAN ADDED GPS.</strong> I am deeply concerned. And, against my better judgment, impressed.</p>',
     '<div class="rpg-ai-stats" aria-label="Game settings"><span>QUEST STATUS <strong>AUTHORIZED</strong></span><span>DIFFICULTY <strong>PEACEFUL</strong></span><span>WHIMSY LEVEL <strong>CATASTROPHIC</strong></span></div>',
+    '<p>NINE stops. NINE treasures. Glassblowing and ZuZu’s get separate quests, because combining beautiful glass and shiny rocks into one objective is a violation of Loot Law Section 9. I wrote the law. I am also the judge.</p>',
     '<p>Follow each unlocked chapter. Find your friends. Collect treasures and memories. Enjoy every strange, lovely minute at your own pace. No battles. No timer. Unless you count the ongoing war against parking.</p>',
     '<div class="rpg-ai-achievement"><span class="rpg-ai-achievement-label">★ NEW ACHIEVEMENT UNLOCKED ★</span><strong>ABSURDLY ADORED</strong><p>Reward: One handmade adventure from a wizard who thinks you are the entire universe. <em>Disgustingly sweet.</em></p></div>',
     '<p class="rpg-ai-farewell">Now go have the birthday you deserve. And do not tell anyone I said something nice. I have a reputation to maintain.</p>',
