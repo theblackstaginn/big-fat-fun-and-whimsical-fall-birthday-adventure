@@ -5,9 +5,10 @@
 const sheet=document.querySelector(".rpg-sheet"),body=document.getElementById("rpg-sheet-body"),title=document.getElementById("rpg-sheet-title");
 if(!sheet||!body||!title||sheet.dataset.susanInstalled)return;
 sheet.dataset.susanInstalled="1";
+/* Jar acquisition follows its own completed quest, never the next unlocked stop. */
 const items=[
- ["ruby",0],["wonderland",1],["candle",2],["glass",3],["zuzu",3],
- ["river",4],["dinner",5],["sweet",6],["park",7]
+ ["ruby",1],["wonderland",2],["candle",3],["glass",4],["zuzu",5],
+ ["river",6],["dinner",7],["sweet",8],["park",9]
 ],T=Math.PI*2,STEP=T/9;
 let stage,viewer,fallback,ring,jarCanvas,buttons=[],angle=Math.PI,selected=0,active=false,modelReady=false;
 let animation=0,drag=null,moved=false,pending=false,previewAll=false;
