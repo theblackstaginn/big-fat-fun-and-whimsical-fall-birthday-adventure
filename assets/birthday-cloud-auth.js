@@ -360,9 +360,14 @@
       if (readError) throw readError;
       const cloudIds = Array.isArray(existing?.completed_chapters)
         ? existing.completed_chapters : [];
-      // Never regress an existing cloud save or import progress from a different path.
-      if (cloudIds.length > chapterIds.length ||
-          cloudIds.some((id, index) => chapterIds[index] !== id)) {
+      // The retired "town" chapter represented BOTH Glassblowing and ZuZu's.
+      // Compare legacy backups against the nine-stop route without silently
+      // overwriting or shortening someone's cloud save.
+      const compatibleCloudIds = cloudIds.flatMap(id =>
+        id === "town" ? ["glass", "zuzu"] : [id]
+      );
+      if (compatibleCloudIds.length > chapterIds.length ||
+          compatibleCloudIds.some((id, index) => chapterIds[index] !== id)) {
         backupStatus.textContent = "Cloud save differs from local progress. No changes made.";
         showSaveToast("☁ Cloud save needs review");
         return;

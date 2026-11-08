@@ -174,7 +174,7 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 }
 .rpg-fullscreen .street-quest-pin.current{outline:3px solid #f6d28a;outline-offset:3px}
 .rpg-fullscreen .street-quest-pin.visited{background:radial-gradient(circle at 30% 20%,#819777,#3d5542 78%)}
-/* ZuZu is an optional stop within the Curiosity Walk, not another chapter. */
+/* Give ZuZu's independent quest marker its own recognizable amethyst tone. */
 .rpg-fullscreen .street-quest-pin.is-zuzu{background:radial-gradient(circle at 32% 23%,#8f688f,#46314f 82%);border-color:#f4caeb;color:#fff6fe;box-shadow:0 0 0 4px #5b395b88,0 0 18px #e2a5dd96,0 3px 11px #241423c9}
 .rpg-fullscreen .street-map-frame .leaflet-popup-content-wrapper{
  border:1px solid #d9b87b;border-radius:11px;

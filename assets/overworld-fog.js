@@ -4,39 +4,11 @@
   "use strict";
   if(!Array.isArray(chapters)||!document.querySelector("#complete-button"))return;
 
-  /* The glass shop and the crystal shop each have their own real destination. */
-  const townAt=chapters.findIndex(c=>c.id==="town");
-  if(townAt!==-1){
-    const old=chapters[townAt];
-    const glass=Object.assign({},old,{
-      id:"glass",title:"The Glassblowing Shop",subtitle:"Fire & Colored Glass",
-      address:"8600 N Main St, Unit 1, Helen, GA 30545",
-      streetQuery:"The Glassblowing Shop, 8600 N Main St, Helen, GA 30545",
-      hours:"Monday hours need confirmation",duration:"Browse handmade glass at your own pace.",
-      description:"Explore the colorful handmade glass in the heart of Helen. Look for delicate ornaments, glowing glass animals and the artist's brilliant colors. Then follow the northbound quest to a little crystal shop.",
-      clue:"Find a color captured in glass that reminds you of this wonderful day."
-    });
-    const zuzu={
-      id:"zuzu",title:"ZuZu’s Petals Rock Shop",subtitle:"The Cabinet of Curious Stones",
-      address:"White Horse Square · 8660 N Main St, Helen, GA 30545",
-      streetQuery:"ZuZu’s Petals Rock Shop, 8660 N Main St, Helen, GA 30545",
-      hours:"Monday hours need confirmation",
-      duration:"Enjoy geodes, minerals and jewelry in the tucked-away shop.",
-      description:"Find the little rock shop in White Horse Square. Explore glowing geodes, crystals and the stones that call to Jess. The next part of the journey carries you toward the Chattahoochee.",
-      clue:"Choose a stone whose color carries a memory of today.",
-      google:"https://www.google.com/maps/search/?api=1&query=ZuZus+Petals+Rock+Shop+Helen+GA",
-      apple:"https://maps.apple.com/?q=ZuZus+Petals+Rock+Shop+Helen+GA"
-    };
-    chapters.splice(townAt,1,glass,zuzu);
-    let saved=[];
-    try{const raw=JSON.parse(localStorage.getItem(storeKey)||"[]");if(Array.isArray(raw))saved=raw}catch{}
-    const seen=new Set(saved);
-    if(seen.has("town")){seen.add("glass");seen.add("zuzu")}
-    const prefix=[];
-    for(const chapter of chapters){if(!seen.has(chapter.id))break;prefix.push(chapter.id)}
-    completed=prefix;
-    selected=chapters[Math.min(completed.length,chapters.length-1)];
-    saveProgress();
+  /* Chapters now come directly from adventure.js as nine independent stops.
+   * Do not splice them, rewrite saved progress, or send cloud updates on load. */
+  if(chapters.length!==9||chapters[3]?.id!=="glass"||chapters[4]?.id!=="zuzu"){
+    console.error("The birthday adventure requires nine independent quests.");
+    return;
   }
   const symbols=["I","II","III","IV","V","VI","VII","VIII","IX"];
   sceneForChapter=function(chapter){
@@ -255,18 +227,20 @@
   "glass": {
     "kind": "quest",
     "sigil": "✧",
-    "kicker": "DEXTERITY SAVE PENDING",
-    "title": "FRAGILE LOOT DETECTED!",
-    "copy": "A room full of beautiful glass. Two hands. Absolutely no protective armor. Incredible. The Overseer is already composing the incident report.",
-    "reward": "REWARD: +2 sparkle. +10 PLEASE DON'T DROP THAT."
+    "kicker": "EMERGENCY BROADCAST · FRAGILITY DETECTED",
+    "title": "THE GLASS IS JUDGING YOU.",
+    "copy": "Congratulations, Rogue Witch. You've survived a building packed with beautiful objects and roughly ZERO acceptable places to put your elbows. The System has rolled a Dexterity save on your behalf. It landed sideways. Somehow, you're fine. I have fired the dice.",
+    "reward": "REWARD: +7 shimmer. GLASS QUEST COMPLETE. A separate crystal-hoarding incident is now available.",
+    "button": "Unlock the Suspiciously Shiny Rock Shop ✧"
   },
   "zuzu": {
     "kind": "quest",
     "sigil": "💎",
-    "kicker": "GEOLOGICAL COMPANION UNLOCKED",
-    "title": "THE ROCK HAS CHOSEN YOU.",
-    "copy": "You have befriended a shiny mineral. It has no pulse, offers excellent emotional support, and frankly possesses better boundaries than most adults. The System is jealous.",
-    "reward": "REWARD: +1 loyal pebble. Rock charisma: legendary."
+    "kicker": "SYSTEM ALERT · UNLICENSED GEOLOGICAL BONDING",
+    "title": "YOU HAVE BEEN ADOPTED BY A ROCK.",
+    "copy": "Outstanding. You've encountered a collection of glittering minerals and immediately formed emotional attachments to ancient geology. That stone has selected you as its legal guardian. The System has filed custody paperwork and named itself the godparent. This is legally binding in exactly zero jurisdictions.",
+    "reward": "REWARD: +1 devoted pebble. ROCK QUEST COMPLETE. River magic now unlocked.",
+    "button": "Proceed to the Extremely Wet Side Quest ✧"
   },
   "river": {
     "kind": "quest",
