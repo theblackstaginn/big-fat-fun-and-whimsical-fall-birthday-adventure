@@ -388,8 +388,6 @@ body.rpg-fullscreen{height:100dvh;overflow:hidden;background:#17120f}
 .rpg-fullscreen .nearby-view.vector-ready .map-compass{top:calc(env(safe-area-inset-top,0px) + 162px);}
 .rpg-fullscreen .map-compass{top:calc(env(safe-area-inset-top,0px) + 162px);}
 .rpg-fullscreen #rpg-neighborhood-map .maplibregl-ctrl-top-left{top:calc(env(safe-area-inset-top,0px) + 171px);left:6px;}
-.rpg-fullscreen .maplibregl-ctrl-top-right .rpg-location-controls,.rpg-fullscreen .leaflet-top.leaflet-right .rpg-location-controls{margin-top:calc(env(safe-area-inset-top,0px) + 165px)!important;margin-right:7px!important;gap:0!important;padding:2px!important;border:1px solid #be8564;border-radius:10px;background:#3c2736ec!important;box-shadow:0 3px 10px #160d17a0;}
-.rpg-fullscreen .rpg-location-controls button{width:34px!important;height:34px!important;background:#efc49d!important;color:#3c2431!important;border-radius:7px!important;}
 .rpg-fullscreen .rpg-bottom{left:50%;right:auto;width:min(calc(100vw - 22px),312px);padding:0 0 calc(env(safe-area-inset-bottom,0px) + 8px);transform:translateX(-50%);background:transparent;}
 .rpg-fullscreen .rpg-progress{width:max-content;max-width:100%;margin:0 auto 6px;padding:4px 15px 5px;border-radius:99px;border:1px solid #ae735ab3;background:#2d1d2bcf;color:#f7d1ad;font:italic .78rem/1.1 Georgia,serif;box-shadow:0 2px 8px #130a118c;text-shadow:none;letter-spacing:.015em;}
 .rpg-fullscreen .rpg-progress>span:first-child,.rpg-fullscreen .rpg-progress>span:last-child{color:#dc956e;font:8px Georgia,serif;}
