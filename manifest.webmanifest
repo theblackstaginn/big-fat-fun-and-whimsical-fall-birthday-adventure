@@ -9,10 +9,10 @@
   "theme_color": "#301b24",
   "icons": [
     {
-      "src": "assets/favicon.svg",
+      "src": "assets/rogue-witch-icon.png",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
