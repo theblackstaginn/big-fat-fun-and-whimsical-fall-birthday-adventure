@@ -198,7 +198,7 @@
   document.body.append(overlay);
 
   /* Original, theatrically unqualified dungeon announcer. Shares the same
-   * scenes with real progression and isolated Satchel Preview. */
+   * scenes with live progression and the collected Satchel view. */
   const achievementScripts=Object.freeze({
   "ruby": {
     "kind": "quest",
@@ -279,13 +279,13 @@
     "button": "Claim Your Moonlit Ending ✦"
   }
 });
-  function decorateBirthdayAchievement(chapter,preview=false){
+  function decorateBirthdayAchievement(chapter){
    const script=achievementScripts[chapter?.id]||achievementScripts.ruby;
    overlay.classList.remove("is-feast","is-sweet","is-finale");
    if(script.kind!=="quest")overlay.classList.add("is-"+script.kind);
    overlay.setAttribute("aria-label",script.kind==="finale"?"Moonlit birthday finale":"Quest achievement for "+chapter.title);
    overlay.querySelector(".achievement-sigil").textContent=script.sigil;
-   overlay.querySelector(".achievement-kicker").textContent=(preview?"✧ TEST BROADCAST · ":"")+script.kicker;
+   overlay.querySelector(".achievement-kicker").textContent=script.kicker;
    overlay.querySelector("#achievement-title").textContent=script.title;
    overlay.querySelector("#achievement-place").textContent=chapter.title;
    overlay.querySelector("#achievement-copy").textContent=script.copy;

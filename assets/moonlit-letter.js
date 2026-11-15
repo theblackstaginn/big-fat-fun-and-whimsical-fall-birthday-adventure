@@ -51,12 +51,12 @@
  /* Defensive link to Claim, preserving the existing completion gating. */
  document.addEventListener("click",event=>{
   const trigger=event.target?.closest?.("#achievement-reveal");
-  if(!trigger||!modal.hidden||window.__birthdayPreview)return; // Preview owns its letter timing after the fizzle.
+  if(!trigger||!modal.hidden)return;
   const finalScreen=trigger.closest(".quest-achievement.is-finale");
   const finalChapter=typeof selected!=="undefined"&&selected?.id==="park";
   const finalProgress=typeof completed!=="undefined"&&Array.isArray(chapters)&&completed.length===chapters.length-1;
   if(!finalScreen||finalScreen.hidden||!finalChapter||!finalProgress)return;
-  window.setTimeout(()=>{if(completed.length===chapters.length)open()},window.__birthdayPreview?60:1120);
+  window.setTimeout(()=>{if(completed.length===chapters.length)open()},1120);
  },true);
  /* Once the finale is truly complete, keep its letter accessible after reload.
     This is a recovery affordance, never a shortcut past the quest. */
@@ -73,7 +73,7 @@
    reread.addEventListener("click",()=>{document.querySelector("#rpg-close")?.click();open()});
    settings.append(reread);
   }
-  reread.hidden=completed.length!==chapters.length||!!window.__birthdayPreview;
+  reread.hidden=completed.length!==chapters.length;
  },false);
  document.documentElement.setAttribute("data-moonlit-letter-ready","true");
 })();

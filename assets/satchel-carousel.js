@@ -11,7 +11,7 @@ const items=[
  ["river",6],["dinner",7],["sweet",8],["park",9]
 ],T=Math.PI*2,STEP=T/9;
 let stage,viewer,fallback,ring,jarCanvas,buttons=[],angle=Math.PI,selected=0,active=false,modelReady=false;
-let animation=0,drag=null,moved=false,pending=false,previewAll=false;
+let animation=0,drag=null,moved=false,pending=false;
 const jarSprites={empty:"assets/satchel/jars/empty_site.webp",ruby:"assets/satchel/jars/01_ruby_maes.webp",wonderland:"assets/satchel/jars/02_wonderland.webp",candle:"assets/satchel/jars/03_crafty_mountain.webp",glass:"assets/satchel/jars/04_glassblowing.webp",zuzu:"assets/satchel/jars/05_zuzus_petals_no_glow.webp",river:"assets/satchel/jars/06_chattahoochee_river.webp",dinner:"assets/satchel/jars/07_bangkok_haus.webp",sweet:"assets/satchel/jars/08_hansel_gretel_no_glow.webp",park:"assets/satchel/jars/09_unicoi_hill_park_gazebo.webp"};
 let THREE=null,renderer3d=null,scene3d=null,camera3d=null,jarRoots=Array(9).fill(null);
 let artMeshes=Array(9).fill(null),artTextures=Array(9).fill(null),artLoading=Array(9).fill(false),threePromise=null;
@@ -55,7 +55,7 @@ function unlock(){
   const open=n>=threshold;
   b.setAttribute("aria-label",open?"Collected jar "+(i+1):"Undiscovered jar "+(i+1));
   const sprite=b.querySelector(".satchel-jar-sprite");
-  if(sprite){const src=(previewAll||open)?(jarSprites[id]||jarSprites.empty):jarSprites.empty;if(sprite.getAttribute("src")!==src)sprite.setAttribute("src",src);}
+  if(sprite){const src=open?(jarSprites[id]||jarSprites.empty):jarSprites.empty;if(sprite.getAttribute("src")!==src)sprite.setAttribute("src",src);}
  });
 }
 async function init3D(){

@@ -9,7 +9,7 @@ We are **NOT making candles or booking a workshop**. Start at Ruby Mae’s at th
 
 1. **The Gathering — Ruby Mae’s**, 8160 S Main St Unit A-4. Start the quest with friends and Jess’s keepsake. Confirm the friend meet-up time.
 2. **The Cabinet of Curious Things — Wonderland Antiques & Curiosities**, 8251 S Main St. Head north through South Main. Monday opening hours have not been confirmed reliably; if closed, the outdoor observation clue can still be completed.
-3. **The Candlekeeper’s Cabinet — Crafty Mountain Candle Co.**, 705 Brucken Strasse Building 101. Shopping only: ready-made candles, wax melts, scents. No class, reservation, pouring, cooling or pickup plan. Official site lists Monday 11:30 AM–3 PM. If arrival will be after closing, keep the stop flexible and look for other open candle shops rather than breaking the one-way route.
+3. **The Candlekeeper’s Cabinet — Crafty Mountain Candle Co.**, 705 Brucken Strasse Building 101. Shopping only: ready-made candles, wax melts, scents. No class, reservation, pouring, cooling or pickup plan. Official site lists Monday 11:30 AM–6 PM. If arrival will be after closing, keep the stop flexible and continue the overall south-to-north route without making a special return trip.
 4. **The Glassblowing Shop — Fire & Colored Glass**, 8600 N Main St, Unit 1. Browse the colorful glasswork and collect its own Journal memory, photo, achievement and jar. Confirm Monday hours.
 5. **ZuZu’s Petals Rock Shop — The Cabinet of Curious Stones**, White Horse Square, 8660 N Main St. Independently explore the rocks, crystals and minerals; earn a second Journal memory, photo, achievement and jar before continuing north. Confirm Monday hours.
 6. **The Chattahoochee Pause**, public river access near River Street/Fussen Platz. A short daylight side excursion; on November 16 sunset is approximately 5:29 PM EST. No unlit or closed river/forest trails.
@@ -28,7 +28,7 @@ No future scene artwork is fetched before its first chapter unlocks. The existin
 
 ## Important logistics and tradeoffs
 
-- **Candle shopping is still limited by store opening hours**, but it no longer requires an hour-long class or reservation. Crafty Mountain's Monday published hours: 11:30 AM–3 PM. The business sells ready-made candles with storefront pickup options.
+- **Candle shopping is still limited by store opening hours**, but it no longer requires an hour-long class or reservation. Crafty Mountain's Monday published hours: 11:30 AM–6 PM. The business sells ready-made candles with storefront pickup options.
 - Confirm Ruby Mae’s friends' meet-up time and Monday shop openings. Wonderland’s precise Monday hours are unclear in public listings.
 - Check candle-shop hours again before November 16, since seasonal schedules may change.
 - River stop before sunset (~5:29 PM EST); park finale near village lights with a public street fallback if park access after dark is restricted.
