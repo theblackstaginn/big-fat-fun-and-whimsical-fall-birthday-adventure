@@ -34,7 +34,7 @@
   slots.forEach((slot,i)=>{
    const unlocked=found.has(ids[i]),img=slot.querySelector("img");
    const url=unlocked?artwork(ids[i]):emptyArt;
-   if(img.dataset.expected!==url && !(img.dataset.failed===url)){img.dataset.expected=url;img.src=url;}
+   if(img.dataset.expected!==url && img.dataset.failed!==url){img.dataset.expected=url;img.src=url;}
    slot.classList.toggle("is-collected",unlocked);
    slot.setAttribute("aria-label",unlocked?"Enlarge keepsake from "+names[i]:"View undiscovered treasure slot "+(i+1));
   });
@@ -82,7 +82,7 @@
     const img=document.createElement("img");img.src=emptyArt;img.alt="";img.draggable=false;
     img.addEventListener("error",()=>{
      if(img.src.endsWith(emptyArt))return;
-     img.dataset.failed=img.dataset.expected;img.dataset.expected=emptyArt;img.src=emptyArt;
+     img.dataset.failed=img.dataset.expected;img.src=emptyArt;
     });
     slot.append(img);slot.addEventListener("click",()=>open(i));
     slots.push(slot);panel.append(slot);
