@@ -29,7 +29,7 @@ jobs:
       - name: Assemble public site
         run: |
           mkdir dist
-          cp index.html styles.css adventure.js dist/
+          cp index.html styles.css adventure.js manifest.webmanifest dist/
           cp -R assets dist/assets
       - name: Unpack optional illustrated Journal artwork
         run: |
