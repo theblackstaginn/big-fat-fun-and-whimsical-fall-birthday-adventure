@@ -88,146 +88,19 @@ function renderMap(){
 function renderList(){list.replaceChildren();const unlockedThrough=Math.min(completed.length,chapters.length-1);chapters.slice(0,unlockedThrough+1).forEach((chapter,index)=>{const button=document.createElement("button");button.type="button";button.className="chapter-button"+(completed.includes(chapter.id)?" is-complete":"");button.setAttribute("aria-current",chapter.id===selected.id?"true":"false");button.innerHTML=`<span class="chapter-number">${completed.includes(chapter.id)?"✓":String(index+1).padStart(2,"0")}</span><span><span class="chapter-name">${chapter.title}</span><span class="chapter-subtitle">${chapter.subtitle}</span></span><span class="chapter-state" aria-hidden="true">${chapter.id===selected.id?"✦":"›"}</span>`;button.addEventListener("click",()=>{selected=chapter;renderProgress()});list.append(button)});for(let i=unlockedThrough+1;i<chapters.length;i++){const locked=document.createElement("div");locked.className="fog-slot";locked.setAttribute("aria-label","Unrevealed location; complete the current chapter to reveal it");locked.innerHTML='<span class="fog-lock" aria-hidden="true">⌑</span><span class="fog-copy">Uncharted trail<span class="fog-caption">Complete the revealed chapter to discover this place</span></span><span aria-hidden="true">· · ·</span>';list.append(locked)}}
 function renderDetail(){const i=chapters.indexOf(selected),isDone=completed.includes(selected.id);questSection.querySelector("#detail-kicker").textContent=isDone?`CHAPTER ${String(i+1).padStart(2,"0")} · EXPLORED`:`CHAPTER ${String(i+1).padStart(2,"0")} · CURRENT CHAPTER`;questSection.querySelector("#detail-title").textContent=selected.title;questSection.querySelector("#detail-description").textContent=selected.description;questSection.querySelector("#detail-clue").textContent=selected.clue;questSection.querySelector("#detail-meta").innerHTML=`<span><strong>Where:</strong> ${selected.address}</span><span><strong>When:</strong> ${selected.hours}</span><span><strong>Pace:</strong> ${selected.duration}</span>`;questSection.querySelector("#detail-directions").innerHTML=`<a href="${selected.google}" target="_blank" rel="noopener">Open Google Maps ↗</a><a href="${selected.apple}" target="_blank" rel="noopener">Open Apple Maps ↗</a>`;const button=questSection.querySelector("#complete-button");button.disabled=isDone;button.textContent=isDone?(completed.length===chapters.length?"Adventure complete":"Place explored ✓"):"Mark this place visited · reveal next";button.setAttribute("aria-pressed",String(isDone))}
 let streetMap=null,streetPins=null,leafletPromise=null,geocodeChain=Promise.resolve(),lastGeocodeAt=0,mapRenderId=0,lastNearbyFocusId=null;const geocodePending=new Map(),geocodeKey="jess-birthday-map-coordinates-v1",helenCenter=[34.7012,-83.7246];
-const homeTestLocation={lat:34.564025725501,lng:-83.673061413538,address:"774 Will Hambrick Rd, Cleveland, GA 30528"};
-const CLEVELAND_HOME_SCENE={
- extent:{west:-83.6735,south:34.5636,east:-83.6726,north:34.5645},
- buildings:[
-  {height:7.4,pixels:[[674,90],[678,250],[554,266],[538,117]],roof:"#8d4935"},
-  {height:4.8,pixels:[[446,329],[596,339],[607,388],[456,379]],roof:"#744537"},
-  {height:3.8,pixels:[[516,409],[644,413],[658,456],[524,452]],roof:"#98604a"}
- ],
- trees:[
-  /* Retain the existing tree placements; these are illustrative parcel-local
-   * pixels, not GPS-surveyed individual trunks. */
-  [286,85],[370,55],[765,55],[842,105],[192,300],[226,376],[205,456],[267,526],
-  [362,593],[408,662],[754,293],[844,351],[919,465],[821,562],[775,635],[916,681],
-  [471,758],[535,864],[408,920],[120,842],[48,652],[96,512],[278,172],[915,235],
-  /* Fill woodland edges while keeping the mapped roofs and open yard clear. */
-  [112,70],[194,104],[465,57],[952,86],[714,145],[962,175],
-  [56,215],[115,280],[64,377],[146,557],[82,735],
-  [957,315],[955,540],[887,603],[955,761],
-  [178,930],[294,960],[605,924],[684,859],[746,953],
-  [328,328],[357,435],[385,532],[691,534],[682,625],[596,718],[317,737],[714,344],
-  /* Seven mature trees: size multiplier used in both map renderers. */
-  [132,195,2.25],[402,223,2.15],[826,221,2.3],[896,410,2.1],
-  [303,650,2.4],[707,772,2.3],[867,854,2.2]
- ]
-};
-let streetHomeControl=null,neighborhoodHomeControl=null;
-function ensurePlayerTestStyles(){
- if(document.querySelector("#rpg-player-test-styles"))return;
- const style=document.createElement("style");style.id="rpg-player-test-styles";
- style.textContent=".rpg-home-marker-shell,.rpg-player-marker-shell{background:transparent!important;border:0!important}.rpg-home-marker{width:34px;height:38px;display:grid;place-items:center;background:#80502f;border:2px solid #f2d58f;border-radius:50% 50% 50% 5px;transform:rotate(-45deg);box-shadow:0 3px 9px #17110db3;color:#f8e9c7}.rpg-home-marker svg{width:19px;height:19px;transform:rotate(45deg)}.rpg-location-controls svg{width:20px;height:20px;display:block;margin:auto}.rpg-player-marker{width:36px;height:36px;display:grid;place-items:center;background:#315a56;border:3px solid #f2d58f;border-radius:50%;box-shadow:0 2px 9px #17110dcc;color:#fff4d7}.rpg-player-marker svg{width:20px;height:20px}.rpg-location-controls{display:flex;gap:3px;padding:3px!important;background:#38271fd9!important}.rpg-location-controls button{width:40px;height:38px;padding:0;border:0;background:#f5e7c8;color:#39271d;font:700 21px/1 Georgia,serif;cursor:pointer}.rpg-location-controls button:focus-visible{outline:3px solid #c18d45;outline-offset:1px}.maplibregl-ctrl-group.rpg-location-controls{display:flex}.maplibregl-ctrl-group.rpg-location-controls button{border-radius:2px}.rpg-player-marker-shell{z-index:20!important}";
- style.textContent+=".rpg-home-tree-shell{background:transparent!important;border:0!important}.rpg-home-tree{position:absolute;left:50%;bottom:3px;transform:translateX(-50%);width:var(--tree-size);height:calc(var(--tree-size)*.82);filter:drop-shadow(1px 2px 1px #24291e88)}.rpg-home-tree:before{content:'';position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);width:27%;height:30%;background:#59422c;border-radius:2px}.rpg-home-tree i,.rpg-home-tree b{position:absolute;left:50%;transform:translateX(-50%);display:block;width:100%;height:68%;bottom:20%;background:var(--tree-color);clip-path:polygon(50% 0,97% 78%,83% 89%,100% 100%,0 100%,17% 88%,3% 78%)}.rpg-home-tree b{width:68%;height:50%;bottom:42%;filter:brightness(1.12)}.rpg-home-tree i{box-shadow:inset -5px 0 #0002}.rpg-home-tree-shell{z-index:650!important}";style.textContent+=".maplibregl-ctrl-top-right .rpg-location-controls{margin-top:430px!important;margin-right:8px!important}.leaflet-top.leaflet-right .rpg-location-controls{margin-top:430px!important;margin-right:8px!important}";document.head.append(style);
+function ensurePlayerMarkerStyles(){
+ if(document.querySelector("#rpg-player-marker-styles"))return;
+ const style=document.createElement("style");style.id="rpg-player-marker-styles";
+ style.textContent=".rpg-player-marker-shell{background:transparent!important;border:0!important}.rpg-player-marker{width:36px;height:36px;display:grid;place-items:center;background:#315a56;border:3px solid #f2d58f;border-radius:50%;box-shadow:0 2px 9px #17110dcc;color:#fff4d7}.rpg-player-marker svg{width:20px;height:20px}.rpg-player-marker-shell{z-index:20!important}";
+ document.head.append(style);
 }
-function homePixelToLatLng(pixel){
- const e=CLEVELAND_HOME_SCENE.extent,[x,y]=pixel;
- return [e.north-(y/1024)*(e.north-e.south),e.west+(x/1024)*(e.east-e.west)];
-}
-function renderClevelandHomeSceneLeaflet(L){
- if(!streetTerrain||streetTerrain.__homeSceneAdded)return;
- streetTerrain.__homeSceneAdded=true;
- const pane=streetMap.getPane("village-geometry");
- const buildings=L.layerGroup(),trees=L.layerGroup();
- /* Paint autumn grass before drawing Home's existing buildings and trees. */
- const e=CLEVELAND_HOME_SCENE.extent;
- L.imageOverlay(new URL("assets/cleveland-painted-ground.webp?v=20261104-home-grass1",document.baseURI).href,
-  [[e.south,e.west],[e.north,e.east]],
-  {pane:"village-geometry",interactive:false,opacity:1}).addTo(streetTerrain);
- for(const building of CLEVELAND_HOME_SCENE.buildings){
-  const roof=building.pixels.map(homePixelToLatLng);
-  const wall=roof.map(([lat,lng])=>[lat-0.000018,lng+0.000012]);
-  roof.forEach((point,index)=>{const following=roof[(index+1)%roof.length];const lower=wall[index],lowerFollowing=wall[(index+1)%wall.length];L.polygon([point,following,lowerFollowing,lower],{pane:"village-geometry",stroke:false,fillColor:"#49362a",fillOpacity:.94,interactive:false}).addTo(buildings)});
-  L.polygon(roof,{pane:"village-geometry",color:"#583729",weight:1.1,opacity:.92,fillColor:building.roof,fillOpacity:1,interactive:false}).addTo(buildings);
-  const ridge=roof.slice(0,2);
-  L.polyline(ridge,{pane:"village-geometry",color:"#c17a51",weight:1.2,opacity:.6,interactive:false}).addTo(buildings);
- }
- const palette=["#9b4f31","#b56b2e","#6c7642","#4d6855","#8b6b36"];
- CLEVELAND_HOME_SCENE.trees.forEach((pixel,index)=>{
-  const point=homePixelToLatLng(pixel),color=palette[(index*7+Math.floor(pixel[0]/100))%palette.length];
-  const size=Math.round((20+(index%4)*2)*(pixel[2]||1));
-  const html='<span class="rpg-home-tree" style="--tree-color:'+color+';--tree-size:'+size+'px"><i></i><b></b></span>';
-  const icon=L.divIcon({className:"rpg-home-tree-shell",html,iconSize:[size+14,size+15],iconAnchor:[(size+14)/2,size+11]});
-  L.marker(point,{pane:"markerPane",icon,keyboard:false,interactive:false,zIndexOffset:120}).addTo(trees);
- });
- buildings.addTo(streetTerrain);trees.addTo(streetTerrain);
-}
-function homePixelToLngLat(pixel){
- const [lat,lng]=homePixelToLatLng(pixel);return [lng,lat];
-}
-function homeSceneFeatureCollection(){
- const features=[];
- for(const building of CLEVELAND_HOME_SCENE.buildings){
-  const ring=building.pixels.map(homePixelToLngLat);ring.push(ring[0]);
-  features.push({type:"Feature",properties:{kind:"building",roof:building.roof,height:building.height},geometry:{type:"Polygon",coordinates:[ring]}});
- }
- const treeVariants=["maple-rust","maple-amber","oak-moss","pine-green","maple-gold"];
- CLEVELAND_HOME_SCENE.trees.forEach((pixel,index)=>{
-  const variation=(index*7+Math.floor(pixel[0]/100))%treeVariants.length;
-  features.push({type:"Feature",properties:{kind:"tree",sprite:treeVariants[variation],scale:(.78+(index%4)*.1)*(pixel[2]||1)},geometry:{type:"Point",coordinates:homePixelToLngLat(pixel)}});
- });
- return {type:"FeatureCollection",features};
-}
-function makeHomeTreeSprite(color,kind){
- const canvas=document.createElement("canvas");canvas.width=52;canvas.height=64;
- const ctx=canvas.getContext("2d");if(!ctx)return null;
- ctx.fillStyle="rgba(40,34,26,.25)";ctx.beginPath();ctx.ellipse(26,57,14,4,0,0,Math.PI*2);ctx.fill();
- ctx.fillStyle="#62472e";ctx.fillRect(23,43,6,12);
- if(kind==="pine"){
-  ctx.fillStyle=color;
-  [[26,5,13],[26,17,19],[26,31,24]].forEach(([x,y,w])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+w,y+26);ctx.lineTo(x-w,y+26);ctx.closePath();ctx.fill()});
-  ctx.fillStyle="rgba(255,231,180,.18)";
-  [[26,5,13],[26,17,19],[26,31,24]].forEach(([x,y,w])=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-w*.3,y+20);ctx.lineTo(x-w*.68,y+23);ctx.closePath();ctx.fill()});
- }else{
-  ctx.fillStyle=color;
-  [[17,21,12],[31,16,13],[23,31,15],[37,31,10],[12,35,10],[28,42,13]].forEach(([x,y,r])=>{ctx.beginPath();ctx.moveTo(x-r,y+2);ctx.lineTo(x-r*.7,y-r*.48);ctx.lineTo(x-r*.1,y-r);ctx.lineTo(x+r*.65,y-r*.62);ctx.lineTo(x+r,y+3);ctx.lineTo(x+r*.4,y+r*.58);ctx.lineTo(x-r*.65,y+r*.55);ctx.closePath();ctx.fill()});
-  ctx.fillStyle="rgba(255,230,174,.18)";
-  [[17,21,12],[31,16,13],[23,31,15],[37,31,10],[12,35,10],[28,42,13]].forEach(([x,y,r])=>{ctx.beginPath();ctx.moveTo(x-r,y+2);ctx.lineTo(x-r*.7,y-r*.48);ctx.lineTo(x-r*.1,y-r);ctx.lineTo(x-r*.15,y+1);ctx.closePath();ctx.fill()});
- }
- return ctx.getImageData(0,0,canvas.width,canvas.height);
-}
-function installClevelandHomeMapLibreScene(map,vegetationBefore,symbolBefore){
- if(!map||map.getSource("birthday-cleveland-home-scene"))return;
- const data=homeSceneFeatureCollection();
- for(const [name,color,kind] of [
-  ["maple-rust","#a64f32","deciduous"],["maple-amber","#c17b31","deciduous"],
-  ["oak-moss","#778047","deciduous"],["pine-green","#405d50","pine"],["maple-gold","#c6a044","deciduous"]
- ]){
-  if(map.hasImage(name))continue;
-  const image=makeHomeTreeSprite(color,kind);if(image)map.addImage(name,image,{pixelRatio:2});
- }
- map.addSource("birthday-cleveland-home-scene",{type:"geojson",data});
- const firstSurface=vegetationBefore||symbolBefore;
- try{
-  map.addLayer({
-   id:"birthday-cleveland-home-trees",type:"symbol",source:"birthday-cleveland-home-scene",minzoom:15,
-   filter:["==",["get","kind"],"tree"],
-   layout:{"icon-image":["get","sprite"],"icon-size":["get","scale"],"icon-anchor":"bottom","icon-allow-overlap":true,"icon-ignore-placement":true,"symbol-z-order":"source"}
-  },firstSurface);
- }catch{/* The home tree sprites are decorative; keep the street map available. */}
- try{
-  map.addLayer({
-   id:"birthday-cleveland-home-roof-footprints",type:"fill",source:"birthday-cleveland-home-scene",minzoom:15,
-   filter:["==",["get","kind"],"building"],
-   paint:{"fill-color":["get","roof"],"fill-outline-color":"#583729","fill-opacity":1}
-  },symbolBefore);
- }catch{/* Keep the road map available if an optional roof fill is unsupported. */}
- try{
-  map.addLayer({
-   id:"birthday-cleveland-home-buildings",type:"fill-extrusion",source:"birthday-cleveland-home-scene",minzoom:15,
-   filter:["==",["get","kind"],"building"],
-   paint:{"fill-extrusion-color":["get","roof"],"fill-extrusion-height":["get","height"],"fill-extrusion-base":0,"fill-extrusion-opacity":1,"fill-extrusion-vertical-gradient":true}
-  },symbolBefore);
- }catch{/* The home roofs are decorative; keep the street map available. */}
-}
-function homeIconSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2M5.7 9.1V20h12.6V9.1M9.5 20v-6.2h5V20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'}
 function returnIconSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 3.5 10.5 9 16M4 10.5h9a7 7 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(0 -2)"/></svg>'}
 function playerMarkerSvg(){return '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="3.5" fill="currentColor"/><path d="M5.2 21v-2.1a6.8 6.8 0 0 1 13.6 0V21z" fill="currentColor"/></svg>'}
 /* Opt-in GPS player marker. Location is never written to quest progress. */
 let livePlayerPoint=null,playerWatchId=null,playerFollow=false,gpsSession=0;
 let liveStreetMarker=null,liveWorldMarker=null,liveVillageMarker=null;
 function makeLiveLeafletIcon(L){
- ensurePlayerTestStyles();
+ ensurePlayerMarkerStyles();
  return L.divIcon({className:"rpg-player-marker-shell",html:'<span class="rpg-player-marker" aria-hidden="true">'+playerMarkerSvg()+'</span>',iconSize:[38,38],iconAnchor:[19,19]});
 }
 function syncLivePlayerMarkers(){
@@ -335,54 +208,6 @@ function startLivePlayerTracking(){
   setGpsControls("Unable to start GPS");
  }
 }
-function addLeafletHomePlayerMarkers(L,map,layer){
- ensurePlayerTestStyles();
- const point=[homeTestLocation.lat,homeTestLocation.lng];
- const home=L.divIcon({className:"rpg-home-marker-shell",html:'<span class="rpg-home-marker" aria-hidden="true">'+homeIconSvg()+'</span>',iconSize:[48,46],iconAnchor:[44,43]});
- L.marker(point,{icon:home,title:"Home test location",keyboard:true,zIndexOffset:800}).bindPopup("<strong>Home test location</strong><br>"+homeTestLocation.address).addTo(layer);
-}
-function ensureLeafletHomeControl(L,map,questPoint){
- ensurePlayerTestStyles();
- if(streetHomeControl){streetHomeControl.questPoint=questPoint;return}
- const control=L.control({position:"topright"});
- control.questPoint=questPoint;
- control.onAdd=function(){
-  const wrap=L.DomUtil.create("div","leaflet-bar rpg-location-controls");
-  wrap.innerHTML='<button type="button" aria-label="Show home location" title="Show home location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button><button type="button" aria-label="Center map on your player marker" title="Center on player marker"><span aria-hidden="true">'+playerMarkerSvg()+'</span></button>';
-  L.DomEvent.disableClickPropagation(wrap);
-  L.DomEvent.on(wrap.children[0],"click",event=>{L.DomEvent.preventDefault(event);onPlayerMapDragged();map.setView([homeTestLocation.lat,homeTestLocation.lng],18.5,{animate:true})});
-  L.DomEvent.on(wrap.children[1],"click",event=>{L.DomEvent.preventDefault(event);onPlayerMapDragged();map.setView(control.questPoint||helenCenter,17,{animate:true})});
-   L.DomEvent.on(wrap.children[2],"click",event=>{L.DomEvent.preventDefault(event);focusPlayerMarker()});
-  return wrap;
- };
- control.addTo(map);streetHomeControl=control;
-}
-function addMapLibreHomePlayerMarkers(ml,map){
- ensurePlayerTestStyles();
- const home=document.createElement("button");home.type="button";home.className="rpg-home-marker-shell";home.setAttribute("aria-label","Home test location");
- home.innerHTML='<span class="rpg-home-marker" aria-hidden="true">'+homeIconSvg()+'</span>';
- const homeMarker=new ml.Marker({element:home,anchor:"bottom",offset:[-16,0]}).setLngLat([homeTestLocation.lng,homeTestLocation.lat]).setPopup(new ml.Popup({offset:28}).setText("Home test location · "+homeTestLocation.address)).addTo(map);
- neighborhoodPins.push(homeMarker);
-}
-function ensureMapLibreHomeControl(ml,map,questCenter){
- ensurePlayerTestStyles();
- if(neighborhoodHomeControl){neighborhoodHomeControl.questCenter=[questCenter[1],questCenter[0]];return}
- const control={
-  questCenter:[questCenter[1],questCenter[0]],
-  onAdd(mapInstance){
-   this.map=mapInstance;
-   this.container=document.createElement("div");this.container.className="maplibregl-ctrl maplibregl-ctrl-group rpg-location-controls";
-   this.container.innerHTML='<button type="button" aria-label="Show home location" title="Show home location"><span aria-hidden="true">'+homeIconSvg()+'</span></button><button type="button" aria-label="Return to current quest" title="Return to current quest"><span aria-hidden="true">'+returnIconSvg()+'</span></button><button type="button" aria-label="Center map on your player marker" title="Center on player marker"><span aria-hidden="true">'+playerMarkerSvg()+'</span></button>';
-   this.container.children[0].addEventListener("click",()=>{onPlayerMapDragged();mapInstance.flyTo({center:[homeTestLocation.lng,homeTestLocation.lat],zoom:18.5,pitch:42})});
-   this.container.children[1].addEventListener("click",()=>{onPlayerMapDragged();mapInstance.flyTo({center:this.questCenter,zoom:17,pitch:42})});
-    this.container.children[2].addEventListener("click",focusPlayerMarker);
-   return this.container;
-  },
-  onRemove(){this.container?.remove();this.map=null}
- };
- neighborhoodHomeControl=control;map.addControl(control,"top-right");
-}
-
 function setStreetStatus(message,show=true){const status=document.querySelector("#street-map-status");status.textContent=message;status.hidden=!show}
 function loadLeaflet(){if(window.L)return Promise.resolve(window.L);if(leafletPromise)return leafletPromise;leafletPromise=new Promise((resolve,reject)=>{if(!document.querySelector("#leaflet-style")){const css=document.createElement("link");css.id="leaflet-style";css.rel="stylesheet";css.href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";document.head.append(css)}const script=document.createElement("script");script.src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";script.onload=()=>window.L?resolve(window.L):reject(new Error("Map library did not load"));script.onerror=()=>reject(new Error("Map library could not load"));document.head.append(script)}).catch(error=>{leafletPromise=null;throw error});return leafletPromise}
 /* Stable GPS/map anchors for all nine stops. Building-level approximations,
@@ -436,14 +261,6 @@ function createMapGrid(L){const Grid=L.GridLayer.extend({createTile(){const tile
 /* Interactive RPG street atlas: real OSM roads, buildings, and water.
  * MapLibre/OpenFreeMap provides the 3D village; Leaflet uses car-free OSM tiles as fallback. */
 let neighborhoodMap=null,neighborhoodLoad=null,neighborhoodLibrary=null,neighborhoodPins=[],neighborhoodRequest=0;
-/* Temporary on-screen atlas diagnostic for iPhone / embedded browsers.
- * Reports only map-loading stages, never visitor location or personal data. */
-/* Keep atlas diagnostics in the developer console so they never cover the map. */
-function showAtlasDiagnostic(message,failed=false){
- const status=document.querySelector("#atlas-diagnostic");
- if(status)status.remove();
- if(failed)console.warn("3D village view unavailable; showing the street map.",String(message).slice(0,180));
-}
 function loadNeighborhoodLibrary(){
  if(window.maplibregl&&typeof window.maplibregl.Map==="function")return Promise.resolve(window.maplibregl);
  if(neighborhoodLibrary)return neighborhoodLibrary;
@@ -498,12 +315,6 @@ function installSyntheticHelenGround(map){
    coordinates:[[-83.739,34.713],[-83.709,34.713],[-83.709,34.691],[-83.739,34.691]],minzoom:12},
   {url:new URL("assets/helen-painted-ground-downtown.png?v=20261103-ground21",document.baseURI).href,
    coordinates:[[-83.732,34.708],[-83.717,34.708],[-83.717,34.694],[-83.732,34.694]],minzoom:14},
-  /* Cleveland Home uses the Helen renderer with its own geographic bounds. */
-  {url:new URL("assets/cleveland-painted-ground.webp?v=20261104-home-grass1",document.baseURI).href,
-   coordinates:[[CLEVELAND_HOME_SCENE.extent.west,CLEVELAND_HOME_SCENE.extent.north],
-    [CLEVELAND_HOME_SCENE.extent.east,CLEVELAND_HOME_SCENE.extent.north],
-    [CLEVELAND_HOME_SCENE.extent.east,CLEVELAND_HOME_SCENE.extent.south],
-    [CLEVELAND_HOME_SCENE.extent.west,CLEVELAND_HOME_SCENE.extent.south]],minzoom:15}
  ];
  return true;
 }
@@ -676,10 +487,6 @@ function styleVillageAtlas(map){
    const treeBefore=layers.find(layer=>layer["source-layer"]==="transportation"&&layer.type==="line")?.id||symbolBefore;
    try{window.installHelenTreeOverlay(map,treeBefore)}catch{/* Trees are decorative; retain map navigation. */}
   }
-  /* Install the home scene ABOVE its painted grass, preserving existing trees
-   * and all three previously mapped home structures. */
-  try{installClevelandHomeMapLibreScene(map,vegetationBefore,symbolBefore)}
-  catch{/* The homestead art is optional; street navigation must still work. */}
   /* Overlay real sloping roof geometry only when the lightweight renderer is available.
    * If unsupported or unavailable, MapLibre's native buildings remain in place. */
   if(typeof window.installAlpineRoofLayer==="function"){
@@ -691,18 +498,15 @@ function styleVillageAtlas(map){
   for(const id of ["birthday-rooftops","birthday-alpine-eaves","birthday-alpine-walls"]){
    try{if(map.getLayer(id))map.removeLayer(id)}catch{}
   }
-  showAtlasDiagnostic("Using standard village buildings",false);
- }
+  }
 }
 async function renderVillageAtlas(center,features){
- showAtlasDiagnostic("Starting vector map");
  const request=++neighborhoodRequest;
  const pane=document.querySelector(".street-map-frame"),nearby=document.querySelector("#nearby-view");
- if(!pane||!nearby||nearby.hidden){showAtlasDiagnostic("Nearby container not visible",true);return;}
+ if(!pane||!nearby||nearby.hidden)return;
  let container=pane.querySelector("#rpg-neighborhood-map");
  if(!container){container=document.createElement("div");container.id="rpg-neighborhood-map";container.setAttribute("aria-label","Illustrated interactive streets of Helen");pane.append(container);}
  const ml=await loadNeighborhoodLibrary();
- showAtlasDiagnostic("Map library loaded");
  if(!neighborhoodMap){
   neighborhoodMap=new ml.Map({
    container,style:"https://tiles.openfreemap.org/styles/liberty",
@@ -710,25 +514,15 @@ async function renderVillageAtlas(center,features){
    bearing:nearbyMainStreetBearing(center),dragRotate:false,pitchWithRotate:false,renderWorldCopies:false
   });
   /* Zoom and navigation live in the shared upper-left rail. */
-  showAtlasDiagnostic("Loading vector style and tiles");
-  neighborhoodMap.on("error",event=>showAtlasDiagnostic("Map event: "+(event?.error?.message||"unknown"),true));neighborhoodMap.on("dragstart",onPlayerMapDragged);
+  neighborhoodMap.on("dragstart",onPlayerMapDragged);
   neighborhoodLoad=new Promise((resolve,reject)=>{
    const timeout=setTimeout(()=>reject(new Error("Vector map startup timed out")),18000);
-   neighborhoodMap.once("load",()=>{clearTimeout(timeout);showAtlasDiagnostic("Style loaded; applying rooftops");styleVillageAtlas(neighborhoodMap);resolve()});
+   neighborhoodMap.once("load",()=>{clearTimeout(timeout);styleVillageAtlas(neighborhoodMap);resolve()});
   });
  }
  await neighborhoodLoad;
  if(request!==neighborhoodRequest||!neighborhoodMap||nearby.hidden)return;
- /* Keep the active pin visible ABOVE the movable Preview Mode control card.
-  * MapLibre remains georeferenced; only the screen-space camera offset changes. */
- const previewCard=document.querySelector("#adventure-preview-bar");
- const previewBlocking=!!window.__birthdayPreview&&previewCard&&!previewCard.hidden;
- const mapBox=container.getBoundingClientRect();
- const previewTop=previewBlocking?previewCard.getBoundingClientRect().top:0;
- const safeTop=document.querySelector(".nearby-heading")?.getBoundingClientRect().bottom||mapBox.top+130;
- const safeTarget=previewBlocking?Math.max(safeTop+82,Math.min(previewTop-56,(safeTop+previewTop)/2)):mapBox.top+mapBox.height*.5;
- const cameraY=previewBlocking?Math.max(-mapBox.height*.27,Math.min(0,safeTarget-(mapBox.top+mapBox.height/2))):0;
- neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42,bearing:nearbyMainStreetBearing(center),offset:[0,cameraY]});
+ neighborhoodMap.jumpTo({center:[center[1],center[0]],zoom:17,pitch:42,bearing:nearbyMainStreetBearing(center)});
  for(const marker of neighborhoodPins)marker.remove();
  neighborhoodPins=[];
  for(const {chapter,point,name} of features){
@@ -747,13 +541,11 @@ async function renderVillageAtlas(center,features){
   });
   neighborhoodPins.push(new ml.Marker({element:node,anchor:"bottom"}).setLngLat([point[1],point[0]]).addTo(neighborhoodMap));
  }
- addMapLibreHomePlayerMarkers(ml,neighborhoodMap);
  nearby.classList.add("vector-ready");
  syncLivePlayerMarkers();
  if(playerFollow)centerOnLivePlayer();
  neighborhoodMap.resize();
- showAtlasDiagnostic("Vector neighborhood visible");
-}
+ }
 
 function initStreetMap(L){if(streetMap)return;streetMap=L.map("street-map",{center:helenCenter,zoom:15,scrollWheelZoom:false,zoomControl:false,preferCanvas:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"© <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap contributors</a>",updateWhenIdle:true,keepBuffer:1}).addTo(streetMap);createMapGrid(L).addTo(streetMap);streetMap.createPane("village-geometry");streetMap.getPane("village-geometry").style.zIndex="430";streetMap.getPane("village-geometry").style.pointerEvents="none";streetTerrain=L.layerGroup().addTo(streetMap);streetPins=L.layerGroup().addTo(streetMap);streetMap.on("dragstart",onPlayerMapDragged);streetMap.on("tileload",()=>setStreetStatus("",false));streetMap.on("tileerror",()=>setStreetStatus("Map tiles need a connection. The chapter’s directions are below."));setTimeout(()=>streetMap&&streetMap.invalidateSize(),100)}
 async function renderStreetMap(){
@@ -775,7 +567,6 @@ async function renderStreetMap(){
  if(!streetMap||requestId!==mapRenderId)return;
  streetPins.clearLayers();
  liveStreetMarker=null;
- renderClevelandHomeSceneLeaflet(L);
  const activeId=chapters[completed.length]?.id;
  points.forEach(({chapter,point,name})=>{
   const index=chapters.indexOf(chapter),visited=completed.includes(chapter.id);
@@ -795,15 +586,12 @@ async function renderStreetMap(){
  const active=points.find(item=>item.chapter.id===activeId);
  const previous=points.filter(item=>completed.includes(item.chapter.id)).at(-1);
  const center=focused?.point||active?.point||previous?.point;
- addLeafletHomePlayerMarkers(L,streetMap,streetPins);
  syncLivePlayerMarkers();
  if(center){
   streetMap.setView(center,17,{animate:!matchMedia("(prefers-reduced-motion: reduce)").matches});
   setStreetStatus(focused?"":active?"Selected location could not be placed; showing the current quest.":"Current location could not be placed; showing the last explored stop.",!focused);
   if(playerFollow&&livePlayerPoint)centerOnLivePlayer();
-  renderVillageAtlas(center,points).catch(error=>{
-   if(requestId===mapRenderId)showAtlasDiagnostic("Fallback: "+(error?.message||String(error)),true);
-  });
+  renderVillageAtlas(center,points).catch(()=>{});
  }else{
   streetMap.setView(helenCenter,15);
   setStreetStatus("This location could not be placed. Use the chapter’s directions in the Journal.");
@@ -972,7 +760,6 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
    };
    addButton("map-zoom-in","Zoom in",'<span aria-hidden="true">+</span>').addEventListener("click",()=>activeMap()?.zoomIn());
    addButton("map-zoom-out","Zoom out",'<span aria-hidden="true">−</span>').addEventListener("click",()=>activeMap()?.zoomOut());
-   addButton("map-home","Show home test location",homeIconSvg()).addEventListener("click",()=>flyToPoint([homeTestLocation.lat,homeTestLocation.lng],18.5));
    addButton("map-quest","Return to current quest",returnIconSvg()).addEventListener("click",()=>{
     const active=chapters[Math.min(completed.length,chapters.length-1)];
     flyToPoint(questAnchors[active?.id],17);
