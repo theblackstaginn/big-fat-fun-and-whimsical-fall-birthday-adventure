@@ -82,7 +82,7 @@
     const img=document.createElement("img");img.src=emptyArt;img.alt="";img.draggable=false;
     img.addEventListener("error",()=>{
      if(img.src.endsWith(emptyArt))return;
-     img.src=emptyArt;
+     img.dataset.expected=emptyArt;img.src=emptyArt;
     });
     slot.append(img);slot.addEventListener("click",()=>open(i));
     slots.push(slot);panel.append(slot);
