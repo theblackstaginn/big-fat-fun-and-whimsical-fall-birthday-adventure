@@ -93,6 +93,6 @@
   window.setTimeout(()=>{
    if(completed.length!==previous+1||chapters[previous+1]?.id!==upcoming?.id)return;
    open(upcoming);
-  },window.__birthdayPreview?155:1160);
+  },1160);
  },true);
 })();
