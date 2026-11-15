@@ -1,11 +1,9 @@
 /* One-time standalone birthday cold open. No quest or keepsake writes. */
 (()=>{"use strict";
 const standalone=window.matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
-const params=new URLSearchParams(location.search);
-const test=params.get("birthdayIntro")==="preview";
 const key="rogue-witch-first-launch-cinematic-v1";
 let seen=false;try{seen=localStorage.getItem(key)==="done"}catch{}
-if((!standalone&&!test)||(seen&&!test))return;
+if(!standalone||seen)return;
 const reduced=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const overlay=document.createElement("div");overlay.className="birthday-boot";overlay.setAttribute("role","dialog");overlay.setAttribute("aria-modal","true");overlay.setAttribute("aria-label","Birthday system initialization");
 overlay.innerHTML='<canvas class="birthday-boot-canvas" aria-hidden="true"></canvas><div class="birthday-boot-terminal"><div class="birthday-boot-head"><span>PS C:\\ROGUE_WITCH\\BIRTHDAY&gt; ./initialize.ps1</span><span class="birthday-boot-led">●</span></div><div class="birthday-boot-log" role="log" aria-live="off"></div><div class="birthday-boot-progress"><div></div></div><div class="birthday-boot-percent">0%</div><button type="button" class="birthday-boot-skip">Skip intro</button></div><div class="birthday-boot-finale" hidden><div class="birthday-boot-boom">HAPPY BIRTHDAY, SWEET CHEEKS!</div><p>MAGIC CONTAINMENT: COMPLETELY DESTROYED</p></div>';
@@ -25,7 +23,7 @@ const script=[
 ];
 let timers=[],raf=0,done=false,particles=[],start=0;
 function later(fn,ms){const id=setTimeout(fn,ms);timers.push(id)}
-function markDone(){if(test)return;try{localStorage.setItem(key,"done")}catch{}}
+function markDone(){try{localStorage.setItem(key,"done")}catch{}}
 function finish(){if(done)return;done=true;markDone();timers.forEach(clearTimeout);cancelAnimationFrame(raf);overlay.remove();document.documentElement.classList.remove("birthday-boot-active");}
 overlay.querySelector(".birthday-boot-skip").addEventListener("click",finish);
 function resize(){const d=Math.min(devicePixelRatio||1,2);canvas.width=Math.round(innerWidth*d);canvas.height=Math.round(innerHeight*d);ctx.setTransform(d,0,0,d,0,0)}
