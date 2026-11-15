@@ -707,7 +707,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
       satchel.replaceChildren(intro,tally,empty);
     }
   };
-  const settings=document.createElement("div");settings.className="rpg-settings";settings.innerHTML='<p>Adventure controls, location tracking, and journey settings.</p><button type="button" id="rpg-stop-location" hidden>Stop GPS tracking</button><button type="button" id="rpg-print">Print the adventure map</button><button type="button" id="rpg-reset">Start the journey over</button><button type="button" id="rpg-finale">Read the birthday blessing</button>';
+  const settings=document.createElement("div");settings.className="rpg-settings";settings.innerHTML='<p>Adventure controls, location tracking, and journey settings.</p><button type="button" id="rpg-stop-location" hidden>Stop GPS tracking</button><button type="button" id="rpg-replay-init">Replay initialization sequence ✦</button><button type="button" id="rpg-print">Print the adventure map</button><button type="button" id="rpg-reset">Start the journey over</button><button type="button" id="rpg-finale">Read the birthday blessing</button>';
   const openPanel=(name)=>{
     if(name==="satchel")renderSatchel();
     const target=content[name]||settings;
@@ -773,6 +773,7 @@ document.querySelector("#complete-button").addEventListener("click",()=>{if(comp
   window.addEventListener("pagehide",stopLivePlayerTracking);
   shade.addEventListener("click",closePanel);sheet.querySelector("#rpg-close").addEventListener("click",closePanel);
   document.addEventListener("keydown",event=>{if(event.key==="Escape"&&!sheet.hidden)closePanel()});
+  settings.querySelector("#rpg-replay-init").addEventListener("click",()=>{closePanel();window.replayBirthdayInitialization?.()});
   settings.querySelector("#rpg-print").addEventListener("click",()=>window.print());
   settings.querySelector("#rpg-reset").addEventListener("click",()=>{document.querySelector("#reset-progress").click();closePanel()});
   settings.querySelector("#rpg-finale").addEventListener("click",()=>openPanel("finale"));
