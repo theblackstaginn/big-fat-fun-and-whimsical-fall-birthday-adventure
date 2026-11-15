@@ -1,6 +1,5 @@
 /* The Moonlit Finale: white bloom, button sparks and a gentle card fade.
  * Presentation only. The existing quest gate, ninth save and letter remain authoritative.
- * Shared with isolated Preview Mode; no new quest or storage writes.
  */
 (()=>{
  "use strict";
@@ -66,10 +65,8 @@
  }
  window.playMoonlitFizzle=playMoonlitFizzle;
 
- // Only the genuinely unlocked park achievement may play the real finale.
- // The preview has its own capture handler and deliberately uses this effect.
+ // Only the unlocked park achievement may play the finale.
  document.addEventListener("click",event=>{
-  if(window.__birthdayPreview)return;
   const trigger=event.target?.closest?.("#achievement-reveal");
   const achievement=trigger?.closest?.(".quest-achievement.is-finale");
   if(!trigger||!achievement||achievement.hidden)return;
