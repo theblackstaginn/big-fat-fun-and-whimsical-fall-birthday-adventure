@@ -1,0 +1,18 @@
+{
+  "name": "Jess’s Big, Fat, Fun & Whimsical Birthday Adventure",
+  "short_name": "bffawfbda! 🖤",
+  "description": "A birthday quest made for Jess.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1c1124",
+  "theme_color": "#301b24",
+  "icons": [
+    {
+      "src": "assets/rogue-witch-icon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

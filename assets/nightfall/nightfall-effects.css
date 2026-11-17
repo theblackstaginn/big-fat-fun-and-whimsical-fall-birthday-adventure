@@ -1,0 +1,138 @@
+/* Three graded nighttime passes over the approved 1024x1536 artwork, plus subtle river shimmer in daylight. Daytime sky and map artwork stay unchanged. All visual layers are pointer-transparent. */
+.rpg-fullscreen .map-canvas .nightfall-painted-layer {
+  position:absolute;inset:0;
+  width:100%;height:100%;max-width:none;
+  object-fit:cover;object-position:center;
+  display:block;pointer-events:none;
+  z-index:2;opacity:0;
+  transition:opacity 1.9s ease-in-out;
+  will-change:opacity;
+}
+.rpg-fullscreen .map-canvas .nightfall-painted-layer.nightfall-visible {opacity:1}
+.rpg-fullscreen .map-canvas:not(.portrait-loaded) .nightfall-painted-layer{display:none!important}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere {
+  position:absolute;inset:0;z-index:3;
+  width:100%;height:100%;overflow:hidden;
+  pointer-events:none;isolation:isolate;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[hidden]{display:none!important}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere svg{
+  position:absolute;inset:0;width:100%;height:100%;
+  display:block;pointer-events:none;
+}
+/* The glowing pixels stay on the original lamps and windows, not broad
+   floating blobs. Four gentle asynchronous groups mimic candle flutter. */
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-warm-glows{
+  opacity:0;
+  transition:opacity 1.8s ease-in-out;
+  mix-blend-mode:screen;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .nightfall-warm-glows{opacity:.28}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-warm-glows{opacity:.51}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-warm-glows{opacity:.70}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family-0{animation:nightfall-light-breathe 5.7s ease-in-out -1.1s infinite alternate}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family-1{animation:nightfall-light-breathe 6.8s ease-in-out -3.7s infinite alternate}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family-2{animation:nightfall-light-breathe 8.3s ease-in-out -1.9s infinite alternate}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family-3{animation:nightfall-light-breathe 7.4s ease-in-out -4.5s infinite alternate}
+@keyframes nightfall-light-breathe{
+  0%,100%{opacity:.48}
+  27%{opacity:.72}
+  54%{opacity:.55}
+  79%{opacity:.82}
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-sky {
+  opacity:0;
+  transition:opacity 2s ease-in-out;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .nightfall-sky{opacity:.55}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .nightfall-sky{opacity:1}
+.rpg-fullscreen .map-canvas .nightfall-star {
+  opacity:.32;
+  animation:nightfall-star-twinkle var(--star-period,5s) ease-in-out var(--star-delay,0s) infinite alternate;
+}
+@keyframes nightfall-star-twinkle{0%,100%{opacity:.18}30%{opacity:.7}65%{opacity:.36}88%{opacity:1}}
+
+/* The original 36 KB painted whitewater texture is reused four times,
+   all from the browser cache. Two passes per river section run in the SAME
+   downstream direction, half a cycle apart. Each fades fully out before it
+   resets, while its partner remains visible: no jump, reversal or blank gap.
+   The river/sky painting and existing rock edges never move. */
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-system {
+  position:absolute;inset:0;
+  pointer-events:none;
+  opacity:.64;
+  mix-blend-mode:screen;
+  transition:opacity 1.6s ease-in-out;
+  /* Fixed, water-only matte. The foam moves, but the mask is stationary:
+     highlights cannot drift onto the Welcome Center or adjacent roofs. */
+  -webkit-mask-image:url("river-foam-fixed-mask.webp");
+  mask-image:url("river-foam-fixed-mask.webp");
+  -webkit-mask-size:100% 100%;
+  mask-size:100% 100%;
+  -webkit-mask-position:center;
+  mask-position:center;
+  -webkit-mask-repeat:no-repeat;
+  mask-repeat:no-repeat;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="0"] .river-whitewater-system{opacity:.64}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="1"] .river-whitewater-system{opacity:.75}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="2"] .river-whitewater-system{opacity:.88}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere[data-nightfall-level="3"] .river-whitewater-system{opacity:.98}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-layer {
+  position:absolute;inset:0;
+  display:block;
+  width:100%;height:100%;max-width:none;
+  object-fit:cover;object-position:center;
+  pointer-events:none;
+  opacity:0;
+  animation-timing-function:linear;
+  animation-iteration-count:infinite;
+  will-change:transform,opacity;
+}
+/* Preserve the existing left/right channel separation. Foam itself is
+   transparent except at the genuine rapids in the approved illustration. */
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-left {
+  clip-path:inset(0 55% 0 0);
+  animation-name:river-foam-downstream;
+  animation-duration:10.8s;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-right {
+  clip-path:inset(0 0 0 50%);
+  animation-name:river-foam-crossstream;
+  animation-duration:12.6s;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-left.river-whitewater-phase-b {
+  animation-delay:-5.4s;
+}
+.rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-right.river-whitewater-phase-b {
+  animation-delay:-6.3s;
+}
+/* Each 50% midpoint is the brightest; one pass is at full strength
+   precisely while its partner is invisibly resetting. */
+@keyframes river-foam-downstream {
+  0%{opacity:0;transform:translate3d(0,-14px,0)}
+  50%{opacity:.70;transform:translate3d(0,0,0)}
+  100%{opacity:0;transform:translate3d(0,14px,0)}
+}
+@keyframes river-foam-crossstream {
+  0%{opacity:0;transform:translate3d(-16px,0,0)}
+  50%{opacity:.70;transform:translate3d(0,0,0)}
+  100%{opacity:0;transform:translate3d(16px,0,0)}
+}
+/* Don't spend animation frames on an invisible Nearby Streets layer. */
+.rpg-fullscreen .map-canvas:not(.portrait-loaded) #nightfall-atmosphere .river-whitewater-layer {
+  animation-play-state:paused!important;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .rpg-fullscreen .map-canvas .nightfall-painted-layer,
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere svg,
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-warm-glows {transition:none!important}
+  .rpg-fullscreen .map-canvas .nightfall-star,
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-layer,
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .nightfall-glow-family{animation:none!important}
+  .rpg-fullscreen .map-canvas .nightfall-star{opacity:.65}
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-phase-a{opacity:.60!important;transform:none!important}
+  .rpg-fullscreen .map-canvas #nightfall-atmosphere .river-whitewater-phase-b{opacity:0!important;transform:none!important}
+}
+@media print{.rpg-fullscreen .map-canvas #nightfall-atmosphere{display:none!important}}

@@ -1,0 +1,309 @@
+/* Satchel's independent 3D turntable view.
+ * Scope only to the Satchel modal. Journal/map/quest panels stay untouched. */
+.rpg-sheet.is-satchel-3d {
+  position: fixed;
+  z-index: 91;
+  inset: 50% auto auto 50%;
+  display: flex;
+  flex-direction: column;
+  width: min(100vw, 690px);
+  height: min(94dvh, 890px);
+  max-height: none;
+  padding: 0;
+  overflow: hidden;
+  transform: translate(-50%,-50%);
+  border: 1px solid #b68162;
+  border-radius: 15px;
+  background:
+    radial-gradient(ellipse at 50% 39%, #684555 0%, #302334 51%, #1d1626 100%);
+  color: #efd6b7;
+  box-shadow: 0 16px 70px #100715df, inset 0 0 0 2px #e2b18b17;
+}
+.rpg-sheet.is-satchel-3d .rpg-sheet-head {
+  position: relative;
+  z-index: 5;
+  flex: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid #b4876655;
+  background: linear-gradient(100deg,#5f3d4d,#352637);
+  color: #f5dcb9;
+  font: 1.02rem/1.2 Georgia,serif;
+}
+.rpg-sheet.is-satchel-3d .rpg-sheet-head::before { display: none; }
+.rpg-sheet.is-satchel-3d .rpg-sheet-head button {
+  flex: none;
+  width: 40px;height: 40px;
+  padding: 0;border-radius: 50%;
+  border: 1px solid #d3a17f;
+  background: #442e44;color: #fff0d5;
+}
+.rpg-sheet.is-satchel-3d .rpg-sheet-body {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  padding: 0 0 max(10px,env(safe-area-inset-bottom,0px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #a27864 transparent;
+  overscroll-behavior: contain;
+  background: transparent;
+}
+.rpg-sheet.is-satchel-3d .rpg-sheet-body .rpg-satchel {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  min-height: 100%;
+  padding: 0 8px 8px;
+  margin: 0;
+  box-sizing: border-box;
+  background: transparent;
+  color: #efd6b7;
+}
+.rpg-sheet.is-satchel-3d .satchel-oddities {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  min-height: 0;
+}
+.rpg-sheet.is-satchel-3d .satchel-eyebrow {
+  margin: 10px 6px 0;
+  color: #e9bc96;
+  font: 700 .65rem/1.3 system-ui,sans-serif;
+  letter-spacing: .19em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.rpg-sheet.is-satchel-3d .satchel-title {
+  margin: 0 6px 4px;
+  color: #f8dcb7;
+  font: normal clamp(1.25rem,5.5vw,1.9rem)/1.16 Georgia,serif;
+  text-align: center;
+  text-shadow: 0 2px 8px #110912;
+}
+.rpg-sheet.is-satchel-3d .satchel-stage {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  height: clamp(320px, 52dvh, 515px);
+  min-height: 320px;
+  overflow: hidden;
+  border-radius: 10px;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: grab;
+  background:
+    radial-gradient(ellipse at 50% 53%, #9b69574a, transparent 63%),
+    radial-gradient(ellipse at 50% 77%, #130d18b3, transparent 59%);
+}
+.rpg-sheet.is-satchel-3d .satchel-stage.is-dragging { cursor: grabbing; touch-action: none; }
+.rpg-sheet.is-satchel-3d .satchel-stage canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+.rpg-sheet.is-satchel-3d .satchel-overlay-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  overflow: hidden;
+}
+.rpg-sheet.is-satchel-3d .satchel-jar {
+  position: absolute;
+  box-sizing: border-box;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translate(-50%,-50%);
+  transform-origin: 50% 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  filter: drop-shadow(0 4px 4px #110a14a6);
+  transition: opacity .2s ease;
+}
+.rpg-sheet.is-satchel-3d .satchel-jar[hidden] { display: none !important; }
+.rpg-sheet.is-satchel-3d .satchel-jar:focus-visible {
+  outline: 2px solid #ffdf9f;
+  outline-offset: 2px;
+  border-radius: 28%;
+}
+.rpg-sheet.is-satchel-3d .satchel-jar.is-selected {
+  filter: drop-shadow(0 0 7px #ddaa70b5) drop-shadow(0 5px 5px #0a0612a6);
+}
+.rpg-sheet.is-satchel-3d .satchel-jar-art {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+.rpg-sheet.is-satchel-3d .satchel-scene-window {
+  position: absolute;
+  z-index: 1;
+  top: 31%;
+  left: 17%;
+  width: 66%;
+  height: 49%;
+  overflow: hidden;
+  border-radius: 24% 24% 14% 14% / 16% 16% 12% 12%;
+  pointer-events: none;
+}
+.rpg-sheet.is-satchel-3d .satchel-scene-window img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: saturate(.91) sepia(.07) contrast(.95);
+}
+.rpg-sheet.is-satchel-3d .satchel-glass-shine {
+  position: absolute;
+  z-index: 2;
+  inset: 26% 12% 13%;
+  border-radius: 31%;
+  box-shadow: inset 3px 0 7px #fff6d32b, inset -4px 0 9px #2e20204a;
+  pointer-events: none;
+}
+.rpg-sheet.is-satchel-3d .satchel-status {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: 4px;
+  width: max-content;
+  max-width: 80%;
+  padding: 5px 11px;
+  transform: translateX(-50%);
+  border: 1px solid #bb8a6750;
+  border-radius: 20px;
+  background: #201525cd;
+  color: #f3d8b8;
+  text-align: center;
+  font: italic .76rem/1.3 Georgia,serif;
+  pointer-events: none;
+}
+.rpg-sheet.is-satchel-3d .satchel-nav {
+  display: grid;
+  grid-template-columns: 46px minmax(0,1fr) 46px;
+  width: 100%;
+  max-width: 490px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 6px;
+}
+.rpg-sheet.is-satchel-3d .satchel-nav button {
+  width: 44px;height: 44px;
+  border: 1px solid #c39376;
+  border-radius: 9px;
+  background: linear-gradient(145deg,#694352,#3e293c);
+  color: #f8d6af;
+  font: 1.6rem/1 Georgia,serif;
+  cursor: pointer;
+}
+.rpg-sheet.is-satchel-3d .satchel-nav button:focus-visible,
+.rpg-sheet.is-satchel-3d .satchel-actions button:focus-visible {
+  outline: 2px solid #ffe0ad;outline-offset: 3px;
+}
+.rpg-sheet.is-satchel-3d .satchel-current {
+  min-width: 0;
+  color: #f6dfba;
+  text-align: center;
+  font: 700 clamp(.86rem,3.8vw,1.1rem)/1.2 Georgia,serif;
+  text-wrap: balance;
+}
+.rpg-sheet.is-satchel-3d .satchel-current small {
+  display: block;margin-top: 4px;color: #c7a79d;
+  font: normal .69rem/1.2 system-ui,sans-serif;
+  letter-spacing: .03em;
+}
+.rpg-sheet.is-satchel-3d .satchel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 5px 8px 0;
+}
+.rpg-sheet.is-satchel-3d .satchel-actions button {
+  min-height: 41px;
+  padding: 9px 13px;
+  border: 1px solid #c29474;
+  border-radius: 9px;
+  background: #5c374b;
+  color: #ffdfb5;
+  font: 700 .76rem/1.2 Georgia,serif;
+}
+.rpg-sheet.is-satchel-3d .satchel-actions button:disabled { opacity: .47;cursor: default; }
+.rpg-sheet.is-satchel-3d .satchel-description {
+  max-width: 490px;
+  padding: 4px 16px 12px;
+  margin: 0 auto;
+  color: #d4baaa;
+  text-align: center;
+  font: .78rem/1.45 Georgia,serif;
+}
+.rpg-sheet.is-satchel-3d .satchel-fallback-plate {
+  position: absolute;
+  inset: auto 0 6%;
+  z-index: 0;
+  display: block;
+  width: 100%;
+  max-height: 40%;
+  object-fit: contain;
+  pointer-events: none;
+}
+.rpg-sheet.is-satchel-3d .satchel-fallback-plate[hidden] { display: none!important; }
+.rpg-sheet.is-satchel-3d .satchel-painting {
+  position: fixed;
+  z-index: 240;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 55px 10px max(20px,env(safe-area-inset-bottom,0px));
+  background: #130c18f5;
+}
+.rpg-sheet.is-satchel-3d .satchel-painting[hidden] { display:none!important; }
+.rpg-sheet.is-satchel-3d .satchel-painting img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 8px 30px #08040db8;
+}
+.rpg-sheet.is-satchel-3d .satchel-painting-close {
+  position: absolute;
+  z-index: 1;
+  top: max(12px,env(safe-area-inset-top,0px));
+  right: 12px;
+  width: 43px;
+  height: 43px;
+  border-radius: 50%;
+  border: 1px solid #eac9a3;
+  background: #4a2b43;
+  color: white;
+  font: 1.6rem/1 Georgia,serif;
+}
+@media (max-height: 680px) {
+  .rpg-sheet.is-satchel-3d .satchel-stage { height: 46dvh;min-height: 250px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rpg-sheet.is-satchel-3d .satchel-jar { transition: none; }
+}

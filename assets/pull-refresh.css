@@ -1,0 +1,2 @@
+/* Lightweight pull-to-refresh hint, no changes to map or controls. */
+#rpg-pull-refresh{position:fixed;z-index:2000;top:max(12px,env(safe-area-inset-top));left:50%;transform:translate(-50%,0);padding:9px 17px;border:1px solid #c89c6a;border-radius:30px;background:#342137ed;color:#f7e2bc;box-shadow:0 3px 15px #180b1bc4;font:600 13px Georgia,serif;pointer-events:none;white-space:nowrap}
